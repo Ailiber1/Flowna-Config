@@ -134,6 +134,29 @@ export function ConnectionsLayer() {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        {/* Arrowhead marker for connection lines */}
+        <marker
+          id="arrowhead"
+          markerWidth="12"
+          markerHeight="12"
+          refX="10"
+          refY="6"
+          orient="auto"
+          markerUnits="userSpaceOnUse"
+        >
+          <path d="M0,0 L12,6 L0,12 L3,6 Z" fill="#c084fc" />
+        </marker>
+        <marker
+          id="arrowhead-hover"
+          markerWidth="12"
+          markerHeight="12"
+          refX="10"
+          refY="6"
+          orient="auto"
+          markerUnits="userSpaceOnUse"
+        >
+          <path d="M0,0 L12,6 L0,12 L3,6 Z" fill="#d8b4fe" />
+        </marker>
       </defs>
       {state.connections.map(renderConnection)}
       {renderGhostLine()}
