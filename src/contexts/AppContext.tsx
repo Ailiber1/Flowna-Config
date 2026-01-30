@@ -107,7 +107,7 @@ const initialState: AppState = {
     language: 'ja',
     theme: 'dark',
     sidebarWidth: 280,
-    defaultFolder: 'folder-config',
+    defaultFolder: 'folder-workflows',
     autoSave: true,
     syncInterval: 30000,
   },
