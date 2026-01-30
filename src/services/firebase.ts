@@ -26,7 +26,7 @@ import {
 } from 'firebase/auth';
 import type { Workflow, Folder, CustomCategory, AppSettings } from '../types';
 
-// Firebase configuration - user needs to replace these values
+// Firebase configuration interface
 export interface FirebaseConfig {
   apiKey: string;
   authDomain: string;
@@ -34,7 +34,21 @@ export interface FirebaseConfig {
   storageBucket: string;
   messagingSenderId: string;
   appId: string;
+  databaseURL?: string;
+  measurementId?: string;
 }
+
+// Default Firebase configuration for Flowna Config
+const DEFAULT_FIREBASE_CONFIG: FirebaseConfig = {
+  apiKey: "AIzaSyA3-66jq9BQG1Vf0M8nrmBUl6q8255KuWo",
+  authDomain: "flowna-config.firebaseapp.com",
+  databaseURL: "https://flowna-config-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "flowna-config",
+  storageBucket: "flowna-config.firebasestorage.app",
+  messagingSenderId: "1051913712097",
+  appId: "1:1051913712097:web:e2036ca1b71c588cc022a0",
+  measurementId: "G-GWHNKHQ6JQ"
+};
 
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
@@ -92,13 +106,15 @@ export async function initializeFirebase(config: FirebaseConfig): Promise<boolea
   }
 }
 
-// Auto-initialize from stored config
+// Auto-initialize from stored config or use default
 export async function autoInitializeFirebase(): Promise<boolean> {
-  const config = getStoredFirebaseConfig();
-  if (config) {
-    return initializeFirebase(config);
-  }
-  return false;
+  const config = getStoredFirebaseConfig() || DEFAULT_FIREBASE_CONFIG;
+  return initializeFirebase(config);
+}
+
+// Get the default Firebase config
+export function getDefaultFirebaseConfig(): FirebaseConfig {
+  return DEFAULT_FIREBASE_CONFIG;
 }
 
 // Authentication functions
