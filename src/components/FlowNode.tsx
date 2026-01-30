@@ -12,7 +12,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const { state, dispatch } = useApp();
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
 
   const getCategoryClass = (category: string): string => {
     const categoryLower = category.toLowerCase();
@@ -30,13 +30,11 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     setIsDragging(true);
     dispatch({ type: 'START_DRAGGING_NODE' });
 
-    const rect = nodeRef.current?.getBoundingClientRect();
-    if (rect) {
-      setDragOffset({
-        x: e.clientX / state.viewport.scale - node.position.x,
-        y: e.clientY / state.viewport.scale - node.position.y,
-      });
-    }
+    // Store initial mouse position for delta calculation
+    setLastMousePos({
+      x: e.clientX / state.viewport.scale,
+      y: e.clientY / state.viewport.scale,
+    });
 
     // Select node
     if (e.ctrlKey || e.metaKey) {
@@ -44,19 +42,33 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     } else if (!isSelected) {
       dispatch({ type: 'SELECT_NODES', payload: [node.id] });
     }
-  }, [node.id, node.position, state.viewport.scale, isSelected, dispatch]);
+  }, [node.id, state.viewport.scale, isSelected, dispatch]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (isDragging) {
-      const newX = e.clientX / state.viewport.scale - dragOffset.x;
-      const newY = e.clientY / state.viewport.scale - dragOffset.y;
+      const currentX = e.clientX / state.viewport.scale;
+      const currentY = e.clientY / state.viewport.scale;
 
-      dispatch({
-        type: 'MOVE_NODE',
-        payload: { id: node.id, position: { x: newX, y: newY } },
-      });
+      const dx = currentX - lastMousePos.x;
+      const dy = currentY - lastMousePos.y;
+
+      // Move all selected nodes together
+      if (isSelected && state.selectedNodeIds.length > 1) {
+        dispatch({
+          type: 'MOVE_SELECTED_NODES',
+          payload: { dx, dy },
+        });
+      } else {
+        // Move only this node
+        dispatch({
+          type: 'MOVE_NODE',
+          payload: { id: node.id, position: { x: node.position.x + dx, y: node.position.y + dy } },
+        });
+      }
+
+      setLastMousePos({ x: currentX, y: currentY });
     }
-  }, [isDragging, dragOffset, node.id, state.viewport.scale, dispatch]);
+  }, [isDragging, lastMousePos, node.id, node.position, state.viewport.scale, isSelected, state.selectedNodeIds.length, dispatch]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
