@@ -88,6 +88,10 @@ export function TopBar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [searchValue, handleSearch]);
 
+  const handleLanguageToggle = () => {
+    dispatch({ type: 'SET_LANGUAGE', payload: state.language === 'ja' ? 'en' : 'ja' });
+  };
+
   return (
     <div className="topbar">
       <div className="search-container">
@@ -109,6 +113,13 @@ export function TopBar() {
         </button>
         <button className="topbar-btn primary" onClick={handleSaveWorkflow}>
           💾 {t('save', state.language)}
+        </button>
+        <button
+          className="topbar-btn language-btn"
+          onClick={handleLanguageToggle}
+          title={state.language === 'ja' ? 'Switch to English' : '日本語に切り替え'}
+        >
+          🌐 {state.language === 'ja' ? '日本語' : 'EN'}
         </button>
       </div>
     </div>

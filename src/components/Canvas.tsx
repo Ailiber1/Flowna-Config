@@ -12,13 +12,34 @@ export function Canvas() {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
-  // Handle canvas pan
+  // Marquee selection state
+  const [isMarqueeSelecting, setIsMarqueeSelecting] = useState(false);
+  const [marqueeStart, setMarqueeStart] = useState({ x: 0, y: 0 });
+  const [marqueeEnd, setMarqueeEnd] = useState({ x: 0, y: 0 });
+
+  // Handle canvas pan and marquee selection
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.target === canvasRef.current || e.target === contentRef.current?.querySelector('.canvas-grid')) {
-      setIsPanning(true);
-      setPanStart({ x: e.clientX - state.viewport.panX, y: e.clientY - state.viewport.panY });
-      dispatch({ type: 'DESELECT_ALL' });
+    const isCanvasClick = e.target === canvasRef.current ||
+      (e.target as HTMLElement).classList.contains('canvas-grid') ||
+      (e.target as HTMLElement).classList.contains('canvas-content');
+
+    if (isCanvasClick) {
       dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
+
+      if (e.button === 0 && !e.shiftKey) {
+        // Left click without shift: start marquee selection
+        const rect = canvasRef.current!.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        setIsMarqueeSelecting(true);
+        setMarqueeStart({ x, y });
+        setMarqueeEnd({ x, y });
+        dispatch({ type: 'DESELECT_ALL' });
+      } else if (e.shiftKey || e.button === 1) {
+        // Shift+click or middle button: pan
+        setIsPanning(true);
+        setPanStart({ x: e.clientX - state.viewport.panX, y: e.clientY - state.viewport.panY });
+      }
     }
   }, [state.viewport.panX, state.viewport.panY, dispatch]);
 
@@ -34,6 +55,15 @@ export function Canvas() {
       });
     }
 
+    // Marquee selection
+    if (isMarqueeSelecting && canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      setMarqueeEnd({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+
     // Update ghost line for connection creation
     if (state.isCreatingConnection && canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
@@ -45,14 +75,48 @@ export function Canvas() {
         },
       });
     }
-  }, [isPanning, panStart, state.viewport, state.isCreatingConnection, dispatch]);
+  }, [isPanning, panStart, isMarqueeSelecting, state.viewport, state.isCreatingConnection, dispatch]);
 
   const handleMouseUp = useCallback(() => {
+    // Complete marquee selection
+    if (isMarqueeSelecting && canvasRef.current) {
+      const minX = Math.min(marqueeStart.x, marqueeEnd.x);
+      const maxX = Math.max(marqueeStart.x, marqueeEnd.x);
+      const minY = Math.min(marqueeStart.y, marqueeEnd.y);
+      const maxY = Math.max(marqueeStart.y, marqueeEnd.y);
+
+      // Convert screen coordinates to canvas coordinates
+      const canvasMinX = (minX - state.viewport.panX) / state.viewport.scale;
+      const canvasMaxX = (maxX - state.viewport.panX) / state.viewport.scale;
+      const canvasMinY = (minY - state.viewport.panY) / state.viewport.scale;
+      const canvasMaxY = (maxY - state.viewport.panY) / state.viewport.scale;
+
+      // Find nodes within the marquee
+      const selectedNodeIds = state.nodes
+        .filter(node => {
+          const nodeRight = node.position.x + 220;
+          const nodeBottom = node.position.y + 150;
+          return (
+            node.position.x < canvasMaxX &&
+            nodeRight > canvasMinX &&
+            node.position.y < canvasMaxY &&
+            nodeBottom > canvasMinY
+          );
+        })
+        .map(node => node.id);
+
+      if (selectedNodeIds.length > 0) {
+        dispatch({ type: 'SELECT_NODES', payload: selectedNodeIds });
+      }
+    }
+
     setIsPanning(false);
+    setIsMarqueeSelecting(false);
+
     if (state.isCreatingConnection) {
       dispatch({ type: 'CANCEL_CONNECTION' });
     }
-  }, [state.isCreatingConnection, dispatch]);
+  }, [isMarqueeSelecting, marqueeStart, marqueeEnd, state.viewport, state.nodes, state.isCreatingConnection, dispatch]);
 
   // Handle zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -202,6 +266,19 @@ export function Canvas() {
           />
         ))}
       </div>
+
+      {/* Marquee Selection Box */}
+      {isMarqueeSelecting && (
+        <div
+          className="marquee-selection"
+          style={{
+            left: Math.min(marqueeStart.x, marqueeEnd.x),
+            top: Math.min(marqueeStart.y, marqueeEnd.y),
+            width: Math.abs(marqueeEnd.x - marqueeStart.x),
+            height: Math.abs(marqueeEnd.y - marqueeStart.y),
+          }}
+        />
+      )}
     </div>
   );
 }

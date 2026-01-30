@@ -6,7 +6,7 @@ import type { Folder, Workflow, Connector } from '../types';
 export function Sidebar() {
   const { state, dispatch } = useApp();
   const [foldersExpanded, setFoldersExpanded] = useState(true);
-  const [connectorsExpanded, setConnectorsExpanded] = useState(true);
+  const [connectorsExpanded, setConnectorsExpanded] = useState(false); // Collapsed by default
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['folder-config']));
 
   const toggleFolder = (folderId: string) => {
@@ -31,10 +31,6 @@ export function Sidebar() {
 
   const handleConnectorClick = (connector: Connector) => {
     dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
-  };
-
-  const handleLanguageChange = (lang: 'en' | 'ja') => {
-    dispatch({ type: 'SET_LANGUAGE', payload: lang });
   };
 
   return (
@@ -101,24 +97,18 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Connectors Section */}
-      <div className="sidebar-section">
+      {/* Connectors Section - Collapsed by default */}
+      <div className="sidebar-section connectors-section">
         <div
-          className="sidebar-section-header"
+          className="sidebar-section-header clickable"
           onClick={() => setConnectorsExpanded(!connectorsExpanded)}
         >
           <span className="sidebar-section-title">
             {t('connectors', state.language)}
           </span>
-          <button
-            className="sidebar-add-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: null });
-            }}
-          >
-            +
-          </button>
+          <span className={`sidebar-section-toggle ${!connectorsExpanded ? 'collapsed' : ''}`}>
+            ▾
+          </span>
         </div>
         <div className={`sidebar-section-content ${!connectorsExpanded ? 'collapsed' : ''}`}>
           {state.connectors.map(connector => (
@@ -133,18 +123,6 @@ export function Sidebar() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Language Toggle with Globe Icon */}
-      <div className="language-toggle">
-        <button
-          className="language-globe-btn"
-          onClick={() => handleLanguageChange(state.language === 'ja' ? 'en' : 'ja')}
-          title={state.language === 'ja' ? 'Switch to English' : '日本語に切り替え'}
-        >
-          <span className="globe-icon">🌐</span>
-          <span className="language-label">{state.language === 'ja' ? '日本語' : 'English'}</span>
-        </button>
       </div>
     </aside>
   );
