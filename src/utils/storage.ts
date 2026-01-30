@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { Workflow, Folder, Connector, AppSettings, CustomCategory, FlowNode, Connection, DEFAULT_FOLDERS, DEFAULT_CONNECTORS, DEFAULT_CATEGORIES } from '../types';
+import type { Workflow, Folder, Connector, AppSettings, CustomCategory, FlowNode, Connection } from '../types';
+import { DEFAULT_FOLDERS, DEFAULT_CONNECTORS, DEFAULT_CATEGORIES } from '../types';
 
 const STORAGE_KEYS = {
   WORKFLOWS: 'flowna_workflows',
@@ -75,7 +76,6 @@ export function getFolders(): Folder[] {
     return JSON.parse(data);
   }
   // Return default folders if none exist
-  const { DEFAULT_FOLDERS } = require('../types');
   saveFolders(DEFAULT_FOLDERS);
   return DEFAULT_FOLDERS;
 }
@@ -114,7 +114,6 @@ export function getConnectors(): Connector[] {
     return JSON.parse(data);
   }
   // Return default connectors if none exist
-  const { DEFAULT_CONNECTORS } = require('../types');
   saveConnectors(DEFAULT_CONNECTORS);
   return DEFAULT_CONNECTORS;
 }
@@ -160,7 +159,6 @@ export function getCategories(): CustomCategory[] {
   if (data) {
     return JSON.parse(data);
   }
-  const { DEFAULT_CATEGORIES } = require('../types');
   saveCategories(DEFAULT_CATEGORIES);
   return DEFAULT_CATEGORIES;
 }
@@ -172,7 +170,8 @@ export function addCategory(category: CustomCategory): void {
 }
 
 // Generate thumbnail from canvas
-export async function generateThumbnail(canvasElement: HTMLElement): Promise<string> {
+export async function generateThumbnail(_canvasElement: HTMLElement): Promise<string> {
   // Simple implementation - in production would use html2canvas or similar
+  // The canvasElement parameter will be used when implementing actual thumbnail generation
   return '';
 }

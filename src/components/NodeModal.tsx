@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
 import { generateId } from '../utils/storage';
-import type { FlowNode, CustomCategory } from '../types';
+import type { FlowNode } from '../types';
 
 const ICON_OPTIONS = ['🤖', '⚡', '⚙️', '📋', '💡', '🔧', '📁', '🎯', '📊', '🔗', '☁️', '🐙', '💎', '🚀', '📝'];
 const COLOR_OPTIONS = ['#a78bfa', '#60a5fa', '#ff8800', '#4ade80', '#f472b6', '#fbbf24', '#ef4444', '#06b6d4'];
