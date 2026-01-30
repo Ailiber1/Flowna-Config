@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useApp } from '../contexts/AppContext';
 
 export function Toast() {
@@ -16,8 +16,10 @@ export function Toast() {
 
   if (!state.toast) return null;
 
+  const toast = state.toast;
+
   const getIcon = () => {
-    switch (state.toast.type) {
+    switch (toast.type) {
       case 'success': return '✅';
       case 'error': return '❌';
       case 'warning': return '⚠️';
@@ -28,9 +30,9 @@ export function Toast() {
 
   return (
     <div className="toast-container">
-      <div className={`toast ${state.toast.type}`}>
+      <div className={`toast ${toast.type}`}>
         <span>{getIcon()}</span>
-        <span className="toast-message">{state.toast.message}</span>
+        <span className="toast-message">{toast.message}</span>
       </div>
     </div>
   );

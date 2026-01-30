@@ -8,3 +8,5 @@ export { SaveWorkflowModal } from './SaveWorkflowModal';
 export { ContextMenu } from './ContextMenu';
 export { Toast } from './Toast';
 export { StatusBar } from './StatusBar';
+export { ConnectorModal } from './ConnectorModal';
+export { Onboarding } from './Onboarding';

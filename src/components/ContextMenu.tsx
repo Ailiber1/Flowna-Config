@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
 import { generateId } from '../utils/storage';
@@ -22,7 +22,9 @@ export function ContextMenu() {
 
   const { x, y, type, targetId } = state.contextMenu;
   const node = targetId ? state.nodes.find(n => n.id === targetId) : null;
-  const connection = targetId ? state.connections.find(c => c.id === targetId) : null;
+  // Connection is available for future use with connection-specific context menu items
+  const _connection = targetId ? state.connections.find(c => c.id === targetId) : null;
+  void _connection; // Suppress unused warning
 
   const handleEdit = () => {
     if (targetId) {

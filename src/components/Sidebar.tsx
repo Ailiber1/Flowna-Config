@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
-import { getWorkflowsByFolder } from '../utils/storage';
 import type { Folder, Workflow, Connector } from '../types';
 
 export function Sidebar() {
