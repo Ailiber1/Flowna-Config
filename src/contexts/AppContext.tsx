@@ -162,6 +162,23 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ),
       };
 
+    case 'MOVE_SELECTED_NODES':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          state.selectedNodeIds.includes(n.id)
+            ? {
+                ...n,
+                position: {
+                  x: n.position.x + action.payload.dx,
+                  y: n.position.y + action.payload.dy,
+                },
+                updatedAt: Date.now(),
+              }
+            : n
+        ),
+      };
+
     case 'SET_CONNECTIONS':
       return { ...state, connections: action.payload };
 

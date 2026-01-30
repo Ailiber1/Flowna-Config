@@ -112,11 +112,7 @@ export function Canvas() {
 
     setIsPanning(false);
     setIsMarqueeSelecting(false);
-
-    if (state.isCreatingConnection) {
-      dispatch({ type: 'CANCEL_CONNECTION' });
-    }
-  }, [isMarqueeSelecting, marqueeStart, marqueeEnd, state.viewport, state.nodes, state.isCreatingConnection, dispatch]);
+  }, [isMarqueeSelecting, marqueeStart, marqueeEnd, state.viewport, state.nodes, dispatch]);
 
   // Handle zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -185,6 +181,34 @@ export function Canvas() {
       });
     }
   }, [dispatch]);
+
+  // Handle global mouse move for connection creation
+  useEffect(() => {
+    if (state.isCreatingConnection && canvasRef.current) {
+      const handleGlobalMouseMove = (e: MouseEvent) => {
+        const rect = canvasRef.current!.getBoundingClientRect();
+        dispatch({
+          type: 'UPDATE_GHOST_LINE',
+          payload: {
+            x: (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale,
+            y: (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale,
+          },
+        });
+      };
+
+      const handleGlobalMouseUp = () => {
+        dispatch({ type: 'CANCEL_CONNECTION' });
+      };
+
+      window.addEventListener('mousemove', handleGlobalMouseMove);
+      window.addEventListener('mouseup', handleGlobalMouseUp);
+
+      return () => {
+        window.removeEventListener('mousemove', handleGlobalMouseMove);
+        window.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+    }
+  }, [state.isCreatingConnection, state.viewport, dispatch]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
