@@ -6,17 +6,17 @@ const NODE_WIDTH = 220;
 const NODE_HEIGHT = 150;
 
 // Port circle position for HUD-style nodes
-// Footer padding: 8px top, 10px bottom, port circle is centered
-const PORT_OFFSET_FROM_BOTTOM = 15;
+// The port circles are in the footer area, approximately 38px from the bottom of the node
+const PORT_OFFSET_FROM_BOTTOM = 38;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
   const portY = node.position.y + NODE_HEIGHT - PORT_OFFSET_FROM_BOTTOM;
 
   if (portType === 'input') {
-    // Input port: left side, 12px padding + 5px (half of port circle)
+    // Input port: left side - padding (12px) + half of port circle (5px)
     return { x: node.position.x + 17, y: portY };
   } else {
-    // Output port: right side, width - 12px padding - 5px (half of port circle)
+    // Output port: right side - width minus padding (12px) minus half of port circle (5px)
     return { x: node.position.x + NODE_WIDTH - 17, y: portY };
   }
 }
