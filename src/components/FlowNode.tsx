@@ -130,6 +130,30 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
 
   const categoryClass = getCategoryClass(node.category);
 
+  const getCategoryLabel = (category: string): string => {
+    const cat = category.toUpperCase();
+    if (cat.includes('AGENT')) return 'SYS_NODE :: AGENT';
+    if (cat.includes('LOGIC')) return 'SYS_NODE :: LOGIC';
+    if (cat.includes('SYSTEM')) return 'SYS_NODE :: SYSTEM';
+    if (cat.includes('RULE')) return 'SYS_NODE :: RULE';
+    return `SYS_NODE :: ${cat}`;
+  };
+
+  const getStatusLabel = (status: string): string => {
+    if (state.language === 'ja') {
+      switch (status) {
+        case 'done': return '完了';
+        case 'doing': return '作業中';
+        default: return '未着手';
+      }
+    }
+    switch (status) {
+      case 'done': return 'Done';
+      case 'doing': return 'In Progress';
+      default: return 'Todo';
+    }
+  };
+
   return (
     <div
       ref={nodeRef}
@@ -143,6 +167,12 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
+      {/* HUD Corner Decorations */}
+      <div className="hud-corner hud-corner-tl" />
+      <div className="hud-corner hud-corner-tr" />
+      <div className="hud-corner hud-corner-bl" />
+      <div className="hud-corner hud-corner-br" />
+
       {/* Memo Indicator */}
       {node.memo && (
         <span className="node-memo-indicator" title={node.memo}>
@@ -150,20 +180,25 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         </span>
       )}
 
-      {/* Header */}
+      {/* Header - System Node Type */}
       <div className="node-header">
-        <span className={`node-category-badge ${categoryClass}`}>
-          {node.categoryDisplayName || node.category}
-        </span>
-        <span className="node-title">{node.displayName || node.title}</span>
-        <span className={`node-status-dot ${node.status}`} />
+        <span className="node-type-indicator">● {getCategoryLabel(node.category)}</span>
       </div>
 
-      {/* Body */}
+      {/* Title Section */}
+      <div className="node-title-section">
+        <span className="node-title"># {node.displayName || node.title}</span>
+        <span className={`node-status-badge ${node.status}`}>
+          {getStatusLabel(node.status)}
+        </span>
+      </div>
+
+      {/* Body - Description */}
       <div className="node-body">
-        <span className="node-icon">{node.icon}</span>
         {node.description && (
-          <p className="node-description">{node.description}</p>
+          <div className="node-description-box">
+            <p className="node-description">{node.description}</p>
+          </div>
         )}
       </div>
 
@@ -175,10 +210,10 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
             onMouseDown={(e) => handlePortMouseDown(e, 'input')}
             onMouseUp={(e) => handlePortMouseUp(e, 'input')}
           />
-          <span>{state.language === 'ja' ? '入力' : 'Input'}</span>
+          <span className="port-label">{state.language === 'ja' ? '入力' : 'Input'}</span>
         </div>
         <div className="node-port">
-          <span>{state.language === 'ja' ? '出力' : 'Output'}</span>
+          <span className="port-label">{state.language === 'ja' ? '出力' : 'Output'}</span>
           <span
             className="port-circle"
             onMouseDown={(e) => handlePortMouseDown(e, 'output')}
