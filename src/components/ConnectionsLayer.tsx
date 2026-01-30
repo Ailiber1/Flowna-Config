@@ -6,8 +6,9 @@ const NODE_WIDTH = 220;
 const NODE_HEIGHT = 150;
 
 // Port circle position for HUD-style nodes
-// The port circles are in the footer area, approximately 38px from the bottom of the node
-const PORT_OFFSET_FROM_BOTTOM = 38;
+// Footer: 8px top padding + 10px bottom padding, port circle is ~15px from bottom
+// Adding extra offset to account for flex centering in footer
+const PORT_OFFSET_FROM_BOTTOM = 20;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
   const portY = node.position.y + NODE_HEIGHT - PORT_OFFSET_FROM_BOTTOM;
