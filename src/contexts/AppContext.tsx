@@ -49,6 +49,7 @@ type AppAction =
   | { type: 'UPDATE_NODE'; payload: FlowNode }
   | { type: 'DELETE_NODE'; payload: string }
   | { type: 'MOVE_NODE'; payload: { id: string; position: { x: number; y: number } } }
+  | { type: 'MOVE_SELECTED_NODES'; payload: { dx: number; dy: number } }
   | { type: 'SET_CONNECTIONS'; payload: Connection[] }
   | { type: 'ADD_CONNECTION'; payload: Connection }
   | { type: 'DELETE_CONNECTION'; payload: string }
