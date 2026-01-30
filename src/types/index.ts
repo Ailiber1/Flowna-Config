@@ -120,12 +120,7 @@ export const DEFAULT_CATEGORIES: CustomCategory[] = [
 ];
 
 export const DEFAULT_FOLDERS: Folder[] = [
-  { id: 'folder-config', name: '構成', parentId: null, icon: '📁', order: 1, createdAt: Date.now(), updatedAt: Date.now() },
-  { id: 'folder-connect', name: '接続', parentId: null, icon: '📁', order: 2, createdAt: Date.now(), updatedAt: Date.now() },
-  { id: 'folder-module', name: 'モジュール', parentId: null, icon: '📁', order: 3, createdAt: Date.now(), updatedAt: Date.now() },
-  { id: 'folder-input', name: 'Data Input', parentId: null, icon: '📁', order: 4, createdAt: Date.now(), updatedAt: Date.now() },
-  { id: 'folder-user', name: 'ユーザード', parentId: null, icon: '📁', order: 5, createdAt: Date.now(), updatedAt: Date.now() },
-  { id: 'folder-owner', name: 'オーナー', parentId: null, icon: '📁', order: 6, createdAt: Date.now(), updatedAt: Date.now() },
+  { id: 'folder-workflows', name: 'ワークフロー', parentId: null, icon: '📂', order: 1, createdAt: Date.now(), updatedAt: Date.now() },
 ];
 
 export const DEFAULT_CONNECTORS: Connector[] = [
