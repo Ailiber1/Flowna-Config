@@ -11,8 +11,9 @@
   /* Canvas accent colors */
   --accent-cyan: #00ffff;
   --accent-neon-green: #00ff88;
-  --grid-color: #1a3a52;
-  --grid-color-subtle: #0d1f2d;
+  --accent-blue: #4a9eff;
+  --grid-color: rgba(26, 58, 82, 0.3);
+  --grid-color-subtle: rgba(13, 31, 45, 0.2);
 
   /* Node category colors */
   --color-agent: #a78bfa;
@@ -333,39 +334,37 @@ body {
 /* Language Toggle */
 .language-toggle {
   margin-top: auto;
-  padding: 16px;
+  padding: 12px 16px;
   border-top: 1px solid var(--sidebar-highlight);
 }
 
-.language-toggle-container {
+.language-globe-btn {
   display: flex;
-  background: rgba(19, 47, 76, 0.3);
-  border: 1px solid var(--sidebar-logo);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(19, 47, 76, 0.4);
+  border: 1px solid var(--sidebar-highlight);
   border-radius: 8px;
-  overflow: hidden;
-}
-
-.language-toggle-btn {
-  flex: 1;
-  padding: 10px;
-  background: transparent;
-  border: none;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.language-toggle-btn.active {
-  background: var(--sidebar-logo);
-  color: white;
+.language-globe-btn:hover {
+  background: rgba(33, 150, 243, 0.2);
+  border-color: var(--sidebar-accent);
 }
 
-.language-toggle-btn:hover:not(.active) {
-  background: rgba(255, 107, 53, 0.2);
-  color: var(--sidebar-logo);
+.globe-icon {
+  font-size: 18px;
+}
+
+.language-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
 }
 
 /* Main Content Area */
@@ -506,11 +505,12 @@ body {
   overflow: visible;
 }
 
+/* Connection line - Blue dotted line */
 .connection-line {
   fill: none;
-  stroke: var(--accent-neon-green);
+  stroke: var(--accent-blue);
   stroke-width: 2;
-  stroke-dasharray: 10 5;
+  stroke-dasharray: 8 6;
   pointer-events: stroke;
   cursor: pointer;
   transition: stroke-width var(--transition-fast);
@@ -519,26 +519,27 @@ body {
 .connection-line:hover,
 .connection-line.selected {
   stroke-width: 3;
-  filter: drop-shadow(0 0 8px var(--accent-neon-green));
+  filter: drop-shadow(0 0 6px var(--accent-blue));
 }
 
 .connection-line.inactive {
   stroke: var(--text-secondary);
-  stroke-opacity: 0.5;
+  stroke-opacity: 0.4;
+  stroke-dasharray: 4 4;
 }
 
 .ghost-line {
   fill: none;
-  stroke: var(--accent-neon-green);
+  stroke: var(--accent-cyan);
   stroke-width: 2;
-  stroke-dasharray: 10 5;
-  stroke-opacity: 0.3;
+  stroke-dasharray: 8 6;
+  stroke-opacity: 0.4;
 }
 
-/* Connection animation */
+/* Connection animation - flowing dashes */
 @keyframes flowAnimation {
   from {
-    stroke-dashoffset: 30;
+    stroke-dashoffset: 28;
   }
   to {
     stroke-dashoffset: 0;
@@ -546,13 +547,13 @@ body {
 }
 
 .connection-line.active {
-  animation: flowAnimation 1.2s linear infinite;
+  animation: flowAnimation 0.8s linear infinite;
 }
 
-/* Data packets */
+/* Data packets - Green pulse effect */
 .data-packet {
   fill: var(--accent-neon-green);
-  filter: drop-shadow(0 0 6px var(--accent-neon-green));
+  filter: drop-shadow(0 0 8px var(--accent-neon-green)) drop-shadow(0 0 4px var(--accent-neon-green));
 }
 
 @keyframes packetMove {

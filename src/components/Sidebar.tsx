@@ -135,22 +135,16 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Language Toggle */}
+      {/* Language Toggle with Globe Icon */}
       <div className="language-toggle">
-        <div className="language-toggle-container">
-          <button
-            className={`language-toggle-btn ${state.language === 'en' ? 'active' : ''}`}
-            onClick={() => handleLanguageChange('en')}
-          >
-            EN
-          </button>
-          <button
-            className={`language-toggle-btn ${state.language === 'ja' ? 'active' : ''}`}
-            onClick={() => handleLanguageChange('ja')}
-          >
-            JP
-          </button>
-        </div>
+        <button
+          className="language-globe-btn"
+          onClick={() => handleLanguageChange(state.language === 'ja' ? 'en' : 'ja')}
+          title={state.language === 'ja' ? 'Switch to English' : '日本語に切り替え'}
+        >
+          <span className="globe-icon">🌐</span>
+          <span className="language-label">{state.language === 'ja' ? '日本語' : 'English'}</span>
+        </button>
       </div>
     </aside>
   );
