@@ -5,13 +5,19 @@ import type { FlowNode, Connection } from '../types';
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 165;
 
+// Port circle position: footer padding (12px) + half of port circle height (6px) = 18px from bottom
+// But we need to account for the visual center of the port area in the footer
+const PORT_OFFSET_FROM_BOTTOM = 30;
+
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
-  const portY = node.position.y + NODE_HEIGHT - 25;
+  const portY = node.position.y + NODE_HEIGHT - PORT_OFFSET_FROM_BOTTOM;
 
   if (portType === 'input') {
-    return { x: node.position.x + 16, y: portY };
+    // Input port: left side, 16px padding + 6px (half of port circle)
+    return { x: node.position.x + 22, y: portY };
   } else {
-    return { x: node.position.x + NODE_WIDTH - 16, y: portY };
+    // Output port: right side, width - 16px padding - 6px (half of port circle)
+    return { x: node.position.x + NODE_WIDTH - 22, y: portY };
   }
 }
 
