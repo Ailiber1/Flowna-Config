@@ -180,13 +180,20 @@ body {
 }
 
 .sidebar-section-content {
-  max-height: 500px;
-  overflow: hidden;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: max-height var(--transition-normal);
 }
 
 .sidebar-section-content.collapsed {
   max-height: 0;
+  overflow: hidden;
+}
+
+/* Connectors section - limited height with scroll */
+.connectors-section .sidebar-section-content {
+  max-height: 200px;
 }
 
 /* Folder Items */
@@ -524,49 +531,53 @@ body {
   overflow: visible;
 }
 
-/* Connection line - Blue dotted line */
+/* Connection line - Solid magenta line with arrow */
 .connection-line {
   fill: none;
-  stroke: var(--accent-blue);
-  stroke-width: 2;
-  stroke-dasharray: 8 6;
+  stroke: #c084fc;
+  stroke-width: 3;
   pointer-events: stroke;
   cursor: pointer;
   transition: stroke-width var(--transition-fast);
+  filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.5));
+  marker-end: url(#arrowhead);
 }
 
 .connection-line:hover,
 .connection-line.selected {
-  stroke-width: 3;
-  filter: drop-shadow(0 0 6px var(--accent-blue));
+  stroke-width: 4;
+  stroke: #d8b4fe;
+  filter: drop-shadow(0 0 8px rgba(216, 180, 254, 0.7));
 }
 
 .connection-line.inactive {
-  stroke: var(--text-secondary);
-  stroke-opacity: 0.4;
-  stroke-dasharray: 4 4;
+  stroke: #6b7280;
+  stroke-opacity: 0.6;
+  filter: none;
 }
 
 .ghost-line {
   fill: none;
-  stroke: var(--accent-cyan);
-  stroke-width: 2;
-  stroke-dasharray: 8 6;
-  stroke-opacity: 0.4;
+  stroke: #c084fc;
+  stroke-width: 3;
+  stroke-dasharray: 10 5;
+  stroke-opacity: 0.9;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.7));
 }
 
-/* Connection animation - flowing dashes */
-@keyframes flowAnimation {
-  from {
-    stroke-dashoffset: 28;
+/* Connection animation - pulse glow for active connections */
+@keyframes connectionPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.5));
   }
-  to {
-    stroke-dashoffset: 0;
+  50% {
+    filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.9));
   }
 }
 
 .connection-line.active {
-  animation: flowAnimation 0.8s linear infinite;
+  animation: connectionPulse 2s ease-in-out infinite;
 }
 
 /* Data packets - Green pulse effect */
@@ -604,10 +615,33 @@ body {
 }
 
 .flow-node.selected {
-  background: rgba(15, 25, 40, 0.75);
+  background: rgba(15, 25, 40, 0.9);
   box-shadow:
-    0 0 12px rgba(0, 255, 255, 0.4),
-    0 0 25px rgba(0, 255, 255, 0.15);
+    0 0 25px rgba(0, 255, 255, 0.7),
+    0 0 50px rgba(0, 255, 255, 0.4),
+    inset 0 0 30px rgba(0, 255, 255, 0.15);
+  z-index: 100;
+}
+
+.flow-node.selected::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--accent-cyan);
+  border-radius: 16px;
+  pointer-events: none;
+  animation: selection-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes selection-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 10px var(--accent-cyan);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 20px var(--accent-cyan);
+  }
 }
 
 .flow-node.highlighted {
@@ -631,36 +665,64 @@ body {
   border-color: rgba(167, 139, 250, 0.5);
   background: rgba(20, 15, 35, 0.6);
 }
-.flow-node.agent:hover, .flow-node.agent.selected {
+.flow-node.agent:hover {
   border-color: rgba(167, 139, 250, 0.8);
   box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+}
+.flow-node.agent.selected {
+  border-color: rgba(167, 139, 250, 1);
+  box-shadow: 0 0 30px rgba(167, 139, 250, 0.6), 0 0 60px rgba(167, 139, 250, 0.3);
+}
+.flow-node.agent.selected::after {
+  border-color: rgba(167, 139, 250, 0.9);
 }
 
 .flow-node.logic {
   border-color: rgba(96, 165, 250, 0.5);
   background: rgba(15, 25, 40, 0.6);
 }
-.flow-node.logic:hover, .flow-node.logic.selected {
+.flow-node.logic:hover {
   border-color: rgba(96, 165, 250, 0.8);
   box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+}
+.flow-node.logic.selected {
+  border-color: rgba(96, 165, 250, 1);
+  box-shadow: 0 0 30px rgba(96, 165, 250, 0.6), 0 0 60px rgba(96, 165, 250, 0.3);
+}
+.flow-node.logic.selected::after {
+  border-color: rgba(96, 165, 250, 0.9);
 }
 
 .flow-node.system {
   border-color: rgba(255, 136, 0, 0.5);
   background: rgba(30, 20, 15, 0.6);
 }
-.flow-node.system:hover, .flow-node.system.selected {
+.flow-node.system:hover {
   border-color: rgba(255, 136, 0, 0.8);
   box-shadow: 0 0 15px rgba(255, 136, 0, 0.3);
+}
+.flow-node.system.selected {
+  border-color: rgba(255, 136, 0, 1);
+  box-shadow: 0 0 30px rgba(255, 136, 0, 0.6), 0 0 60px rgba(255, 136, 0, 0.3);
+}
+.flow-node.system.selected::after {
+  border-color: rgba(255, 136, 0, 0.9);
 }
 
 .flow-node.rule {
   border-color: rgba(74, 222, 128, 0.5);
   background: rgba(15, 30, 20, 0.6);
 }
-.flow-node.rule:hover, .flow-node.rule.selected {
+.flow-node.rule:hover {
   border-color: rgba(74, 222, 128, 0.8);
   box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
+}
+.flow-node.rule.selected {
+  border-color: rgba(74, 222, 128, 1);
+  box-shadow: 0 0 30px rgba(74, 222, 128, 0.6), 0 0 60px rgba(74, 222, 128, 0.3);
+}
+.flow-node.rule.selected::after {
+  border-color: rgba(74, 222, 128, 0.9);
 }
 
 /* HUD Corner Decorations */
@@ -831,6 +893,8 @@ body {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid var(--accent-neon-green);
+  cursor: crosshair;
+  pointer-events: all;
   cursor: crosshair;
   transition: all var(--transition-fast);
   position: relative;

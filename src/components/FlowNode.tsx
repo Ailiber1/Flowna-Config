@@ -98,8 +98,15 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     e.stopPropagation();
     if (portType === 'output') {
       dispatch({ type: 'START_CONNECTION', payload: node.id });
+      // Set initial ghost line position to the port location
+      const portX = node.position.x + 220 - 17; // Output port X position
+      const portY = node.position.y + 150 - 20; // Output port Y position
+      dispatch({
+        type: 'UPDATE_GHOST_LINE',
+        payload: { x: portX, y: portY },
+      });
     }
-  }, [node.id, dispatch]);
+  }, [node.id, node.position, dispatch]);
 
   const handlePortMouseUp = useCallback((e: React.MouseEvent, portType: 'input' | 'output') => {
     e.stopPropagation();
