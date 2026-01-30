@@ -3,21 +3,21 @@ import { useApp } from '../contexts/AppContext';
 import type { FlowNode, Connection } from '../types';
 
 const NODE_WIDTH = 220;
-const NODE_HEIGHT = 165;
+const NODE_HEIGHT = 150;
 
-// Port circle position: footer padding (12px) + half of port circle height (6px) = 18px from bottom
-// But we need to account for the visual center of the port area in the footer
-const PORT_OFFSET_FROM_BOTTOM = 30;
+// Port circle position for HUD-style nodes
+// Footer padding: 8px top, 10px bottom, port circle is centered
+const PORT_OFFSET_FROM_BOTTOM = 15;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
   const portY = node.position.y + NODE_HEIGHT - PORT_OFFSET_FROM_BOTTOM;
 
   if (portType === 'input') {
-    // Input port: left side, 16px padding + 6px (half of port circle)
-    return { x: node.position.x + 22, y: portY };
+    // Input port: left side, 12px padding + 5px (half of port circle)
+    return { x: node.position.x + 17, y: portY };
   } else {
-    // Output port: right side, width - 16px padding - 6px (half of port circle)
-    return { x: node.position.x + NODE_WIDTH - 22, y: portY };
+    // Output port: right side, width - 12px padding - 5px (half of port circle)
+    return { x: node.position.x + NODE_WIDTH - 17, y: portY };
   }
 }
 
