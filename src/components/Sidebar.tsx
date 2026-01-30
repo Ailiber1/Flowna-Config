@@ -7,7 +7,7 @@ export function Sidebar() {
   const { state, dispatch } = useApp();
   const [foldersExpanded, setFoldersExpanded] = useState(true);
   const [connectorsExpanded, setConnectorsExpanded] = useState(false); // Collapsed by default
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['folder-config']));
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['folder-workflows']));
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => {

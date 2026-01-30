@@ -180,13 +180,20 @@ body {
 }
 
 .sidebar-section-content {
-  max-height: 500px;
-  overflow: hidden;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: max-height var(--transition-normal);
 }
 
 .sidebar-section-content.collapsed {
   max-height: 0;
+  overflow: hidden;
+}
+
+/* Connectors section - limited height with scroll */
+.connectors-section .sidebar-section-content {
+  max-height: 200px;
 }
 
 /* Folder Items */
@@ -550,9 +557,10 @@ body {
 .ghost-line {
   fill: none;
   stroke: var(--accent-cyan);
-  stroke-width: 2;
+  stroke-width: 3;
   stroke-dasharray: 8 6;
-  stroke-opacity: 0.4;
+  stroke-opacity: 0.8;
+  pointer-events: none;
 }
 
 /* Connection animation - flowing dashes */
@@ -831,6 +839,8 @@ body {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid var(--accent-neon-green);
+  cursor: crosshair;
+  pointer-events: all;
   cursor: crosshair;
   transition: all var(--transition-fast);
   position: relative;
