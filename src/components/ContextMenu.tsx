@@ -22,9 +22,13 @@ export function ContextMenu() {
 
   const { x, y, type, targetId } = state.contextMenu;
   const node = targetId ? state.nodes.find(n => n.id === targetId) : null;
+  const connectorNode = targetId ? state.connectorNodes.find(cn => cn.id === targetId) : null;
   // Connection is available for future use with connection-specific context menu items
   const _connection = targetId ? state.connections.find(c => c.id === targetId) : null;
   void _connection; // Suppress unused warning
+
+  // Determine if this is a connector node context menu
+  const isConnectorNode = !node && connectorNode;
 
   const handleEdit = () => {
     if (targetId) {
@@ -35,11 +39,20 @@ export function ContextMenu() {
 
   const handleDelete = () => {
     if (type === 'node' && targetId) {
-      dispatch({ type: 'DELETE_NODE', payload: targetId });
-      dispatch({
-        type: 'SHOW_TOAST',
-        payload: { message: state.language === 'ja' ? 'ノードを削除しました' : 'Node deleted', type: 'info' },
-      });
+      // Check if it's a connector node or regular node
+      if (isConnectorNode) {
+        dispatch({ type: 'DELETE_CONNECTOR_NODE', payload: targetId });
+        dispatch({
+          type: 'SHOW_TOAST',
+          payload: { message: state.language === 'ja' ? 'コネクタを削除しました' : 'Connector deleted', type: 'info' },
+        });
+      } else {
+        dispatch({ type: 'DELETE_NODE', payload: targetId });
+        dispatch({
+          type: 'SHOW_TOAST',
+          payload: { message: state.language === 'ja' ? 'ノードを削除しました' : 'Node deleted', type: 'info' },
+        });
+      }
     } else if (type === 'connection' && targetId) {
       dispatch({ type: 'DELETE_CONNECTION', payload: targetId });
       dispatch({
@@ -110,7 +123,7 @@ export function ContextMenu() {
       className="context-menu"
       style={{ left: adjustedX, top: adjustedY }}
     >
-      {type === 'node' && (
+      {type === 'node' && !isConnectorNode && (
         <>
           <div className="context-menu-item" onClick={handleEdit}>
             ✏️ {t('edit', state.language)}
@@ -138,6 +151,14 @@ export function ContextMenu() {
           <div className="context-menu-divider" />
           <div className="context-menu-item danger" onClick={handleDelete}>
             🗑️ {t('deleteNode', state.language)}
+          </div>
+        </>
+      )}
+
+      {type === 'node' && isConnectorNode && (
+        <>
+          <div className="context-menu-item danger" onClick={handleDelete}>
+            🗑️ {state.language === 'ja' ? 'コネクタを削除' : 'Delete Connector'}
           </div>
         </>
       )}
