@@ -13,8 +13,6 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [folderId, setFolderId] = useState(state.folders[0]?.id || '');
-  const [tags, setTags] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,11 +20,6 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
 
     if (!name.trim()) {
       setError(state.language === 'ja' ? 'ワークフロー名は必須です' : 'Workflow name is required');
-      return;
-    }
-
-    if (!folderId) {
-      setError(state.language === 'ja' ? 'フォルダを選択してください' : 'Please select a folder');
       return;
     }
 
@@ -38,13 +31,13 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
       id: generateId(),
       name: name.trim(),
       description: description.trim(),
-      folderId,
+      folderId: 'default',
       nodes: state.nodes,
       connections: state.connections,
       viewport: state.viewport,
       customCategories,
       thumbnail: '',
-      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+      tags: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
       lastOpenedAt: Date.now(),
@@ -101,32 +94,6 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={state.language === 'ja' ? '説明を入力（任意）' : 'Enter description (optional)'}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label required">{t('selectFolder', state.language)}</label>
-              <select
-                className="form-select"
-                value={folderId}
-                onChange={(e) => setFolderId(e.target.value)}
-              >
-                {state.folders.map(folder => (
-                  <option key={folder.id} value={folder.id}>
-                    {folder.icon} {folder.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">{t('tags', state.language)}</label>
-              <input
-                type="text"
-                className="form-input"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder={state.language === 'ja' ? 'タグをカンマ区切りで入力' : 'Enter tags, separated by commas'}
               />
             </div>
 
