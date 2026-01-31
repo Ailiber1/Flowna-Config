@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
-import type { Workflow, Connector } from '../types';
+import { generateId } from '../utils/storage';
+import type { Workflow, Connector, FlowNode, ConnectorNode, CustomCategory } from '../types';
 
 export function Sidebar() {
   const { state, dispatch } = useApp();
@@ -17,8 +18,63 @@ export function Sidebar() {
     });
   };
 
-  const handleConnectorClick = (connector: Connector) => {
+  const handleConnectorConfigClick = (connector: Connector) => {
     dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
+  };
+
+  // Click to add node to canvas
+  const handlePaletteItemClick = (category: CustomCategory) => {
+    const newNode: FlowNode = {
+      id: generateId(),
+      title: category.displayName,
+      displayName: category.displayName,
+      description: '',
+      category: category.name,
+      categoryDisplayName: category.displayName,
+      icon: category.icon,
+      color: category.color,
+      url: '',
+      status: 'todo',
+      memo: '',
+      position: {
+        x: (window.innerWidth / 2 - 280 - 110 - state.viewport.panX) / state.viewport.scale,
+        y: (window.innerHeight / 2 - 80 - state.viewport.panY) / state.viewport.scale,
+      },
+      connectorLinks: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    dispatch({ type: 'ADD_NODE', payload: newNode });
+    dispatch({
+      type: 'SHOW_TOAST',
+      payload: {
+        message: state.language === 'ja' ? `${category.displayName}ノードを追加しました` : `Added ${category.displayName} node`,
+        type: 'success',
+      },
+    });
+  };
+
+  // Click to add connector node to canvas
+  const handleConnectorClick = (connector: Connector) => {
+    const newConnectorNode: ConnectorNode = {
+      id: `cnode-${Date.now()}`,
+      connectorId: connector.id,
+      position: {
+        x: (window.innerWidth / 2 - 280 - 32 - state.viewport.panX) / state.viewport.scale,
+        y: (window.innerHeight / 2 - 32 - state.viewport.panY) / state.viewport.scale,
+      },
+      createdAt: Date.now(),
+    };
+
+    dispatch({ type: 'ADD_CONNECTOR_NODE', payload: newConnectorNode });
+    dispatch({
+      type: 'SHOW_TOAST',
+      payload: {
+        message: state.language === 'ja' ? `${connector.name}を追加しました` : `Added ${connector.name}`,
+        type: 'success',
+      },
+    });
   };
 
   const handleDeleteWorkflow = (e: React.MouseEvent, workflowId: string) => {
@@ -102,10 +158,7 @@ export function Sidebar() {
               <div
                 key={category.id}
                 className={`palette-item ${category.name.toLowerCase()}`}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('category', JSON.stringify(category));
-                }}
+                onClick={() => handlePaletteItemClick(category)}
               >
                 <span className="palette-item-icon">{category.icon}</span>
                 <span className="palette-item-text">
@@ -135,11 +188,12 @@ export function Sidebar() {
             <div
               key={connector.id}
               className="connector-item"
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('connector', connector.id);
-              }}
               onClick={() => handleConnectorClick(connector)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handleConnectorConfigClick(connector);
+              }}
+              title={state.language === 'ja' ? 'クリックで追加 / 右クリックで設定' : 'Click to add / Right-click for settings'}
             >
               <span className="connector-item-icon">{connector.icon}</span>
               <span className="connector-item-name">{connector.name}</span>
