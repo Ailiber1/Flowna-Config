@@ -119,9 +119,7 @@ export const DEFAULT_CATEGORIES: CustomCategory[] = [
   { id: 'rule', name: 'RULE', displayName: 'Rule', icon: '📋', color: '#4ade80', createdAt: Date.now() },
 ];
 
-export const DEFAULT_FOLDERS: Folder[] = [
-  { id: 'folder-workflows', name: 'ワークフロー', parentId: null, icon: '📂', order: 1, createdAt: Date.now(), updatedAt: Date.now() },
-];
+export const DEFAULT_FOLDERS: Folder[] = [];
 
 export const DEFAULT_CONNECTORS: Connector[] = [
   {

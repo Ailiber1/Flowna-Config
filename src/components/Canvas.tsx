@@ -196,8 +196,18 @@ export function Canvas() {
         });
       };
 
-      const handleGlobalMouseUp = () => {
-        dispatch({ type: 'CANCEL_CONNECTION' });
+      const handleGlobalMouseUp = (e: MouseEvent) => {
+        // Check if the mouseup was on a port-circle (input port)
+        const target = e.target as HTMLElement;
+        const isOnPort = target.classList.contains('port-circle');
+
+        // Only cancel if not on a port (port handles its own mouseup)
+        if (!isOnPort) {
+          // Small delay to allow port's onMouseUp to fire first
+          setTimeout(() => {
+            dispatch({ type: 'CANCEL_CONNECTION' });
+          }, 10);
+        }
       };
 
       window.addEventListener('mousemove', handleGlobalMouseMove);
