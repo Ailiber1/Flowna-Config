@@ -111,7 +111,17 @@ export function saveConnectors(connectors: Connector[]): void {
 export function getConnectors(): Connector[] {
   const data = localStorage.getItem(STORAGE_KEYS.CONNECTORS);
   if (data) {
-    return JSON.parse(data);
+    const stored: Connector[] = JSON.parse(data);
+    // Merge with DEFAULT_CONNECTORS to get updated icons while preserving user config
+    const merged = DEFAULT_CONNECTORS.map(defaultConn => {
+      const storedConn = stored.find(s => s.id === defaultConn.id);
+      if (storedConn) {
+        // Keep user's config/status but update icon from defaults
+        return { ...storedConn, icon: defaultConn.icon };
+      }
+      return defaultConn;
+    });
+    return merged;
   }
   // Return default connectors if none exist
   saveConnectors(DEFAULT_CONNECTORS);
