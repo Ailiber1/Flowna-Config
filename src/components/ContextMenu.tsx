@@ -27,8 +27,9 @@ export function ContextMenu() {
   const _connection = targetId ? state.connections.find(c => c.id === targetId) : null;
   void _connection; // Suppress unused warning
 
-  // Determine if this is a connector node context menu
+  // Determine if this is a connector node context menu - don't show context menu for connectors
   const isConnectorNode = !node && connectorNode;
+  if (type === 'node' && isConnectorNode) return null;
 
   const handleEdit = () => {
     if (targetId) {
@@ -155,13 +156,6 @@ export function ContextMenu() {
         </>
       )}
 
-      {type === 'node' && isConnectorNode && (
-        <>
-          <div className="context-menu-item danger" onClick={handleDelete}>
-            🗑️ {state.language === 'ja' ? 'コネクタを削除' : 'Delete Connector'}
-          </div>
-        </>
-      )}
 
       {type === 'connection' && (
         <>
