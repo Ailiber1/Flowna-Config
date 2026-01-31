@@ -106,14 +106,30 @@ export function Canvas() {
         })
         .map(node => node.id);
 
-      if (selectedNodeIds.length > 0) {
+      // Find connector nodes within the marquee (96px size)
+      const selectedConnectorNodeIds = state.connectorNodes
+        .filter(cn => {
+          const cnRight = cn.position.x + 96;
+          const cnBottom = cn.position.y + 96;
+          return (
+            cn.position.x < canvasMaxX &&
+            cnRight > canvasMinX &&
+            cn.position.y < canvasMaxY &&
+            cnBottom > canvasMinY
+          );
+        })
+        .map(cn => cn.id);
+
+      // Select both nodes and connectors
+      if (selectedNodeIds.length > 0 || selectedConnectorNodeIds.length > 0) {
         dispatch({ type: 'SELECT_NODES', payload: selectedNodeIds });
+        dispatch({ type: 'SELECT_CONNECTOR_NODES', payload: selectedConnectorNodeIds });
       }
     }
 
     setIsPanning(false);
     setIsMarqueeSelecting(false);
-  }, [isMarqueeSelecting, marqueeStart, marqueeEnd, state.viewport, state.nodes, dispatch]);
+  }, [isMarqueeSelecting, marqueeStart, marqueeEnd, state.viewport, state.nodes, state.connectorNodes, dispatch]);
 
   // Handle zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -203,10 +219,9 @@ export function Canvas() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (state.selectedNodeIds.length > 0) {
-          state.selectedNodeIds.forEach(id => {
-            dispatch({ type: 'DELETE_NODE', payload: id });
-          });
+        // Delete all selected nodes and connector nodes
+        if (state.selectedNodeIds.length > 0 || state.selectedConnectorNodeIds.length > 0) {
+          dispatch({ type: 'DELETE_ALL_SELECTED' });
         }
         if (state.selectedConnectionId) {
           dispatch({ type: 'DELETE_CONNECTION', payload: state.selectedConnectionId });
@@ -231,10 +246,10 @@ export function Canvas() {
         dispatch({ type: 'OPEN_ADD_NODE_MODAL' });
       }
 
-      // Ctrl/Cmd+A for select all nodes
+      // Ctrl/Cmd+A for select all nodes and connectors
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
-        dispatch({ type: 'SELECT_ALL_NODES' });
+        dispatch({ type: 'SELECT_ALL' });
       }
 
       // Ctrl/Cmd+C for copy selected nodes
@@ -263,7 +278,7 @@ export function Canvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.selectedNodeIds, state.selectedConnectionId, state.language, dispatch]);
+  }, [state.selectedNodeIds, state.selectedConnectorNodeIds, state.selectedConnectionId, state.language, dispatch]);
 
   return (
     <div
@@ -317,7 +332,7 @@ export function Canvas() {
               key={connectorNode.id}
               connectorNode={connectorNode}
               connector={connector}
-              isSelected={state.selectedConnectorNodeId === connectorNode.id}
+              isSelected={state.selectedConnectorNodeIds.includes(connectorNode.id)}
             />
           );
         })}

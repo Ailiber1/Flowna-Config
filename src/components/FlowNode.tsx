@@ -51,9 +51,13 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       const dx = currentX - lastMousePos.x;
       const dy = currentY - lastMousePos.y;
 
-      if (isSelected && state.selectedNodeIds.length > 1) {
+      // Check if we have multiple items selected (nodes and/or connectors)
+      const totalSelected = state.selectedNodeIds.length + state.selectedConnectorNodeIds.length;
+
+      if (isSelected && totalSelected > 1) {
+        // Move all selected items (nodes and connectors) together
         dispatch({
-          type: 'MOVE_SELECTED_NODES',
+          type: 'MOVE_ALL_SELECTED',
           payload: { dx, dy },
         });
       } else {
@@ -65,7 +69,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
 
       setLastMousePos({ x: currentX, y: currentY });
     }
-  }, [isDragging, lastMousePos, node.id, node.position, state.viewport.scale, isSelected, state.selectedNodeIds.length, dispatch]);
+  }, [isDragging, lastMousePos, node.id, node.position, state.viewport.scale, isSelected, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, dispatch]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);

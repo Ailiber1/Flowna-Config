@@ -648,24 +648,41 @@ body {
   filter: drop-shadow(0 0 8px var(--accent-neon-green)) drop-shadow(0 0 4px var(--accent-neon-green));
 }
 
-/* Connector connection line - Blue dotted line for node-to-connector */
+/* Connector connection line - Blue solid line with orange pulse for node-to-connector */
 .connection-line.connector-connection {
   stroke: #2196f3;
-  stroke-dasharray: 8 4;
+  stroke-width: 3;
+  stroke-dasharray: none;
   filter: drop-shadow(0 0 6px rgba(33, 150, 243, 0.6));
-  marker-end: none;
+  marker-end: url(#arrowhead-connector);
+}
+
+.connection-line.connector-connection.active {
+  animation: connectorPulse 2s ease-in-out infinite;
+}
+
+@keyframes connectorPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(33, 150, 243, 0.6));
+    stroke: #2196f3;
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(255, 136, 0, 0.9)) drop-shadow(0 0 8px rgba(33, 150, 243, 0.6));
+    stroke: #42a5f5;
+  }
 }
 
 .connection-line.connector-connection:hover,
 .connection-line.connector-connection.selected {
   stroke: #42a5f5;
-  filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.8));
+  stroke-width: 4;
+  filter: drop-shadow(0 0 12px rgba(66, 165, 245, 0.9)) drop-shadow(0 0 6px rgba(255, 136, 0, 0.5));
 }
 
 /* Orange data packets for connector connections */
 .data-packet.connector-packet {
-  fill: #ff6b35;
-  filter: drop-shadow(0 0 10px #ff6b35) drop-shadow(0 0 5px #ff8800);
+  fill: #ff8800;
+  filter: drop-shadow(0 0 12px #ff8800) drop-shadow(0 0 6px #ff6b35);
 }
 
 @keyframes packetMove {
@@ -1585,18 +1602,18 @@ body {
 }
 
 .connector-node-circle {
-  width: 64px;
-  height: 64px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: rgba(15, 25, 40, 0.8);
-  border: 2px solid var(--sidebar-accent);
+  border: 3px solid var(--sidebar-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 0 20px rgba(33, 150, 243, 0.4),
-    0 0 40px rgba(33, 150, 243, 0.2),
-    inset 0 0 15px rgba(33, 150, 243, 0.1);
+    0 0 25px rgba(33, 150, 243, 0.5),
+    0 0 50px rgba(33, 150, 243, 0.25),
+    inset 0 0 20px rgba(33, 150, 243, 0.15);
   transition: all var(--transition-fast);
 }
 
@@ -1616,18 +1633,18 @@ body {
 }
 
 .connector-node-emoji {
-  font-size: 28px;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+  font-size: 42px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
 }
 
 .connector-node-label {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-primary);
-  background: rgba(10, 25, 41, 0.8);
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(33, 150, 243, 0.3);
+  background: rgba(10, 25, 41, 0.9);
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(33, 150, 243, 0.4);
 }
 
 /* Scrollbar */
