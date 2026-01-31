@@ -504,7 +504,7 @@ body {
 .topbar-btn.implement {
   background: linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(255, 136, 0, 0.3));
   border-color: #ff6b35;
-  color: #ff6b35;
+  color: var(--text-primary);
 }
 
 .topbar-btn.implement:hover:not(:disabled) {
