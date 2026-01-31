@@ -12,7 +12,7 @@ interface AppState {
   viewport: Viewport;
   selectedNodeIds: string[];
   selectedConnectionId: string | null;
-  selectedConnectorNodeId: string | null;
+  selectedConnectorNodeIds: string[];
 
   // Clipboard
   clipboard: { nodes: FlowNode[]; connections: Connection[] } | null;
@@ -103,8 +103,13 @@ type AppAction =
   | { type: 'PASTE_NODES' }
   | { type: 'ADD_CONNECTOR_NODE'; payload: ConnectorNode }
   | { type: 'MOVE_CONNECTOR_NODE'; payload: { id: string; position: { x: number; y: number } } }
+  | { type: 'MOVE_SELECTED_CONNECTOR_NODES'; payload: { dx: number; dy: number } }
+  | { type: 'MOVE_ALL_SELECTED'; payload: { dx: number; dy: number } }
   | { type: 'DELETE_CONNECTOR_NODE'; payload: string }
-  | { type: 'SELECT_CONNECTOR_NODE'; payload: string | null };
+  | { type: 'DELETE_ALL_SELECTED' }
+  | { type: 'SELECT_CONNECTOR_NODE'; payload: string }
+  | { type: 'SELECT_CONNECTOR_NODES'; payload: string[] }
+  | { type: 'SELECT_ALL' };
 
 const initialState: AppState = {
   nodes: [],
@@ -113,7 +118,7 @@ const initialState: AppState = {
   viewport: { panX: 0, panY: 0, scale: 1 },
   selectedNodeIds: [],
   selectedConnectionId: null,
-  selectedConnectorNodeId: null,
+  selectedConnectorNodeIds: [],
   clipboard: null,
   folders: DEFAULT_FOLDERS,
   workflows: [],
@@ -174,7 +179,16 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         nodes: state.nodes.map(n =>
-          n.id === action.payload.id ? { ...n, position: action.payload.position, updatedAt: Date.now() } : n
+          n.id === action.payload.id
+            ? {
+                ...n,
+                position: {
+                  x: Math.max(0, action.payload.position.x),
+                  y: Math.max(0, action.payload.position.y),
+                },
+                updatedAt: Date.now(),
+              }
+            : n
         ),
       };
 
@@ -186,8 +200,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? {
                 ...n,
                 position: {
-                  x: n.position.x + action.payload.dx,
-                  y: n.position.y + action.payload.dy,
+                  x: Math.max(0, n.position.x + action.payload.dx),
+                  y: Math.max(0, n.position.y + action.payload.dy),
                 },
                 updatedAt: Date.now(),
               }
@@ -250,10 +264,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, selectedNodeIds: action.payload, selectedConnectionId: null };
 
     case 'DESELECT_ALL':
-      return { ...state, selectedNodeIds: [], selectedConnectionId: null };
+      return { ...state, selectedNodeIds: [], selectedConnectorNodeIds: [], selectedConnectionId: null };
 
     case 'SELECT_CONNECTION':
-      return { ...state, selectedConnectionId: action.payload, selectedNodeIds: [] };
+      return { ...state, selectedConnectionId: action.payload, selectedNodeIds: [], selectedConnectorNodeIds: [] };
 
     case 'SET_FOLDERS':
       return { ...state, folders: action.payload };
@@ -460,7 +474,59 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         connectorNodes: state.connectorNodes.map(cn =>
-          cn.id === action.payload.id ? { ...cn, position: action.payload.position } : cn
+          cn.id === action.payload.id
+            ? {
+                ...cn,
+                position: {
+                  x: Math.max(0, action.payload.position.x),
+                  y: Math.max(0, action.payload.position.y),
+                },
+              }
+            : cn
+        ),
+      };
+
+    case 'MOVE_SELECTED_CONNECTOR_NODES':
+      return {
+        ...state,
+        connectorNodes: state.connectorNodes.map(cn =>
+          state.selectedConnectorNodeIds.includes(cn.id)
+            ? {
+                ...cn,
+                position: {
+                  x: Math.max(0, cn.position.x + action.payload.dx),
+                  y: Math.max(0, cn.position.y + action.payload.dy),
+                },
+              }
+            : cn
+        ),
+      };
+
+    case 'MOVE_ALL_SELECTED':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          state.selectedNodeIds.includes(n.id)
+            ? {
+                ...n,
+                position: {
+                  x: Math.max(0, n.position.x + action.payload.dx),
+                  y: Math.max(0, n.position.y + action.payload.dy),
+                },
+                updatedAt: Date.now(),
+              }
+            : n
+        ),
+        connectorNodes: state.connectorNodes.map(cn =>
+          state.selectedConnectorNodeIds.includes(cn.id)
+            ? {
+                ...cn,
+                position: {
+                  x: Math.max(0, cn.position.x + action.payload.dx),
+                  y: Math.max(0, cn.position.y + action.payload.dy),
+                },
+              }
+            : cn
         ),
       };
 
@@ -471,14 +537,47 @@ function appReducer(state: AppState, action: AppAction): AppState {
         connections: state.connections.filter(
           c => c.to !== action.payload && c.from !== action.payload
         ),
-        selectedConnectorNodeId: state.selectedConnectorNodeId === action.payload ? null : state.selectedConnectorNodeId,
+        selectedConnectorNodeIds: state.selectedConnectorNodeIds.filter(id => id !== action.payload),
       };
+
+    case 'DELETE_ALL_SELECTED': {
+      const nodeIdsToDelete = new Set(state.selectedNodeIds);
+      const connectorIdsToDelete = new Set(state.selectedConnectorNodeIds);
+      return {
+        ...state,
+        nodes: state.nodes.filter(n => !nodeIdsToDelete.has(n.id)),
+        connectorNodes: state.connectorNodes.filter(cn => !connectorIdsToDelete.has(cn.id)),
+        connections: state.connections.filter(
+          c => !nodeIdsToDelete.has(c.from) && !nodeIdsToDelete.has(c.to) &&
+               !connectorIdsToDelete.has(c.from) && !connectorIdsToDelete.has(c.to)
+        ),
+        selectedNodeIds: [],
+        selectedConnectorNodeIds: [],
+        selectedConnectionId: null,
+      };
+    }
 
     case 'SELECT_CONNECTOR_NODE':
       return {
         ...state,
-        selectedConnectorNodeId: action.payload,
-        selectedNodeIds: [],
+        selectedConnectorNodeIds: state.selectedConnectorNodeIds.includes(action.payload)
+          ? state.selectedConnectorNodeIds
+          : [...state.selectedConnectorNodeIds, action.payload],
+        selectedConnectionId: null,
+      };
+
+    case 'SELECT_CONNECTOR_NODES':
+      return {
+        ...state,
+        selectedConnectorNodeIds: action.payload,
+        selectedConnectionId: null,
+      };
+
+    case 'SELECT_ALL':
+      return {
+        ...state,
+        selectedNodeIds: state.nodes.map(n => n.id),
+        selectedConnectorNodeIds: state.connectorNodes.map(cn => cn.id),
         selectedConnectionId: null,
       };
 

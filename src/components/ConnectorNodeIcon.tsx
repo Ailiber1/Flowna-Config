@@ -17,14 +17,22 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDragging(true);
+    dispatch({ type: 'START_DRAGGING_NODE' });
 
     setLastMousePos({
       x: e.clientX / state.viewport.scale,
       y: e.clientY / state.viewport.scale,
     });
 
-    dispatch({ type: 'SELECT_CONNECTOR_NODE', payload: connectorNode.id });
-  }, [connectorNode.id, state.viewport.scale, dispatch]);
+    // Handle multi-selection with Ctrl/Cmd
+    if (e.ctrlKey || e.metaKey) {
+      dispatch({ type: 'SELECT_CONNECTOR_NODE', payload: connectorNode.id });
+    } else if (!isSelected) {
+      // Clear other selections and select only this connector
+      dispatch({ type: 'SELECT_NODES', payload: [] });
+      dispatch({ type: 'SELECT_CONNECTOR_NODES', payload: [connectorNode.id] });
+    }
+  }, [connectorNode.id, state.viewport.scale, isSelected, dispatch]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (isDragging) {
@@ -34,24 +42,38 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       const dx = currentX - lastMousePos.x;
       const dy = currentY - lastMousePos.y;
 
-      dispatch({
-        type: 'MOVE_CONNECTOR_NODE',
-        payload: {
-          id: connectorNode.id,
-          position: {
-            x: connectorNode.position.x + dx,
-            y: connectorNode.position.y + dy,
+      // Check if we have multiple items selected (nodes and/or connectors)
+      const hasMultipleSelection =
+        (state.selectedNodeIds.length + state.selectedConnectorNodeIds.length) > 1;
+
+      if (hasMultipleSelection && isSelected) {
+        // Move all selected items together
+        dispatch({
+          type: 'MOVE_ALL_SELECTED',
+          payload: { dx, dy },
+        });
+      } else {
+        // Move only this connector
+        dispatch({
+          type: 'MOVE_CONNECTOR_NODE',
+          payload: {
+            id: connectorNode.id,
+            position: {
+              x: connectorNode.position.x + dx,
+              y: connectorNode.position.y + dy,
+            },
           },
-        },
-      });
+        });
+      }
 
       setLastMousePos({ x: currentX, y: currentY });
     }
-  }, [isDragging, lastMousePos, connectorNode.id, connectorNode.position, state.viewport.scale, dispatch]);
+  }, [isDragging, lastMousePos, connectorNode.id, connectorNode.position, state.viewport.scale, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, isSelected, dispatch]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  }, []);
+    dispatch({ type: 'STOP_DRAGGING_NODE' });
+  }, [dispatch]);
 
   useEffect(() => {
     if (isDragging) {
