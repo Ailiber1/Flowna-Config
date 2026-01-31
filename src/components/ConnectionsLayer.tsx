@@ -4,7 +4,7 @@ import type { FlowNode, Connection, ConnectorNode } from '../types';
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 150; // Visual min-height of node
-const CONNECTOR_NODE_SIZE = 64; // Size of connector node circle
+const CONNECTOR_NODE_SIZE = 96; // Size of connector node circle (increased for better visibility)
 
 // Port circle position - measured from screenshot
 // The green port circles (🟢) are approximately 38px from the bottom of the node
