@@ -235,11 +235,12 @@ body {
   color: var(--text-secondary);
 }
 
-/* Workflow Items in Folder */
+/* Workflow Items */
 .workflow-item {
   display: flex;
-  flex-direction: column;
-  padding: 12px 16px 12px 32px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
   background: rgba(13, 33, 55, 0.05);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -251,18 +252,49 @@ body {
   border-left-color: var(--accent-cyan);
 }
 
+.workflow-item-icon {
+  font-size: 14px;
+}
+
 .workflow-item-title {
   font-family: 'Rajdhani', sans-serif;
   font-weight: 600;
   font-size: 13px;
   color: var(--text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.workflow-item-meta {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
+.workflow-delete-btn {
+  background: transparent;
+  border: none;
   color: var(--text-secondary);
-  margin-top: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.workflow-item:hover .workflow-delete-btn {
+  opacity: 1;
+}
+
+.workflow-delete-btn:hover {
+  background: rgba(255, 100, 100, 0.2);
+  color: #ff6666;
+}
+
+.sidebar-empty-message {
+  padding: 12px 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-style: italic;
 }
 
 /* Connector Items */
