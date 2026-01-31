@@ -125,7 +125,7 @@ export function ConnectionsLayer() {
   };
 
   return (
-    <svg className="connections-layer" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'visible' }}>
+    <svg className="connections-layer" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}>
       <defs>
         <filter id="glow">
           <feGaussianBlur stdDeviation="3" result="coloredBlur" />
