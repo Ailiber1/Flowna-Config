@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import type { FlowNode, Connection, Folder, Connector, CustomCategory, Workflow, AppSettings, Viewport } from '../types';
+import type { FlowNode, Connection, Folder, Connector, CustomCategory, Workflow, AppSettings, Viewport, ConnectorNode } from '../types';
 import { DEFAULT_FOLDERS, DEFAULT_CONNECTORS, DEFAULT_CATEGORIES } from '../types';
 import * as storage from '../utils/storage';
 import type { Language } from '../utils/i18n';
@@ -8,9 +8,14 @@ interface AppState {
   // Canvas state
   nodes: FlowNode[];
   connections: Connection[];
+  connectorNodes: ConnectorNode[];
   viewport: Viewport;
   selectedNodeIds: string[];
   selectedConnectionId: string | null;
+  selectedConnectorNodeId: string | null;
+
+  // Clipboard
+  clipboard: { nodes: FlowNode[]; connections: Connection[] } | null;
 
   // App data
   folders: Folder[];
@@ -92,14 +97,24 @@ type AppAction =
   | { type: 'CANCEL_CONNECTION' }
   | { type: 'SHOW_TOAST'; payload: AppState['toast'] }
   | { type: 'HIDE_TOAST' }
-  | { type: 'LOAD_WORKFLOW'; payload: Workflow };
+  | { type: 'LOAD_WORKFLOW'; payload: Workflow }
+  | { type: 'SELECT_ALL_NODES' }
+  | { type: 'COPY_SELECTED_NODES' }
+  | { type: 'PASTE_NODES' }
+  | { type: 'ADD_CONNECTOR_NODE'; payload: ConnectorNode }
+  | { type: 'MOVE_CONNECTOR_NODE'; payload: { id: string; position: { x: number; y: number } } }
+  | { type: 'DELETE_CONNECTOR_NODE'; payload: string }
+  | { type: 'SELECT_CONNECTOR_NODE'; payload: string | null };
 
 const initialState: AppState = {
   nodes: [],
   connections: [],
+  connectorNodes: [],
   viewport: { panX: 0, panY: 0, scale: 1 },
   selectedNodeIds: [],
   selectedConnectionId: null,
+  selectedConnectorNodeId: null,
+  clipboard: null,
   folders: DEFAULT_FOLDERS,
   workflows: [],
   connectors: DEFAULT_CONNECTORS,
@@ -367,6 +382,104 @@ function appReducer(state: AppState, action: AppAction): AppState {
         connections: action.payload.connections,
         viewport: action.payload.viewport,
         categories: [...DEFAULT_CATEGORIES, ...action.payload.customCategories],
+      };
+
+    case 'SELECT_ALL_NODES':
+      return {
+        ...state,
+        selectedNodeIds: state.nodes.map(n => n.id),
+        selectedConnectionId: null,
+      };
+
+    case 'COPY_SELECTED_NODES': {
+      if (state.selectedNodeIds.length === 0) return state;
+
+      const selectedNodes = state.nodes.filter(n => state.selectedNodeIds.includes(n.id));
+      const selectedNodeIdSet = new Set(state.selectedNodeIds);
+
+      // Copy connections that are between selected nodes
+      const relevantConnections = state.connections.filter(
+        c => selectedNodeIdSet.has(c.from) && selectedNodeIdSet.has(c.to)
+      );
+
+      return {
+        ...state,
+        clipboard: {
+          nodes: selectedNodes,
+          connections: relevantConnections,
+        },
+      };
+    }
+
+    case 'PASTE_NODES': {
+      if (!state.clipboard || state.clipboard.nodes.length === 0) return state;
+
+      const now = Date.now();
+      const idMap = new Map<string, string>();
+
+      // Create new nodes with new IDs and offset positions
+      const newNodes = state.clipboard.nodes.map((node, index) => {
+        const newId = `node-${now}-${index}`;
+        idMap.set(node.id, newId);
+        return {
+          ...node,
+          id: newId,
+          position: {
+            x: node.position.x + 50,
+            y: node.position.y + 50,
+          },
+          createdAt: now,
+          updatedAt: now,
+        };
+      });
+
+      // Create new connections with mapped IDs
+      const newConnections = state.clipboard.connections.map((conn, index) => ({
+        ...conn,
+        id: `conn-${now}-${index}`,
+        from: idMap.get(conn.from) || conn.from,
+        to: idMap.get(conn.to) || conn.to,
+        createdAt: now,
+      }));
+
+      return {
+        ...state,
+        nodes: [...state.nodes, ...newNodes],
+        connections: [...state.connections, ...newConnections],
+        selectedNodeIds: newNodes.map(n => n.id),
+      };
+    }
+
+    case 'ADD_CONNECTOR_NODE':
+      return {
+        ...state,
+        connectorNodes: [...state.connectorNodes, action.payload],
+      };
+
+    case 'MOVE_CONNECTOR_NODE':
+      return {
+        ...state,
+        connectorNodes: state.connectorNodes.map(cn =>
+          cn.id === action.payload.id ? { ...cn, position: action.payload.position } : cn
+        ),
+      };
+
+    case 'DELETE_CONNECTOR_NODE':
+      return {
+        ...state,
+        connectorNodes: state.connectorNodes.filter(cn => cn.id !== action.payload),
+        connections: state.connections.filter(
+          c => c.to !== action.payload && c.from !== action.payload
+        ),
+        selectedConnectorNodeId: state.selectedConnectorNodeId === action.payload ? null : state.selectedConnectorNodeId,
+      };
+
+    case 'SELECT_CONNECTOR_NODE':
+      return {
+        ...state,
+        selectedConnectorNodeId: action.payload,
+        selectedNodeIds: [],
+        selectedConnectionId: null,
       };
 
     default:

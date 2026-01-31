@@ -539,6 +539,15 @@ body {
   cursor: grabbing;
 }
 
+/* Disable transitions during node dragging for smoother connections */
+.canvas.dragging-nodes .flow-node {
+  transition: none !important;
+}
+
+.canvas.dragging-nodes .connection-line {
+  transition: none !important;
+}
+
 .canvas-grid {
   position: absolute;
   top: 0;
@@ -578,6 +587,9 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: visible;
+  /* Optimize for smoother updates during node dragging */
+  will-change: contents;
+  transform: translateZ(0);
 }
 
 /* Connection line - Solid magenta line with arrow */
@@ -587,9 +599,10 @@ body {
   stroke-width: 3;
   pointer-events: stroke;
   cursor: pointer;
-  transition: stroke-width var(--transition-fast);
   filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.5));
   marker-end: url(#arrowhead);
+  /* Remove transition for instant updates during dragging */
+  transition: stroke var(--transition-fast), filter var(--transition-fast);
 }
 
 .connection-line:hover,
@@ -635,6 +648,26 @@ body {
   filter: drop-shadow(0 0 8px var(--accent-neon-green)) drop-shadow(0 0 4px var(--accent-neon-green));
 }
 
+/* Connector connection line - Blue dotted line for node-to-connector */
+.connection-line.connector-connection {
+  stroke: #2196f3;
+  stroke-dasharray: 8 4;
+  filter: drop-shadow(0 0 6px rgba(33, 150, 243, 0.6));
+  marker-end: none;
+}
+
+.connection-line.connector-connection:hover,
+.connection-line.connector-connection.selected {
+  stroke: #42a5f5;
+  filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.8));
+}
+
+/* Orange data packets for connector connections */
+.data-packet.connector-packet {
+  fill: #ff6b35;
+  filter: drop-shadow(0 0 10px #ff6b35) drop-shadow(0 0 5px #ff8800);
+}
+
 @keyframes packetMove {
   0% {
     offset-distance: 0%;
@@ -644,31 +677,40 @@ body {
   }
 }
 
-/* Node Styles - HUD Design with Rounded Corners */
+/* Node Styles - HUD Design with More Rounded Corners and Glow */
 .flow-node {
   position: absolute;
   width: 220px;
   min-height: 150px;
-  background: rgba(15, 25, 40, 0.6);
-  backdrop-filter: blur(8px);
-  border-radius: 18px;
-  border: 1px solid rgba(167, 139, 250, 0.5);
+  background: rgba(15, 25, 40, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 28px;
+  border: 2px solid rgba(167, 139, 250, 0.6);
   cursor: move;
   transition: all var(--transition-fast);
   user-select: none;
   z-index: 10;
+  /* Default glow effect for futuristic look */
+  box-shadow:
+    0 0 15px rgba(167, 139, 250, 0.25),
+    0 0 30px rgba(167, 139, 250, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .flow-node:hover {
-  background: rgba(15, 25, 40, 0.7);
-  box-shadow: 0 0 15px rgba(167, 139, 250, 0.2);
+  background: rgba(15, 25, 40, 0.8);
+  box-shadow:
+    0 0 25px rgba(167, 139, 250, 0.4),
+    0 0 50px rgba(167, 139, 250, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .flow-node.selected {
   background: rgba(15, 25, 40, 0.9);
   box-shadow:
-    0 0 25px rgba(0, 255, 255, 0.7),
-    0 0 50px rgba(0, 255, 255, 0.4),
+    0 0 30px rgba(0, 255, 255, 0.8),
+    0 0 60px rgba(0, 255, 255, 0.5),
+    0 0 90px rgba(0, 255, 255, 0.2),
     inset 0 0 30px rgba(0, 255, 255, 0.15);
   z-index: 100;
 }
@@ -676,9 +718,9 @@ body {
 .flow-node.selected::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -5px;
   border: 2px solid var(--accent-cyan);
-  border-radius: 22px;
+  border-radius: 32px;
   pointer-events: none;
   animation: selection-glow 1.5s ease-in-out infinite;
 }
@@ -706,70 +748,101 @@ body {
 }
 
 .flow-node.dragging {
-  opacity: 0.7;
+  opacity: 0.85;
   cursor: grabbing;
+  /* Optimize for smooth dragging */
+  will-change: left, top;
+  transition: none;
 }
 
-/* Node color variants - Semi-transparent with rounded corners */
+/* Node color variants - Semi-transparent with rounded corners and default glow */
 .flow-node.agent {
-  border-color: rgba(167, 139, 250, 0.5);
-  background: rgba(20, 15, 35, 0.6);
+  border-color: rgba(167, 139, 250, 0.6);
+  background: rgba(20, 15, 35, 0.7);
+  box-shadow:
+    0 0 20px rgba(167, 139, 250, 0.3),
+    0 0 40px rgba(167, 139, 250, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .flow-node.agent:hover {
-  border-color: rgba(167, 139, 250, 0.8);
-  box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+  border-color: rgba(167, 139, 250, 0.9);
+  box-shadow:
+    0 0 30px rgba(167, 139, 250, 0.5),
+    0 0 60px rgba(167, 139, 250, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .flow-node.agent.selected {
   border-color: rgba(167, 139, 250, 1);
-  box-shadow: 0 0 30px rgba(167, 139, 250, 0.6), 0 0 60px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 0 40px rgba(167, 139, 250, 0.7), 0 0 80px rgba(167, 139, 250, 0.4), 0 0 120px rgba(167, 139, 250, 0.2);
 }
 .flow-node.agent.selected::after {
   border-color: rgba(167, 139, 250, 0.9);
 }
 
 .flow-node.logic {
-  border-color: rgba(96, 165, 250, 0.5);
-  background: rgba(15, 25, 40, 0.6);
+  border-color: rgba(96, 165, 250, 0.6);
+  background: rgba(15, 25, 40, 0.7);
+  box-shadow:
+    0 0 20px rgba(96, 165, 250, 0.3),
+    0 0 40px rgba(96, 165, 250, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .flow-node.logic:hover {
-  border-color: rgba(96, 165, 250, 0.8);
-  box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+  border-color: rgba(96, 165, 250, 0.9);
+  box-shadow:
+    0 0 30px rgba(96, 165, 250, 0.5),
+    0 0 60px rgba(96, 165, 250, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .flow-node.logic.selected {
   border-color: rgba(96, 165, 250, 1);
-  box-shadow: 0 0 30px rgba(96, 165, 250, 0.6), 0 0 60px rgba(96, 165, 250, 0.3);
+  box-shadow: 0 0 40px rgba(96, 165, 250, 0.7), 0 0 80px rgba(96, 165, 250, 0.4), 0 0 120px rgba(96, 165, 250, 0.2);
 }
 .flow-node.logic.selected::after {
   border-color: rgba(96, 165, 250, 0.9);
 }
 
 .flow-node.system {
-  border-color: rgba(255, 136, 0, 0.5);
-  background: rgba(30, 20, 15, 0.6);
+  border-color: rgba(255, 136, 0, 0.6);
+  background: rgba(30, 20, 15, 0.7);
+  box-shadow:
+    0 0 20px rgba(255, 136, 0, 0.3),
+    0 0 40px rgba(255, 136, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .flow-node.system:hover {
-  border-color: rgba(255, 136, 0, 0.8);
-  box-shadow: 0 0 15px rgba(255, 136, 0, 0.3);
+  border-color: rgba(255, 136, 0, 0.9);
+  box-shadow:
+    0 0 30px rgba(255, 136, 0, 0.5),
+    0 0 60px rgba(255, 136, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .flow-node.system.selected {
   border-color: rgba(255, 136, 0, 1);
-  box-shadow: 0 0 30px rgba(255, 136, 0, 0.6), 0 0 60px rgba(255, 136, 0, 0.3);
+  box-shadow: 0 0 40px rgba(255, 136, 0, 0.7), 0 0 80px rgba(255, 136, 0, 0.4), 0 0 120px rgba(255, 136, 0, 0.2);
 }
 .flow-node.system.selected::after {
   border-color: rgba(255, 136, 0, 0.9);
 }
 
 .flow-node.rule {
-  border-color: rgba(74, 222, 128, 0.5);
-  background: rgba(15, 30, 20, 0.6);
+  border-color: rgba(74, 222, 128, 0.6);
+  background: rgba(15, 30, 20, 0.7);
+  box-shadow:
+    0 0 20px rgba(74, 222, 128, 0.3),
+    0 0 40px rgba(74, 222, 128, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .flow-node.rule:hover {
-  border-color: rgba(74, 222, 128, 0.8);
-  box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
+  border-color: rgba(74, 222, 128, 0.9);
+  box-shadow:
+    0 0 30px rgba(74, 222, 128, 0.5),
+    0 0 60px rgba(74, 222, 128, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .flow-node.rule.selected {
   border-color: rgba(74, 222, 128, 1);
-  box-shadow: 0 0 30px rgba(74, 222, 128, 0.6), 0 0 60px rgba(74, 222, 128, 0.3);
+  box-shadow: 0 0 40px rgba(74, 222, 128, 0.7), 0 0 80px rgba(74, 222, 128, 0.4), 0 0 120px rgba(74, 222, 128, 0.2);
 }
 .flow-node.rule.selected::after {
   border-color: rgba(74, 222, 128, 0.9);
@@ -890,6 +963,33 @@ body {
 @keyframes status-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* Node Divider Line */
+.node-divider {
+  height: 1px;
+  margin: 4px 12px 8px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.2) 80%,
+    transparent 100%
+  );
+}
+
+.flow-node.agent .node-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(167, 139, 250, 0.4) 20%, rgba(167, 139, 250, 0.5) 50%, rgba(167, 139, 250, 0.4) 80%, transparent 100%);
+}
+.flow-node.logic .node-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(96, 165, 250, 0.4) 20%, rgba(96, 165, 250, 0.5) 50%, rgba(96, 165, 250, 0.4) 80%, transparent 100%);
+}
+.flow-node.system .node-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 136, 0, 0.4) 20%, rgba(255, 136, 0, 0.5) 50%, rgba(255, 136, 0, 0.4) 80%, transparent 100%);
+}
+.flow-node.rule .node-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(74, 222, 128, 0.4) 20%, rgba(74, 222, 128, 0.5) 50%, rgba(74, 222, 128, 0.4) 80%, transparent 100%);
 }
 
 /* Node Body */
@@ -1311,7 +1411,7 @@ body {
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .palette-item {
@@ -1319,11 +1419,24 @@ body {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: grab;
   transition: all var(--transition-fast);
   position: relative;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+/* Glossy shine effect */
+.palette-item .glossy-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  border-radius: 14px 14px 0 0;
 }
 
 /* HUD corner decorations for palette items */
@@ -1331,12 +1444,12 @@ body {
 .palette-item::after {
   content: '';
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-style: solid;
   border-width: 2px;
-  opacity: 0.6;
-  transition: opacity var(--transition-fast);
+  opacity: 0.7;
+  transition: all var(--transition-fast);
 }
 
 .palette-item::before {
@@ -1356,6 +1469,8 @@ body {
 .palette-item:hover::before,
 .palette-item:hover::after {
   opacity: 1;
+  width: 12px;
+  height: 12px;
 }
 
 .palette-item:hover {
@@ -1368,51 +1483,71 @@ body {
 }
 
 .palette-item.agent {
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(167, 139, 250, 0.1));
-  border: 1px solid rgba(167, 139, 250, 0.4);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(167, 139, 250, 0.35) 0%, rgba(167, 139, 250, 0.15) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.5);
   color: #a78bfa;
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .palette-item.agent:hover {
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(167, 139, 250, 0.15));
-  box-shadow: 0 0 20px rgba(167, 139, 250, 0.3), inset 0 0 15px rgba(167, 139, 250, 0.1);
-  border-color: rgba(167, 139, 250, 0.6);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(167, 139, 250, 0.5) 0%, rgba(167, 139, 250, 0.25) 100%);
+  box-shadow: 0 0 25px rgba(167, 139, 250, 0.4), 0 4px 15px rgba(167, 139, 250, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(167, 139, 250, 0.7);
 }
 
 .palette-item.logic {
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.1));
-  border: 1px solid rgba(96, 165, 250, 0.4);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(96, 165, 250, 0.35) 0%, rgba(96, 165, 250, 0.15) 100%);
+  border: 1px solid rgba(96, 165, 250, 0.5);
   color: #60a5fa;
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .palette-item.logic:hover {
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(96, 165, 250, 0.15));
-  box-shadow: 0 0 20px rgba(96, 165, 250, 0.3), inset 0 0 15px rgba(96, 165, 250, 0.1);
-  border-color: rgba(96, 165, 250, 0.6);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(96, 165, 250, 0.5) 0%, rgba(96, 165, 250, 0.25) 100%);
+  box-shadow: 0 0 25px rgba(96, 165, 250, 0.4), 0 4px 15px rgba(96, 165, 250, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(96, 165, 250, 0.7);
 }
 
 .palette-item.system {
-  background: linear-gradient(135deg, rgba(255, 136, 0, 0.2), rgba(255, 136, 0, 0.1));
-  border: 1px solid rgba(255, 136, 0, 0.4);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(255, 136, 0, 0.35) 0%, rgba(255, 136, 0, 0.15) 100%);
+  border: 1px solid rgba(255, 136, 0, 0.5);
   color: #ff8800;
+  box-shadow: 0 2px 8px rgba(255, 136, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .palette-item.system:hover {
-  background: linear-gradient(135deg, rgba(255, 136, 0, 0.3), rgba(255, 136, 0, 0.15));
-  box-shadow: 0 0 20px rgba(255, 136, 0, 0.3), inset 0 0 15px rgba(255, 136, 0, 0.1);
-  border-color: rgba(255, 136, 0, 0.6);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(255, 136, 0, 0.5) 0%, rgba(255, 136, 0, 0.25) 100%);
+  box-shadow: 0 0 25px rgba(255, 136, 0, 0.4), 0 4px 15px rgba(255, 136, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 136, 0, 0.7);
 }
 
 .palette-item.rule {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.1));
-  border: 1px solid rgba(74, 222, 128, 0.4);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(74, 222, 128, 0.35) 0%, rgba(74, 222, 128, 0.15) 100%);
+  border: 1px solid rgba(74, 222, 128, 0.5);
   color: #4ade80;
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .palette-item.rule:hover {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.3), rgba(74, 222, 128, 0.15));
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3), inset 0 0 15px rgba(74, 222, 128, 0.1);
-  border-color: rgba(74, 222, 128, 0.6);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(135deg, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.25) 100%);
+  box-shadow: 0 0 25px rgba(74, 222, 128, 0.4), 0 4px 15px rgba(74, 222, 128, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(74, 222, 128, 0.7);
 }
 
 .palette-item-icon {
@@ -1426,6 +1561,73 @@ body {
   font-size: 14px;
   color: var(--text-primary);
   letter-spacing: 0.5px;
+}
+
+/* Connector Node Icons on Canvas */
+.connector-node-icon {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: move;
+  z-index: 20;
+  transition: transform var(--transition-fast);
+}
+
+.connector-node-icon:hover {
+  transform: scale(1.05);
+}
+
+.connector-node-icon.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.connector-node-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(15, 25, 40, 0.8);
+  border: 2px solid var(--sidebar-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 20px rgba(33, 150, 243, 0.4),
+    0 0 40px rgba(33, 150, 243, 0.2),
+    inset 0 0 15px rgba(33, 150, 243, 0.1);
+  transition: all var(--transition-fast);
+}
+
+.connector-node-icon:hover .connector-node-circle {
+  box-shadow:
+    0 0 30px rgba(33, 150, 243, 0.6),
+    0 0 60px rgba(33, 150, 243, 0.3),
+    inset 0 0 20px rgba(33, 150, 243, 0.15);
+}
+
+.connector-node-icon.selected .connector-node-circle {
+  border-color: var(--accent-cyan);
+  box-shadow:
+    0 0 40px rgba(0, 255, 255, 0.7),
+    0 0 80px rgba(0, 255, 255, 0.4),
+    inset 0 0 25px rgba(0, 255, 255, 0.2);
+}
+
+.connector-node-emoji {
+  font-size: 28px;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+}
+
+.connector-node-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+  background: rgba(10, 25, 41, 0.8);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(33, 150, 243, 0.3);
 }
 
 /* Scrollbar */

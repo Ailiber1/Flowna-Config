@@ -2,8 +2,9 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { FlowNode } from './FlowNode';
 import { ConnectionsLayer } from './ConnectionsLayer';
+import { ConnectorNodeIcon } from './ConnectorNodeIcon';
 import { generateId } from '../utils/storage';
-import type { FlowNode as FlowNodeType, CustomCategory } from '../types';
+import type { FlowNode as FlowNodeType, CustomCategory, ConnectorNode } from '../types';
 
 export function Canvas() {
   const { state, dispatch } = useApp();
@@ -134,31 +135,47 @@ export function Canvas() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const categoryData = e.dataTransfer.getData('category');
-    if (categoryData && canvasRef.current) {
-      const category: CustomCategory = JSON.parse(categoryData);
+    const connectorData = e.dataTransfer.getData('connector');
+
+    if (canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
       const x = (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale;
       const y = (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale;
 
-      const newNode: FlowNodeType = {
-        id: generateId(),
-        title: category.displayName,
-        displayName: category.displayName,
-        description: '',
-        category: category.name,
-        categoryDisplayName: category.displayName,
-        icon: category.icon,
-        color: category.color,
-        url: '',
-        status: 'todo',
-        memo: '',
-        position: { x, y },
-        connectorLinks: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
+      if (categoryData) {
+        const category: CustomCategory = JSON.parse(categoryData);
 
-      dispatch({ type: 'ADD_NODE', payload: newNode });
+        const newNode: FlowNodeType = {
+          id: generateId(),
+          title: category.displayName,
+          displayName: category.displayName,
+          description: '',
+          category: category.name,
+          categoryDisplayName: category.displayName,
+          icon: category.icon,
+          color: category.color,
+          url: '',
+          status: 'todo',
+          memo: '',
+          position: { x, y },
+          connectorLinks: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        dispatch({ type: 'ADD_NODE', payload: newNode });
+      } else if (connectorData) {
+        const connectorId = connectorData;
+
+        const newConnectorNode: ConnectorNode = {
+          id: `cnode-${Date.now()}`,
+          connectorId: connectorId,
+          position: { x, y },
+          createdAt: Date.now(),
+        };
+
+        dispatch({ type: 'ADD_CONNECTOR_NODE', payload: newConnectorNode });
+      }
     }
   }, [state.viewport, dispatch]);
 
@@ -213,16 +230,45 @@ export function Canvas() {
         e.preventDefault();
         dispatch({ type: 'OPEN_ADD_NODE_MODAL' });
       }
+
+      // Ctrl/Cmd+A for select all nodes
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        dispatch({ type: 'SELECT_ALL_NODES' });
+      }
+
+      // Ctrl/Cmd+C for copy selected nodes
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        if (state.selectedNodeIds.length > 0) {
+          e.preventDefault();
+          dispatch({ type: 'COPY_SELECTED_NODES' });
+          dispatch({
+            type: 'SHOW_TOAST',
+            payload: {
+              message: state.language === 'ja'
+                ? `${state.selectedNodeIds.length}個のノードをコピーしました`
+                : `Copied ${state.selectedNodeIds.length} node(s)`,
+              type: 'info',
+            },
+          });
+        }
+      }
+
+      // Ctrl/Cmd+V for paste nodes
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        e.preventDefault();
+        dispatch({ type: 'PASTE_NODES' });
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.selectedNodeIds, state.selectedConnectionId, dispatch]);
+  }, [state.selectedNodeIds, state.selectedConnectionId, state.language, dispatch]);
 
   return (
     <div
       ref={canvasRef}
-      className={`canvas ${isPanning ? 'grabbing' : ''}`}
+      className={`canvas ${isPanning ? 'grabbing' : ''} ${state.isDraggingNode ? 'dragging-nodes' : ''}`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -261,6 +307,20 @@ export function Canvas() {
             isHighlighted={state.highlightedNodeIds.includes(node.id)}
           />
         ))}
+
+        {/* Connector Nodes */}
+        {state.connectorNodes.map(connectorNode => {
+          const connector = state.connectors.find(c => c.id === connectorNode.connectorId);
+          if (!connector) return null;
+          return (
+            <ConnectorNodeIcon
+              key={connectorNode.id}
+              connectorNode={connectorNode}
+              connector={connector}
+              isSelected={state.selectedConnectorNodeId === connectorNode.id}
+            />
+          );
+        })}
       </div>
 
       {/* Marquee Selection Box */}
