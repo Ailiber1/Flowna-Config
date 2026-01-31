@@ -590,12 +590,12 @@ body {
 
 .ghost-line {
   fill: none;
-  stroke: #c084fc;
-  stroke-width: 3;
+  stroke: var(--accent-neon-green);
+  stroke-width: 2;
   stroke-dasharray: 10 5;
-  stroke-opacity: 0.9;
+  stroke-opacity: 0.5;
   pointer-events: none;
-  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.7));
+  filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.6));
 }
 
 /* Connection animation - pulse glow for active connections */
