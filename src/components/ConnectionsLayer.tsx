@@ -129,10 +129,10 @@ export function ConnectionsLayer() {
       className="connections-layer"
       style={{
         position: 'absolute',
-        top: '-5000px',
-        left: '-5000px',
-        width: '10000px',
-        height: '10000px',
+        top: 0,
+        left: 0,
+        width: 10000,
+        height: 10000,
         overflow: 'visible',
         pointerEvents: 'none'
       }}

@@ -92,6 +92,31 @@ export function TopBar() {
     dispatch({ type: 'SET_LANGUAGE', payload: state.language === 'ja' ? 'en' : 'ja' });
   };
 
+  const handleImplement = () => {
+    if (state.connections.length === 0) {
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: {
+          message: state.language === 'ja' ? '接続がありません。ノードを接続してください。' : 'No connections. Please connect nodes first.',
+          type: 'warning',
+        },
+      });
+      return;
+    }
+
+    // Show implementation confirmation
+    dispatch({
+      type: 'SHOW_TOAST',
+      payload: {
+        message: state.language === 'ja' ? `${state.connections.length}件の接続を実装中...` : `Implementing ${state.connections.length} connection(s)...`,
+        type: 'info',
+      },
+    });
+
+    // TODO: Implement actual workflow execution logic
+    // This would connect to external services via connectors
+  };
+
   return (
     <div className="topbar">
       <div className="search-container">
@@ -110,6 +135,14 @@ export function TopBar() {
         </button>
         <button className="topbar-btn" onClick={handleAddNode}>
           ➕ {t('addNode', state.language)}
+        </button>
+        <button
+          className="topbar-btn implement"
+          onClick={handleImplement}
+          disabled={state.connections.length === 0}
+          title={state.language === 'ja' ? '接続したノードを実装' : 'Implement connected nodes'}
+        >
+          🚀 {state.language === 'ja' ? '実装' : 'Implement'}
         </button>
         <button className="topbar-btn primary" onClick={handleSaveWorkflow}>
           💾 {t('save', state.language)}
