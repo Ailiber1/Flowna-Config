@@ -6,6 +6,7 @@ import type { Workflow, Connector } from '../types';
 export function Sidebar() {
   const { state, dispatch } = useApp();
   const [workflowsExpanded, setWorkflowsExpanded] = useState(false);
+  const [nodePaletteExpanded, setNodePaletteExpanded] = useState(false);
   const [connectorsExpanded, setConnectorsExpanded] = useState(false);
 
   const handleWorkflowClick = (workflow: Workflow) => {
@@ -78,29 +79,37 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Node Palette */}
+      {/* Node Palette - Dropdown */}
       <div className="sidebar-section">
-        <div className="sidebar-section-header">
+        <div
+          className="sidebar-section-header clickable"
+          onClick={() => setNodePaletteExpanded(!nodePaletteExpanded)}
+        >
           <span className="sidebar-section-title">
             {state.language === 'ja' ? 'ノードパレット' : 'Node Palette'}
           </span>
+          <span className={`sidebar-section-toggle ${!nodePaletteExpanded ? 'collapsed' : ''}`}>
+            ▾
+          </span>
         </div>
-        <div className="node-palette">
-          {state.categories.map(category => (
-            <div
-              key={category.id}
-              className={`palette-item ${category.name.toLowerCase()}`}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('category', JSON.stringify(category));
-              }}
-            >
-              <span className="palette-item-icon">{category.icon}</span>
-              <span className="palette-item-text">
-                {state.language === 'ja' ? getCategoryJapaneseName(category.name) : category.displayName}
-              </span>
-            </div>
-          ))}
+        <div className={`sidebar-section-content ${!nodePaletteExpanded ? 'collapsed' : ''}`}>
+          <div className="node-palette">
+            {state.categories.map(category => (
+              <div
+                key={category.id}
+                className={`palette-item ${category.name.toLowerCase()}`}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('category', JSON.stringify(category));
+                }}
+              >
+                <span className="palette-item-icon">{category.icon}</span>
+                <span className="palette-item-text">
+                  {state.language === 'ja' ? getCategoryJapaneseName(category.name) : category.displayName}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
