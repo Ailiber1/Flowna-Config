@@ -49,10 +49,19 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
       return;
     }
 
+    // Safeguard: if editing but node no longer exists, show error
+    if (mode === 'edit' && !existingNode) {
+      setError(state.language === 'ja' ? 'ノードが見つかりません' : 'Node not found');
+      return;
+    }
+
     const categoryData = state.categories.find(c => c.name === category) || state.categories[0];
 
+    // In edit mode, always use the existing node's ID
+    const nodeId = mode === 'edit' && existingNode ? existingNode.id : generateId();
+
     const nodeData: FlowNode = {
-      id: existingNode?.id || generateId(),
+      id: nodeId,
       title: title.trim(),
       displayName: displayName.trim() || title.trim(),
       description: description.trim(),
