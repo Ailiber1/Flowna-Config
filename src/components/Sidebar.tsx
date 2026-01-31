@@ -135,6 +135,10 @@ export function Sidebar() {
             <div
               key={connector.id}
               className="connector-item"
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('connector', connector.id);
+              }}
               onClick={() => handleConnectorClick(connector)}
             >
               <span className="connector-item-icon">{connector.icon}</span>
