@@ -39,6 +39,14 @@ export interface Connection {
   active: boolean;
   label: string;
   createdAt: number;
+  type?: 'node-to-node' | 'node-to-connector';
+}
+
+export interface ConnectorNode {
+  id: string;
+  connectorId: string;
+  position: Position;
+  createdAt: number;
 }
 
 export interface Folder {
@@ -125,7 +133,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
   {
     id: 'github',
     name: 'GitHub',
-    icon: '🐙',
+    icon: '🐱',
     description: 'CI/CD integration with GitHub Actions',
     type: 'cicd',
     version: '1.0.0',
@@ -138,7 +146,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
   {
     id: 'claude-code',
     name: 'Claude Code',
-    icon: '⚡',
+    icon: '🦀',
     description: 'AI code assistant',
     type: 'ai',
     version: '1.0.0',
