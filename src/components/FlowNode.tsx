@@ -107,8 +107,11 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   }, [node.id, dispatch]);
 
   const handlePortMouseDown = useCallback((e: React.MouseEvent, portType: 'input' | 'output') => {
+    e.preventDefault();
     e.stopPropagation();
+
     if (portType === 'output') {
+      // Start connection creation
       dispatch({ type: 'START_CONNECTION', payload: node.id });
       // Set initial ghost line position to the port location
       const portX = node.position.x + 220 - 17; // Output port X position
