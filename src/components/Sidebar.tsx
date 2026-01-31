@@ -1,25 +1,12 @@
 import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
-import type { Folder, Workflow, Connector } from '../types';
+import type { Workflow, Connector } from '../types';
 
 export function Sidebar() {
   const { state, dispatch } = useApp();
-  const [foldersExpanded, setFoldersExpanded] = useState(true);
-  const [connectorsExpanded, setConnectorsExpanded] = useState(false); // Collapsed by default
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['folder-workflows']));
-
-  const toggleFolder = (folderId: string) => {
-    setExpandedFolders(prev => {
-      const next = new Set(prev);
-      if (next.has(folderId)) {
-        next.delete(folderId);
-      } else {
-        next.add(folderId);
-      }
-      return next;
-    });
-  };
+  const [workflowsExpanded, setWorkflowsExpanded] = useState(false);
+  const [connectorsExpanded, setConnectorsExpanded] = useState(false);
 
   const handleWorkflowClick = (workflow: Workflow) => {
     dispatch({ type: 'LOAD_WORKFLOW', payload: workflow });
@@ -33,41 +20,61 @@ export function Sidebar() {
     dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
   };
 
+  const handleDeleteWorkflow = (e: React.MouseEvent, workflowId: string) => {
+    e.stopPropagation();
+    if (confirm(state.language === 'ja' ? 'このワークフローを削除しますか？' : 'Delete this workflow?')) {
+      dispatch({ type: 'DELETE_WORKFLOW', payload: workflowId });
+    }
+  };
+
   return (
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">F</div>
         <div className="sidebar-logo-text">
-          <span className="sidebar-logo-title">FLOWNA</span>
-          <span className="sidebar-logo-subtitle">CONFIG VISUALIZER</span>
+          <span className="sidebar-logo-title">フローナ</span>
+          <span className="sidebar-logo-subtitle">設定ビジュアライザー</span>
         </div>
       </div>
 
-      {/* Folders Section */}
+      {/* Saved Workflows Section - Dropdown */}
       <div className="sidebar-section">
         <div
-          className="sidebar-section-header"
-          onClick={() => setFoldersExpanded(!foldersExpanded)}
+          className="sidebar-section-header clickable"
+          onClick={() => setWorkflowsExpanded(!workflowsExpanded)}
         >
           <span className="sidebar-section-title">
-            {t('folders', state.language)}
+            {state.language === 'ja' ? '保存済みワークフロー' : 'Saved Workflows'}
           </span>
-          <span className={`sidebar-section-toggle ${!foldersExpanded ? 'collapsed' : ''}`}>
+          <span className={`sidebar-section-toggle ${!workflowsExpanded ? 'collapsed' : ''}`}>
             ▾
           </span>
         </div>
-        <div className={`sidebar-section-content ${!foldersExpanded ? 'collapsed' : ''}`}>
-          {state.folders.map(folder => (
-            <FolderItem
-              key={folder.id}
-              folder={folder}
-              workflows={state.workflows.filter(w => w.folderId === folder.id)}
-              isExpanded={expandedFolders.has(folder.id)}
-              onToggle={() => toggleFolder(folder.id)}
-              onWorkflowClick={handleWorkflowClick}
-            />
-          ))}
+        <div className={`sidebar-section-content ${!workflowsExpanded ? 'collapsed' : ''}`}>
+          {state.workflows.length === 0 ? (
+            <div className="sidebar-empty-message">
+              {state.language === 'ja' ? 'ワークフローがありません' : 'No saved workflows'}
+            </div>
+          ) : (
+            state.workflows.map(workflow => (
+              <div
+                key={workflow.id}
+                className="workflow-item"
+                onClick={() => handleWorkflowClick(workflow)}
+              >
+                <span className="workflow-item-icon">📁</span>
+                <span className="workflow-item-title">{workflow.name}</span>
+                <button
+                  className="workflow-delete-btn"
+                  onClick={(e) => handleDeleteWorkflow(e, workflow.id)}
+                  title={state.language === 'ja' ? '削除' : 'Delete'}
+                >
+                  ×
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -75,7 +82,7 @@ export function Sidebar() {
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span className="sidebar-section-title">
-            ノードパレット
+            {state.language === 'ja' ? 'ノードパレット' : 'Node Palette'}
           </span>
         </div>
         <div className="node-palette">
@@ -97,8 +104,8 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Connectors Section - Collapsed by default */}
-      <div className="sidebar-section connectors-section">
+      {/* Connectors Section - Dropdown (collapsed by default) */}
+      <div className="sidebar-section">
         <div
           className="sidebar-section-header clickable"
           onClick={() => setConnectorsExpanded(!connectorsExpanded)}
@@ -136,45 +143,4 @@ function getCategoryJapaneseName(name: string): string {
     'RULE': 'ルール（緑）',
   };
   return nameMap[name] || name;
-}
-
-interface FolderItemProps {
-  folder: Folder;
-  workflows: Workflow[];
-  isExpanded: boolean;
-  onToggle: () => void;
-  onWorkflowClick: (workflow: Workflow) => void;
-}
-
-function FolderItem({ folder, workflows, isExpanded, onToggle, onWorkflowClick }: FolderItemProps) {
-  return (
-    <div>
-      <div
-        className={`folder-item ${isExpanded ? 'selected' : ''}`}
-        onClick={onToggle}
-      >
-        <span className="folder-item-icon">{folder.icon}</span>
-        <span className="folder-item-name">{folder.name}</span>
-        {workflows.length > 0 && (
-          <span className="folder-item-count">{workflows.length}</span>
-        )}
-      </div>
-      {isExpanded && workflows.length > 0 && (
-        <div>
-          {workflows.map(workflow => (
-            <div
-              key={workflow.id}
-              className="workflow-item"
-              onClick={() => onWorkflowClick(workflow)}
-            >
-              <span className="workflow-item-title">{workflow.name}</span>
-              <span className="workflow-item-meta">
-                {workflow.nodes.length} nodes, {workflow.connections.length} edges
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
