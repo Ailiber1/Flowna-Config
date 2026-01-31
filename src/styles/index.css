@@ -639,6 +639,7 @@ body {
   cursor: move;
   transition: all var(--transition-fast);
   user-select: none;
+  z-index: 10;
 }
 
 .flow-node:hover {
