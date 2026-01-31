@@ -86,6 +86,20 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch({
+      type: 'SET_CONTEXT_MENU',
+      payload: {
+        x: e.clientX,
+        y: e.clientY,
+        type: 'node', // Use 'node' type to reuse existing delete functionality
+        targetId: connectorNode.id,
+      },
+    });
+  }, [connectorNode.id, dispatch]);
+
   const handlePortMouseUp = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -123,6 +137,7 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       }}
       onMouseDown={handleMouseDown}
       onMouseUp={handlePortMouseUp}
+      onContextMenu={handleContextMenu}
     >
       <div className="connector-node-circle">
         <span className="connector-node-emoji">{connector.icon}</span>
