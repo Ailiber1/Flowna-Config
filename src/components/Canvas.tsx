@@ -182,44 +182,6 @@ export function Canvas() {
     }
   }, [dispatch]);
 
-  // Handle global mouse move for connection creation
-  useEffect(() => {
-    if (state.isCreatingConnection && canvasRef.current) {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
-        const rect = canvasRef.current!.getBoundingClientRect();
-        dispatch({
-          type: 'UPDATE_GHOST_LINE',
-          payload: {
-            x: (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale,
-            y: (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale,
-          },
-        });
-      };
-
-      const handleGlobalMouseUp = (e: MouseEvent) => {
-        // Check if the mouseup was on a port-circle (input port)
-        const target = e.target as HTMLElement;
-        const isOnPort = target.classList.contains('port-circle');
-
-        // Only cancel if not on a port (port handles its own mouseup)
-        if (!isOnPort) {
-          // Small delay to allow port's onMouseUp to fire first
-          setTimeout(() => {
-            dispatch({ type: 'CANCEL_CONNECTION' });
-          }, 10);
-        }
-      };
-
-      window.addEventListener('mousemove', handleGlobalMouseMove);
-      window.addEventListener('mouseup', handleGlobalMouseUp);
-
-      return () => {
-        window.removeEventListener('mousemove', handleGlobalMouseMove);
-        window.removeEventListener('mouseup', handleGlobalMouseUp);
-      };
-    }
-  }, [state.isCreatingConnection, state.viewport, dispatch]);
-
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
