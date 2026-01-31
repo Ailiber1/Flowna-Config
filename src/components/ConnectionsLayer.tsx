@@ -10,7 +10,8 @@ const CONNECTOR_NODE_SIZE = 96; // Size of connector node circle (increased for 
 // The port is in the node-footer which has padding: 8px 12px 10px
 // Port circle is 14px, so center is 7px from its edge
 // From bottom of node: 10px (padding) + 7px (half port) = 17px
-const PORT_OFFSET_FROM_BOTTOM = 17;
+// Adjusted upward to better align with visual port position
+const PORT_OFFSET_FROM_BOTTOM = 24;
 const PORT_OFFSET_X = 19;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
@@ -23,12 +24,15 @@ function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: numbe
   }
 }
 
-function getConnectorNodeCenter(connectorNode: ConnectorNode): { x: number; y: number } {
-  // Center of the connector node circle
-  return {
-    x: connectorNode.position.x + CONNECTOR_NODE_SIZE / 2,
-    y: connectorNode.position.y + CONNECTOR_NODE_SIZE / 2,
-  };
+function getConnectorNodePort(connectorNode: ConnectorNode, portType: 'input' | 'output'): { x: number; y: number } {
+  // Port positions on connector node
+  const centerY = connectorNode.position.y + CONNECTOR_NODE_SIZE / 2;
+
+  if (portType === 'input') {
+    return { x: connectorNode.position.x + 10, y: centerY };
+  } else {
+    return { x: connectorNode.position.x + CONNECTOR_NODE_SIZE - 10, y: centerY };
+  }
 }
 
 function createBezierPath(start: { x: number; y: number }, end: { x: number; y: number }): string {
@@ -75,20 +79,29 @@ export function ConnectionsLayer() {
   // Render connections
   const renderConnection = (connection: Connection) => {
     const fromNode = nodesMap.get(connection.from);
+    const fromConnectorNode = connectorNodesMap.get(connection.from);
     const toNode = nodesMap.get(connection.to);
     const toConnectorNode = connectorNodesMap.get(connection.to);
 
     // Determine if this is a connector connection
-    const isConnectorConnection = connection.type === 'node-to-connector' || toConnectorNode !== undefined;
+    const isConnectorConnection = connection.type === 'node-to-connector' ||
+      fromConnectorNode !== undefined ||
+      toConnectorNode !== undefined;
 
-    // Get start position (always from a node output)
-    if (!fromNode) return null;
-    const start = getNodeCenter(fromNode, 'output');
+    // Get start position (from node output or connector output)
+    let start: { x: number; y: number };
+    if (fromNode) {
+      start = getNodeCenter(fromNode, 'output');
+    } else if (fromConnectorNode) {
+      start = getConnectorNodePort(fromConnectorNode, 'output');
+    } else {
+      return null;
+    }
 
-    // Get end position (either node input or connector node center)
+    // Get end position (either node input or connector node input)
     let end: { x: number; y: number };
     if (toConnectorNode) {
-      end = getConnectorNodeCenter(toConnectorNode);
+      end = getConnectorNodePort(toConnectorNode, 'input');
     } else if (toNode) {
       end = getNodeCenter(toNode, 'input');
     } else {
@@ -143,9 +156,17 @@ export function ConnectionsLayer() {
     }
 
     const startNode = nodesMap.get(state.connectionStartNodeId);
-    if (!startNode) return null;
+    const startConnectorNode = connectorNodesMap.get(state.connectionStartNodeId);
 
-    const start = getNodeCenter(startNode, 'output');
+    let start: { x: number; y: number };
+    if (startNode) {
+      start = getNodeCenter(startNode, 'output');
+    } else if (startConnectorNode) {
+      start = getConnectorNodePort(startConnectorNode, 'output');
+    } else {
+      return null;
+    }
+
     const path = createBezierPath(start, state.ghostLineEnd);
 
     return (
