@@ -7,9 +7,9 @@ const NODE_HEIGHT = 150; // Visual min-height of node
 const CONNECTOR_NODE_SIZE = 64; // Size of connector node circle
 
 // Port circle position - measured from screenshot
-// The green port circles (🟢) are approximately 45px from the bottom of the node
+// The green port circles (🟢) are approximately 38px from the bottom of the node
 // and 19px from the left/right edge
-const PORT_OFFSET_FROM_BOTTOM = 45;
+const PORT_OFFSET_FROM_BOTTOM = 38;
 const PORT_OFFSET_X = 19;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
