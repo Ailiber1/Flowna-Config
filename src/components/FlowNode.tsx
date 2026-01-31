@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useApp } from '../contexts/AppContext';
 import type { FlowNode as FlowNodeType } from '../types';
 
@@ -13,6 +13,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+  const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
 
   const getCategoryClass = (category: string): string => {
     const categoryLower = category.toLowerCase();
@@ -30,13 +31,11 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     setIsDragging(true);
     dispatch({ type: 'START_DRAGGING_NODE' });
 
-    // Store initial mouse position for delta calculation
     setLastMousePos({
       x: e.clientX / state.viewport.scale,
       y: e.clientY / state.viewport.scale,
     });
 
-    // Select node
     if (e.ctrlKey || e.metaKey) {
       dispatch({ type: 'SELECT_NODE', payload: node.id });
     } else if (!isSelected) {
@@ -52,14 +51,12 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       const dx = currentX - lastMousePos.x;
       const dy = currentY - lastMousePos.y;
 
-      // Move all selected nodes together
       if (isSelected && state.selectedNodeIds.length > 1) {
         dispatch({
           type: 'MOVE_SELECTED_NODES',
           payload: { dx, dy },
         });
       } else {
-        // Move only this node
         dispatch({
           type: 'MOVE_NODE',
           payload: { id: node.id, position: { x: node.position.x + dx, y: node.position.y + dy } },
@@ -76,7 +73,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   }, [dispatch]);
 
   // Add global mouse listeners for dragging
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
@@ -106,6 +103,48 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     });
   }, [node.id, dispatch]);
 
+  // Connection creation - handle mouse move for ghost line
+  const handleConnectionMouseMove = useCallback((e: MouseEvent) => {
+    // Get canvas element to calculate correct coordinates
+    const canvas = document.querySelector('.canvas') as HTMLElement;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale;
+    const y = (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale;
+
+    dispatch({
+      type: 'UPDATE_GHOST_LINE',
+      payload: { x, y },
+    });
+  }, [state.viewport, dispatch]);
+
+  // Connection creation - handle mouse up
+  const handleConnectionMouseUp = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    // Check if released on an input port
+    if (!target.classList.contains('port-circle')) {
+      // Released not on a port, cancel connection
+      dispatch({ type: 'CANCEL_CONNECTION' });
+    }
+    // If released on a port, handlePortMouseUp will handle it
+
+    setIsCreatingConnectionFromThis(false);
+  }, [dispatch]);
+
+  // Add global listeners when creating connection from this node
+  useEffect(() => {
+    if (isCreatingConnectionFromThis) {
+      window.addEventListener('mousemove', handleConnectionMouseMove);
+      window.addEventListener('mouseup', handleConnectionMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleConnectionMouseMove);
+        window.removeEventListener('mouseup', handleConnectionMouseUp);
+      };
+    }
+  }, [isCreatingConnectionFromThis, handleConnectionMouseMove, handleConnectionMouseUp]);
+
   const handlePortMouseDown = useCallback((e: React.MouseEvent, portType: 'input' | 'output') => {
     e.preventDefault();
     e.stopPropagation();
@@ -113,18 +152,23 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     if (portType === 'output') {
       // Start connection creation
       dispatch({ type: 'START_CONNECTION', payload: node.id });
+
       // Set initial ghost line position to the port location
-      const portX = node.position.x + 220 - 17; // Output port X position
-      const portY = node.position.y + 150 - 20; // Output port Y position
+      const portX = node.position.x + 220 - 17;
+      const portY = node.position.y + 150 - 20;
       dispatch({
         type: 'UPDATE_GHOST_LINE',
         payload: { x: portX, y: portY },
       });
+
+      // Set local state to trigger global listeners
+      setIsCreatingConnectionFromThis(true);
     }
   }, [node.id, node.position, dispatch]);
 
   const handlePortMouseUp = useCallback((e: React.MouseEvent, portType: 'input' | 'output') => {
     e.stopPropagation();
+
     if (portType === 'input' && state.isCreatingConnection && state.connectionStartNodeId) {
       // Complete connection
       if (state.connectionStartNodeId !== node.id) {
@@ -228,7 +272,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       <div className="node-footer">
         <div className="node-port">
           <span
-            className="port-circle"
+            className="port-circle input-port"
             onMouseDown={(e) => handlePortMouseDown(e, 'input')}
             onMouseUp={(e) => handlePortMouseUp(e, 'input')}
           />
@@ -237,7 +281,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         <div className="node-port">
           <span className="port-label">{state.language === 'ja' ? '出力' : 'Output'}</span>
           <span
-            className="port-circle"
+            className="port-circle output-port"
             onMouseDown={(e) => handlePortMouseDown(e, 'output')}
             onMouseUp={(e) => handlePortMouseUp(e, 'output')}
           />
