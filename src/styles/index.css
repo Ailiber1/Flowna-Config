@@ -501,6 +501,23 @@ body {
   box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
 }
 
+.topbar-btn.implement {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(255, 136, 0, 0.3));
+  border-color: #ff6b35;
+  color: #ff6b35;
+}
+
+.topbar-btn.implement:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.5), rgba(255, 136, 0, 0.5));
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+  transform: translateY(-1px);
+}
+
+.topbar-btn.implement:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Canvas Container */
 .canvas-container {
   flex: 1;

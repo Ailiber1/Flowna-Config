@@ -34,8 +34,12 @@ export function Sidebar() {
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">F</div>
         <div className="sidebar-logo-text">
-          <span className="sidebar-logo-title">フローナ</span>
-          <span className="sidebar-logo-subtitle">設定ビジュアライザー</span>
+          <span className="sidebar-logo-title">
+            {state.language === 'ja' ? 'フローナ' : 'FLOWNA'}
+          </span>
+          <span className="sidebar-logo-subtitle">
+            {state.language === 'ja' ? '設定ビジュアライザー' : 'CONFIG VISUALIZER'}
+          </span>
         </div>
       </div>
 
