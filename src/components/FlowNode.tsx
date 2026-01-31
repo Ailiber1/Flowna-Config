@@ -158,9 +158,9 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       dispatch({ type: 'START_CONNECTION', payload: node.id });
 
       // Set initial ghost line position to the port location
-      // Must match ConnectionsLayer constants: WIDTH=220, HEIGHT=150, PORT_OFFSET=38, X_OFFSET=19
+      // Must match ConnectionsLayer constants: WIDTH=220, HEIGHT=150, PORT_OFFSET=17, X_OFFSET=19
       const portX = node.position.x + 220 - 19;
-      const portY = node.position.y + 150 - 38;
+      const portY = node.position.y + 150 - 17;
       dispatch({
         type: 'UPDATE_GHOST_LINE',
         payload: { x: portX, y: portY },
