@@ -651,7 +651,7 @@ body {
   min-height: 150px;
   background: rgba(15, 25, 40, 0.6);
   backdrop-filter: blur(8px);
-  border-radius: 12px;
+  border-radius: 18px;
   border: 1px solid rgba(167, 139, 250, 0.5);
   cursor: move;
   transition: all var(--transition-fast);
@@ -678,7 +678,7 @@ body {
   position: absolute;
   inset: -4px;
   border: 2px solid var(--accent-cyan);
-  border-radius: 16px;
+  border-radius: 22px;
   pointer-events: none;
   animation: selection-glow 1.5s ease-in-out infinite;
 }
