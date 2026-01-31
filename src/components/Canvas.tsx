@@ -155,8 +155,9 @@ export function Canvas() {
 
     if (canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
-      const x = (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale;
-      const y = (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale;
+      // Ensure nodes/connectors cannot be placed at negative positions (under sidebar)
+      const x = Math.max(0, (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale);
+      const y = Math.max(0, (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale);
 
       if (categoryData) {
         const category: CustomCategory = JSON.parse(categoryData);

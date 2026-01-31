@@ -37,8 +37,8 @@ export function Sidebar() {
       status: 'todo',
       memo: '',
       position: {
-        x: (window.innerWidth / 2 - 280 - 110 - state.viewport.panX) / state.viewport.scale,
-        y: (window.innerHeight / 2 - 80 - state.viewport.panY) / state.viewport.scale,
+        x: Math.max(0, (window.innerWidth / 2 - 280 - 110 - state.viewport.panX) / state.viewport.scale),
+        y: Math.max(0, (window.innerHeight / 2 - 80 - state.viewport.panY) / state.viewport.scale),
       },
       connectorLinks: [],
       createdAt: Date.now(),
@@ -61,8 +61,8 @@ export function Sidebar() {
       id: `cnode-${Date.now()}`,
       connectorId: connector.id,
       position: {
-        x: (window.innerWidth / 2 - 280 - 32 - state.viewport.panX) / state.viewport.scale,
-        y: (window.innerHeight / 2 - 32 - state.viewport.panY) / state.viewport.scale,
+        x: Math.max(0, (window.innerWidth / 2 - 280 - 32 - state.viewport.panX) / state.viewport.scale),
+        y: Math.max(0, (window.innerHeight / 2 - 32 - state.viewport.panY) / state.viewport.scale),
       },
       createdAt: Date.now(),
     };
