@@ -213,11 +213,11 @@ export const translations = {
     rule: 'ルール',
 
     // Create/Patch Mode
-    createMode: 'Create',
-    patchMode: 'Patch',
+    createMode: '新規作成',
+    patchMode: 'パッチ',
     createModeDesc: '新規アプリを最初から作成',
     patchModeDesc: '既存アプリを差分で修正',
-    createModeBlocked: 'アプリは作成済みです。Patchモードをご利用ください。',
+    createModeBlocked: 'アプリは作成済みです。パッチモードをご利用ください。',
 
     // Execution Plan
     executionPlan: '実行プラン',
