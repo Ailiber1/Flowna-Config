@@ -700,6 +700,84 @@ body {
   }
 }
 
+/* ============================================
+   Executing State - Blue pulse animation
+   ============================================ */
+.canvas.implementing .connection-line {
+  animation: executingPulse 1s ease-in-out infinite;
+}
+
+.canvas.implementing .connection-line.connector-connection {
+  animation: executingConnectorPulse 1s ease-in-out infinite;
+}
+
+@keyframes executingPulse {
+  0%, 100% {
+    stroke: #2196f3;
+    filter: drop-shadow(0 0 8px rgba(33, 150, 243, 0.8));
+  }
+  50% {
+    stroke: #64b5f6;
+    filter: drop-shadow(0 0 20px rgba(100, 181, 246, 1)) drop-shadow(0 0 40px rgba(33, 150, 243, 0.6));
+  }
+}
+
+@keyframes executingConnectorPulse {
+  0%, 100% {
+    stroke: #2196f3;
+    filter: drop-shadow(0 0 8px rgba(33, 150, 243, 0.8));
+  }
+  50% {
+    stroke: #90caf9;
+    filter: drop-shadow(0 0 25px rgba(144, 202, 249, 1)) drop-shadow(0 0 50px rgba(33, 150, 243, 0.8));
+  }
+}
+
+/* Data packets during execution - Blue */
+.canvas.implementing .data-packet {
+  fill: #2196f3;
+  filter: drop-shadow(0 0 12px #2196f3) drop-shadow(0 0 6px #64b5f6);
+}
+
+.canvas.implementing .data-packet.connector-packet {
+  fill: #42a5f5;
+  filter: drop-shadow(0 0 15px #42a5f5) drop-shadow(0 0 8px #90caf9);
+}
+
+/* Node glow during execution */
+.canvas.implementing .flow-node {
+  animation: nodeExecutingGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes nodeExecutingGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(33, 150, 243, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(33, 150, 243, 0.6)) drop-shadow(0 0 40px rgba(100, 181, 246, 0.4));
+  }
+}
+
+/* Connector node glow during execution */
+.canvas.implementing .connector-node-circle {
+  animation: connectorExecutingGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes connectorExecutingGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 25px rgba(33, 150, 243, 0.6),
+      0 0 50px rgba(33, 150, 243, 0.3),
+      inset 0 0 20px rgba(33, 150, 243, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 40px rgba(100, 181, 246, 0.9),
+      0 0 80px rgba(33, 150, 243, 0.5),
+      inset 0 0 30px rgba(100, 181, 246, 0.3);
+  }
+}
+
 /* Node Styles - HUD Design with More Rounded Corners and Glow */
 .flow-node {
   position: absolute;
