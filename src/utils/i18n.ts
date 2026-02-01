@@ -103,6 +103,38 @@ export const translations = {
     actionAdded: 'Added',
     actionRemoved: 'Action removed',
     noActionsFound: 'No actions found',
+
+    // Action Categories
+    catConditions: 'Conditions',
+    catPatchTarget: 'Patch Target',
+    catDataTransform: 'Data Transform',
+    catConnectorInvoke: 'Connector Invoke',
+
+    // Action Names
+    actionConditionAnd: 'AND Condition',
+    actionConditionOr: 'OR Condition',
+    actionConditionCompare: 'Compare Values',
+    actionPatchTarget: 'Patch Target',
+    actionDiffContext: 'Diff Context',
+    actionExtractData: 'Extract Data',
+    actionFormatData: 'Format Data',
+    actionGithubCommit: 'GitHub Commit',
+    actionGithubPr: 'GitHub PR',
+    actionClaudePatch: 'Claude Patch',
+    actionClaudeReview: 'Claude Review',
+
+    // Action Descriptions
+    descConditionAnd: 'All conditions must be true',
+    descConditionOr: 'Any condition must be true',
+    descConditionCompare: 'Compare two values',
+    descPatchTarget: 'Mark as patch modification target',
+    descDiffContext: 'Get current state from GitHub for diff',
+    descExtractData: 'Extract specific data from input',
+    descFormatData: 'Format data for output',
+    descGithubCommit: 'Commit changes to GitHub',
+    descGithubPr: 'Create Pull Request',
+    descClaudePatch: 'Generate diff patch with Claude',
+    descClaudeReview: 'Review code with Claude',
   },
   ja: {
     // Sidebar
@@ -206,6 +238,38 @@ export const translations = {
     actionAdded: '追加しました',
     actionRemoved: 'アクションを削除しました',
     noActionsFound: 'アクションが見つかりません',
+
+    // Action Categories
+    catConditions: '条件',
+    catPatchTarget: 'パッチ対象',
+    catDataTransform: 'データ変換',
+    catConnectorInvoke: 'コネクタ実行',
+
+    // Action Names
+    actionConditionAnd: 'AND条件',
+    actionConditionOr: 'OR条件',
+    actionConditionCompare: '値を比較',
+    actionPatchTarget: 'パッチ対象',
+    actionDiffContext: '差分コンテキスト',
+    actionExtractData: 'データ抽出',
+    actionFormatData: 'データ整形',
+    actionGithubCommit: 'GitHubコミット',
+    actionGithubPr: 'GitHub PR作成',
+    actionClaudePatch: 'Claudeパッチ',
+    actionClaudeReview: 'Claudeレビュー',
+
+    // Action Descriptions
+    descConditionAnd: 'すべての条件がtrueである必要があります',
+    descConditionOr: 'いずれかの条件がtrueであれば実行',
+    descConditionCompare: '2つの値を比較します',
+    descPatchTarget: 'パッチ修正対象としてマーク',
+    descDiffContext: 'GitHubから現在の状態を取得して差分を計算',
+    descExtractData: '入力から特定のデータを抽出',
+    descFormatData: '出力用にデータを整形',
+    descGithubCommit: 'GitHubに変更をコミット',
+    descGithubPr: 'プルリクエストを作成',
+    descClaudePatch: 'Claudeで差分パッチを生成',
+    descClaudeReview: 'Claudeでコードレビュー',
   },
 };
 
