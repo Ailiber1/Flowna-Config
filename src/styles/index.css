@@ -1654,6 +1654,26 @@ body {
   }
 }
 
+/* Configured connector (API key set, connected) */
+.connector-node-icon.configured .connector-node-circle {
+  border-color: var(--status-connected);
+  box-shadow:
+    0 0 25px rgba(74, 222, 128, 0.6),
+    0 0 50px rgba(74, 222, 128, 0.3),
+    inset 0 0 20px rgba(74, 222, 128, 0.2);
+}
+
+.connector-node-icon.configured:hover .connector-node-circle {
+  box-shadow:
+    0 0 30px rgba(74, 222, 128, 0.7),
+    0 0 60px rgba(74, 222, 128, 0.4),
+    inset 0 0 20px rgba(74, 222, 128, 0.25);
+}
+
+.connector-node-icon.configured .connector-node-label {
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
 .connector-node-emoji {
   font-size: 42px;
   filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
