@@ -509,6 +509,21 @@ body {
   cursor: not-allowed;
 }
 
+.topbar-btn.implement.implementing {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.3), rgba(255, 136, 0, 0.3));
+  border-color: #ffc107;
+  animation: pulse-implementing 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-implementing {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
+  }
+}
+
 /* Canvas Container */
 .canvas-container {
   flex: 1;
