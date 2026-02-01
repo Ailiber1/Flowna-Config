@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
 import { executeWithPlan, validateWorkflow, generateExecutionPlan } from '../services/workflowEngine';
@@ -7,7 +7,6 @@ import ExecutionPlanPreview, { PlanPreviewCompact } from './ExecutionPlanPreview
 
 export function TopBar() {
   const { state, dispatch } = useApp();
-  const [searchValue, setSearchValue] = useState('');
   const [showPlanPreview, setShowPlanPreview] = useState(false);
 
   // Generate plan when nodes/connections/mode change
@@ -25,43 +24,6 @@ export function TopBar() {
       dispatch({ type: 'SET_EXECUTION_PLAN', payload: null });
     }
   }, [state.nodes, state.connections, state.executionMode, state.appCreated, state.currentRevision, dispatch]);
-
-  const handleSearch = useCallback((query: string) => {
-    setSearchValue(query);
-    dispatch({ type: 'SET_SEARCH_QUERY', payload: query });
-
-    if (query.trim()) {
-      const lowerQuery = query.toLowerCase();
-      const matchedNodeIds = state.nodes
-        .filter(node =>
-          node.title.toLowerCase().includes(lowerQuery) ||
-          node.displayName.toLowerCase().includes(lowerQuery) ||
-          node.description.toLowerCase().includes(lowerQuery) ||
-          node.memo.toLowerCase().includes(lowerQuery) ||
-          node.category.toLowerCase().includes(lowerQuery)
-        )
-        .map(node => node.id);
-
-      dispatch({ type: 'SET_HIGHLIGHTED_NODES', payload: matchedNodeIds });
-
-      // Pan to first result
-      if (matchedNodeIds.length > 0) {
-        const firstNode = state.nodes.find(n => n.id === matchedNodeIds[0]);
-        if (firstNode) {
-          dispatch({
-            type: 'SET_VIEWPORT',
-            payload: {
-              ...state.viewport,
-              panX: -firstNode.position.x + window.innerWidth / 2 - 110,
-              panY: -firstNode.position.y + window.innerHeight / 2 - 80,
-            },
-          });
-        }
-      }
-    } else {
-      dispatch({ type: 'SET_HIGHLIGHTED_NODES', payload: [] });
-    }
-  }, [state.nodes, state.viewport, dispatch]);
 
   const handleAddNode = () => {
     dispatch({ type: 'OPEN_ADD_NODE_MODAL' });
@@ -96,17 +58,6 @@ export function TopBar() {
       payload: { panX, panY, scale },
     });
   };
-
-  // Clear search on Escape
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && searchValue) {
-        handleSearch('');
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchValue, handleSearch]);
 
   const handleLanguageToggle = () => {
     dispatch({ type: 'SET_LANGUAGE', payload: state.language === 'ja' ? 'en' : 'ja' });
@@ -298,16 +249,6 @@ export function TopBar() {
       {/* Mode Switch */}
       <ModeSwitch />
 
-      <div className="search-container">
-        <input
-          type="text"
-          className="search-input"
-          placeholder={t('searchPlaceholder', state.language)}
-          value={searchValue}
-          onChange={(e) => handleSearch(e.target.value)}
-        />
-      </div>
-
       <div className="topbar-actions">
         {/* Plan Preview (compact) */}
         <button
@@ -329,18 +270,14 @@ export function TopBar() {
           onClick={handleImplement}
           disabled={state.nodes.length === 0 || state.isImplementing || (state.executionPlan?.runCount === 0)}
           title={state.language === 'ja'
-            ? `${state.executionMode === 'create' ? 'Create' : 'Patch'}モードで実行`
+            ? `${t('createMode', state.language)}モードで実行`
             : `Execute in ${state.executionMode} mode`}
         >
           {state.isImplementing ? '⏳' : (state.executionMode === 'create' ? '✨' : '🔧')}
           {' '}
-          {state.language === 'ja'
-            ? (state.isImplementing
-                ? '実行中...'
-                : (state.executionMode === 'create' ? 'Create' : 'Patch'))
-            : (state.isImplementing
-                ? 'Running...'
-                : (state.executionMode === 'create' ? 'Create' : 'Patch'))}
+          {state.isImplementing
+            ? (state.language === 'ja' ? '実行中...' : 'Running...')
+            : (state.executionMode === 'create' ? t('createMode', state.language) : t('patchMode', state.language))}
         </button>
         <button className="topbar-btn primary" onClick={handleSaveWorkflow}>
           💾 {t('save', state.language)}
