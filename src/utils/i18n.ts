@@ -83,6 +83,9 @@ export const translations = {
     createModeDesc: 'Create new app from scratch',
     patchModeDesc: 'Modify existing app with targeted patches',
     createModeBlocked: 'App already created. Use Patch mode.',
+    execute: 'Execute',
+    executing: 'Executing...',
+    applyPatch: 'Apply Patch',
 
     // Execution Plan
     executionPlan: 'Execution Plan',
@@ -218,6 +221,9 @@ export const translations = {
     createModeDesc: '新規アプリを最初から作成',
     patchModeDesc: '既存アプリを差分で修正',
     createModeBlocked: 'アプリは作成済みです。パッチモードをご利用ください。',
+    execute: '実行',
+    executing: '実行中...',
+    applyPatch: 'パッチ適用',
 
     // Execution Plan
     executionPlan: '実行プラン',
