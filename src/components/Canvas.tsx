@@ -237,6 +237,25 @@ export function Canvas() {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if user is typing in an input field
+      const target = e.target as HTMLElement;
+      const isTypingInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      // When typing in input fields, only handle Ctrl+S (save) and Escape
+      // Let all other keys work normally for text editing
+      if (isTypingInInput) {
+        if (e.key === 'Escape') {
+          dispatch({ type: 'DESELECT_ALL' });
+          dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
+          dispatch({ type: 'CANCEL_CONNECTION' });
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+          e.preventDefault();
+          dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
+        }
+        return; // Don't process other shortcuts when typing
+      }
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         // Delete all selected nodes and connector nodes
         if (state.selectedNodeIds.length > 0 || state.selectedConnectorNodeIds.length > 0) {
