@@ -293,6 +293,12 @@ export function Canvas() {
         e.preventDefault();
         dispatch({ type: 'PASTE_NODES' });
       }
+
+      // Ctrl/Cmd+Z for undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        dispatch({ type: 'UNDO' });
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);

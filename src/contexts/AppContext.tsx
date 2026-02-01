@@ -7,6 +7,15 @@ import { DEFAULT_FOLDERS, DEFAULT_CONNECTORS, DEFAULT_CATEGORIES } from '../type
 import * as storage from '../utils/storage';
 import type { Language } from '../utils/i18n';
 
+// History entry for undo functionality
+interface HistoryEntry {
+  nodes: FlowNode[];
+  connections: Connection[];
+  connectorNodes: ConnectorNode[];
+}
+
+const MAX_HISTORY_SIZE = 50;
+
 interface AppState {
   // Canvas state
   nodes: FlowNode[];
@@ -62,6 +71,9 @@ interface AppState {
   isActionMenuOpen: boolean;
   actionMenuNodeId: string | null;
   actionMenuPosition: { x: number; y: number } | null;
+
+  // Undo history
+  history: HistoryEntry[];
 }
 
 type AppAction =
@@ -143,7 +155,9 @@ type AppAction =
   | { type: 'UPDATE_NODE_ACTION'; payload: { nodeId: string; action: NodeAction } }
   | { type: 'UPDATE_NODE_LAST_RUN'; payload: { nodeId: string; inputHash: string; revision: number; result: 'success' | 'error' | 'skipped' } }
   | { type: 'OPEN_ACTION_MENU'; payload: { nodeId: string; position: { x: number; y: number } } }
-  | { type: 'CLOSE_ACTION_MENU' };
+  | { type: 'CLOSE_ACTION_MENU' }
+  // Undo
+  | { type: 'UNDO' };
 
 const initialState: AppState = {
   nodes: [],
@@ -191,15 +205,51 @@ const initialState: AppState = {
   isActionMenuOpen: false,
   actionMenuNodeId: null,
   actionMenuPosition: null,
+  // Undo history
+  history: [],
 };
+
+// Helper to push current state to history
+function pushHistory(state: AppState): HistoryEntry[] {
+  const entry: HistoryEntry = {
+    nodes: JSON.parse(JSON.stringify(state.nodes)),
+    connections: JSON.parse(JSON.stringify(state.connections)),
+    connectorNodes: JSON.parse(JSON.stringify(state.connectorNodes)),
+  };
+  const newHistory = [...state.history, entry];
+  // Keep history size limited
+  if (newHistory.length > MAX_HISTORY_SIZE) {
+    return newHistory.slice(-MAX_HISTORY_SIZE);
+  }
+  return newHistory;
+}
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
+    // ===== UNDO =====
+    case 'UNDO': {
+      if (state.history.length === 0) return state;
+      const newHistory = [...state.history];
+      const lastEntry = newHistory.pop()!;
+      return {
+        ...state,
+        nodes: lastEntry.nodes,
+        connections: lastEntry.connections,
+        connectorNodes: lastEntry.connectorNodes,
+        selectedNodeIds: [],
+        selectedConnectorNodeIds: [],
+        selectedConnectionId: null,
+        history: newHistory,
+      };
+    }
+
     case 'SET_NODES':
       return { ...state, nodes: action.payload };
 
-    case 'ADD_NODE':
-      return { ...state, nodes: [...state.nodes, action.payload] };
+    case 'ADD_NODE': {
+      const history = pushHistory(state);
+      return { ...state, nodes: [...state.nodes, action.payload], history };
+    }
 
     case 'UPDATE_NODE':
       return {
@@ -209,7 +259,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ),
       };
 
-    case 'DELETE_NODE':
+    case 'DELETE_NODE': {
+      const history = pushHistory(state);
       return {
         ...state,
         nodes: state.nodes.filter(n => n.id !== action.payload),
@@ -217,7 +268,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
           c => c.from !== action.payload && c.to !== action.payload
         ),
         selectedNodeIds: state.selectedNodeIds.filter(id => id !== action.payload),
+        history,
       };
+    }
 
     case 'MOVE_NODE':
       return {
@@ -256,15 +309,20 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_CONNECTIONS':
       return { ...state, connections: action.payload };
 
-    case 'ADD_CONNECTION':
-      return { ...state, connections: [...state.connections, action.payload] };
+    case 'ADD_CONNECTION': {
+      const history = pushHistory(state);
+      return { ...state, connections: [...state.connections, action.payload], history };
+    }
 
-    case 'DELETE_CONNECTION':
+    case 'DELETE_CONNECTION': {
+      const history = pushHistory(state);
       return {
         ...state,
         connections: state.connections.filter(c => c.id !== action.payload),
         selectedConnectionId: state.selectedConnectionId === action.payload ? null : state.selectedConnectionId,
+        history,
       };
+    }
 
     case 'TOGGLE_CONNECTION_ACTIVE':
       return {
@@ -472,6 +530,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'PASTE_NODES': {
       if (!state.clipboard || state.clipboard.nodes.length === 0) return state;
 
+      const history = pushHistory(state);
       const now = Date.now();
       const idMap = new Map<string, string>();
 
@@ -505,14 +564,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
         nodes: [...state.nodes, ...newNodes],
         connections: [...state.connections, ...newConnections],
         selectedNodeIds: newNodes.map(n => n.id),
+        history,
       };
     }
 
-    case 'ADD_CONNECTOR_NODE':
+    case 'ADD_CONNECTOR_NODE': {
+      const history = pushHistory(state);
       return {
         ...state,
         connectorNodes: [...state.connectorNodes, action.payload],
+        history,
       };
+    }
 
     case 'MOVE_CONNECTOR_NODE':
       return {
@@ -574,7 +637,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ),
       };
 
-    case 'DELETE_CONNECTOR_NODE':
+    case 'DELETE_CONNECTOR_NODE': {
+      const history = pushHistory(state);
       return {
         ...state,
         connectorNodes: state.connectorNodes.filter(cn => cn.id !== action.payload),
@@ -582,9 +646,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
           c => c.to !== action.payload && c.from !== action.payload
         ),
         selectedConnectorNodeIds: state.selectedConnectorNodeIds.filter(id => id !== action.payload),
+        history,
       };
+    }
 
     case 'DELETE_ALL_SELECTED': {
+      const history = pushHistory(state);
       const nodeIdsToDelete = new Set(state.selectedNodeIds);
       const connectorIdsToDelete = new Set(state.selectedConnectorNodeIds);
       return {
@@ -598,6 +665,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         selectedNodeIds: [],
         selectedConnectorNodeIds: [],
         selectedConnectionId: null,
+        history,
       };
     }
 
