@@ -2369,8 +2369,9 @@ body {
 }
 
 .plan-status-badge.skip {
-  background: rgba(107, 138, 153, 0.8);
-  color: white;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.9), rgba(245, 158, 11, 0.9));
+  color: #1a1a2e;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }
 
 .plan-status-badge.blocked {
