@@ -46,6 +46,9 @@ interface AppState {
 
   // Toast
   toast: { message: string; type: 'success' | 'error' | 'info' | 'warning' } | null;
+
+  // Implementation state
+  isImplementing: boolean;
 }
 
 type AppAction =
@@ -110,7 +113,10 @@ type AppAction =
   | { type: 'SELECT_CONNECTOR_NODE'; payload: string }
   | { type: 'SELECT_CONNECTOR_NODES'; payload: string[] }
   | { type: 'SELECT_ALL' }
-  | { type: 'IMPLEMENT_NODES'; payload: { success: boolean; errorNodeIds?: string[] } };
+  | { type: 'IMPLEMENT_NODES'; payload: { success: boolean; errorNodeIds?: string[] } }
+  | { type: 'UPDATE_NODE_STATUS'; payload: { nodeId: string; status: 'waiting' | 'done' | 'error' } }
+  | { type: 'RESET_NODE_STATUSES' }
+  | { type: 'SET_IMPLEMENTING'; payload: boolean };
 
 const initialState: AppState = {
   nodes: [],
@@ -148,6 +154,7 @@ const initialState: AppState = {
   connectionStartNodeId: null,
   ghostLineEnd: null,
   toast: null,
+  isImplementing: false,
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -602,6 +609,29 @@ function appReducer(state: AppState, action: AppAction): AppState {
         }),
       };
     }
+
+    case 'UPDATE_NODE_STATUS':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          n.id === action.payload.nodeId
+            ? { ...n, status: action.payload.status, updatedAt: Date.now() }
+            : n
+        ),
+      };
+
+    case 'RESET_NODE_STATUSES':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          n.category.toUpperCase() === 'RULE'
+            ? n
+            : { ...n, status: 'waiting' as const, updatedAt: Date.now() }
+        ),
+      };
+
+    case 'SET_IMPLEMENTING':
+      return { ...state, isImplementing: action.payload };
 
     default:
       return state;
