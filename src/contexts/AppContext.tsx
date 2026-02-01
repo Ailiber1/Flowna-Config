@@ -894,6 +894,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     storage.saveSettings(state.settings);
   }, [state.settings]);
 
+  // Save workflows to localStorage when they change
+  useEffect(() => {
+    // Save the current workflows list to localStorage
+    localStorage.setItem('flowna_workflows', JSON.stringify(state.workflows));
+  }, [state.workflows]);
+
+  // Save folders to localStorage when they change
+  useEffect(() => {
+    storage.saveFolders(state.folders);
+  }, [state.folders]);
+
+  // Save categories to localStorage when they change
+  useEffect(() => {
+    storage.saveCategories(state.categories);
+  }, [state.categories]);
+
   return (
     <AppContext.Provider value={{ state, dispatch }}>
       {children}
