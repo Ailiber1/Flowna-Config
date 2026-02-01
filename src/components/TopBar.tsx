@@ -276,8 +276,8 @@ export function TopBar() {
           {state.isImplementing ? '⏳' : (state.executionMode === 'create' ? '✨' : '🔧')}
           {' '}
           {state.isImplementing
-            ? (state.language === 'ja' ? '実行中...' : 'Running...')
-            : (state.executionMode === 'create' ? t('createMode', state.language) : t('patchMode', state.language))}
+            ? t('executing', state.language)
+            : (state.executionMode === 'create' ? t('execute', state.language) : t('applyPatch', state.language))}
         </button>
         <button className="topbar-btn primary" onClick={handleSaveWorkflow}>
           💾 {t('save', state.language)}
