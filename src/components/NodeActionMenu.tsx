@@ -1,8 +1,31 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
-import { useTranslation } from '../utils/i18n';
+import { useTranslation, type TranslationKey } from '../utils/i18n';
 import { getAvailableActions, createAction, type AvailableAction } from '../services/workflowEngine';
 import type { NodeAction } from '../types';
+
+// Mapping from action type to translation keys
+const actionTranslations: Record<string, { name: TranslationKey; desc: TranslationKey }> = {
+  'condition-and': { name: 'actionConditionAnd', desc: 'descConditionAnd' },
+  'condition-or': { name: 'actionConditionOr', desc: 'descConditionOr' },
+  'condition-compare': { name: 'actionConditionCompare', desc: 'descConditionCompare' },
+  'patch-target': { name: 'actionPatchTarget', desc: 'descPatchTarget' },
+  'diff-context': { name: 'actionDiffContext', desc: 'descDiffContext' },
+  'extract-data': { name: 'actionExtractData', desc: 'descExtractData' },
+  'format-data': { name: 'actionFormatData', desc: 'descFormatData' },
+  'github-commit': { name: 'actionGithubCommit', desc: 'descGithubCommit' },
+  'github-pr': { name: 'actionGithubPr', desc: 'descGithubPr' },
+  'claude-patch': { name: 'actionClaudePatch', desc: 'descClaudePatch' },
+  'claude-review': { name: 'actionClaudeReview', desc: 'descClaudeReview' },
+};
+
+// Mapping from category to translation key
+const categoryTranslations: Record<string, TranslationKey> = {
+  'Conditions': 'catConditions',
+  'Patch Target': 'catPatchTarget',
+  'Data Transform': 'catDataTransform',
+  'Connector Invoke': 'catConnectorInvoke',
+};
 
 export default function NodeActionMenu() {
   const { state, dispatch } = useApp();
@@ -14,23 +37,49 @@ export default function NodeActionMenu() {
 
   const availableActions = useMemo(() => getAvailableActions(), []);
 
+  // Helper to get translated action name
+  const getActionName = (action: AvailableAction | NodeAction) => {
+    const trans = actionTranslations[action.type];
+    return trans ? t(trans.name) : action.name;
+  };
+
+  // Helper to get translated action description
+  const getActionDesc = (action: AvailableAction) => {
+    const trans = actionTranslations[action.type];
+    return trans ? t(trans.desc) : action.description;
+  };
+
+  // Helper to get translated category
+  const getCategoryName = (category: string) => {
+    const key = categoryTranslations[category];
+    return key ? t(key) : category;
+  };
+
   // Get the current node
   const currentNode = useMemo(() => {
     if (!state.actionMenuNodeId) return null;
     return state.nodes.find(n => n.id === state.actionMenuNodeId);
   }, [state.actionMenuNodeId, state.nodes]);
 
-  // Filter actions based on search
+  // Filter actions based on search (supports both original and translated text)
   const filteredActions = useMemo(() => {
     if (!searchQuery.trim()) return availableActions;
     const query = searchQuery.toLowerCase();
     return availableActions.filter(
-      action =>
-        action.name.toLowerCase().includes(query) ||
-        action.description.toLowerCase().includes(query) ||
-        action.category.toLowerCase().includes(query)
+      action => {
+        const translatedName = getActionName(action).toLowerCase();
+        const translatedDesc = getActionDesc(action).toLowerCase();
+        const translatedCategory = getCategoryName(action.category).toLowerCase();
+        return (
+          translatedName.includes(query) ||
+          translatedDesc.includes(query) ||
+          translatedCategory.includes(query) ||
+          action.name.toLowerCase().includes(query) ||
+          action.description.toLowerCase().includes(query)
+        );
+      }
     );
-  }, [searchQuery, availableActions]);
+  }, [searchQuery, availableActions, state.language]);
 
   // Group actions by category
   const groupedActions = useMemo(() => {
@@ -115,7 +164,7 @@ export default function NodeActionMenu() {
       dispatch({
         type: 'SHOW_TOAST',
         payload: {
-          message: `${t('actionAdded') || 'Added'}: ${actionDef.name}`,
+          message: `${t('actionAdded') || 'Added'}: ${getActionName(actionDef)}`,
           type: 'success',
         },
       });
@@ -191,7 +240,7 @@ export default function NodeActionMenu() {
             {nodeActions.map(action => (
               <div key={action.id} className={`current-action-item ${action.enabled ? '' : 'disabled'}`}>
                 <span className="action-icon">{action.icon}</span>
-                <span className="action-name">{action.name}</span>
+                <span className="action-name">{getActionName(action)}</span>
                 <div className="action-controls">
                   <button
                     className="toggle-btn"
@@ -226,7 +275,7 @@ export default function NodeActionMenu() {
 
         {Object.entries(groupedActions).map(([category, actions]) => (
           <div key={category} className="action-category">
-            <div className="category-header">{category}</div>
+            <div className="category-header">{getCategoryName(category)}</div>
             <div className="category-actions">
               {actions.map((action) => {
                 const globalIndex = filteredActions.indexOf(action);
@@ -239,8 +288,8 @@ export default function NodeActionMenu() {
                   >
                     <span className="action-icon">{action.icon}</span>
                     <div className="action-info">
-                      <span className="action-name">{action.name}</span>
-                      <span className="action-desc">{action.description}</span>
+                      <span className="action-name">{getActionName(action)}</span>
+                      <span className="action-desc">{getActionDesc(action)}</span>
                     </div>
                   </div>
                 );
