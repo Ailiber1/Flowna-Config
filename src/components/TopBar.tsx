@@ -104,7 +104,7 @@ export function TopBar() {
       return;
     }
 
-    // Show implementation confirmation
+    // Show implementation progress
     dispatch({
       type: 'SHOW_TOAST',
       payload: {
@@ -113,8 +113,33 @@ export function TopBar() {
       },
     });
 
-    // TODO: Implement actual workflow execution logic
-    // This would connect to external services via connectors
+    // Simulate implementation process
+    // In a real app, this would connect to external services via connectors
+    setTimeout(() => {
+      try {
+        // Simulate success - all nodes completed
+        dispatch({
+          type: 'IMPLEMENT_NODES',
+          payload: { success: true },
+        });
+        dispatch({
+          type: 'SHOW_TOAST',
+          payload: {
+            message: state.language === 'ja' ? '実装が完了しました' : 'Implementation completed successfully',
+            type: 'success',
+          },
+        });
+      } catch {
+        // On error, mark failed nodes
+        dispatch({
+          type: 'SHOW_TOAST',
+          payload: {
+            message: state.language === 'ja' ? '実装中にエラーが発生しました' : 'Error occurred during implementation',
+            type: 'error',
+          },
+        });
+      }
+    }, 1000);
   };
 
   return (

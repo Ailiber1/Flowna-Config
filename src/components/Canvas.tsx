@@ -155,12 +155,13 @@ export function Canvas() {
 
     if (canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
-      // Ensure nodes/connectors cannot be placed at negative positions (under sidebar)
-      const x = Math.max(0, (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale);
-      const y = Math.max(0, (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale);
+      const x = (e.clientX - rect.left - state.viewport.panX) / state.viewport.scale;
+      const y = (e.clientY - rect.top - state.viewport.panY) / state.viewport.scale;
 
       if (categoryData) {
         const category: CustomCategory = JSON.parse(categoryData);
+        // RULE (green) nodes default to 'done', others default to 'waiting'
+        const isRuleNode = category.name.toUpperCase() === 'RULE';
 
         const newNode: FlowNodeType = {
           id: generateId(),
@@ -172,7 +173,7 @@ export function Canvas() {
           icon: category.icon,
           color: category.color,
           url: '',
-          status: 'todo',
+          status: isRuleNode ? 'done' : 'waiting',
           memo: '',
           position: { x, y },
           connectorLinks: [],

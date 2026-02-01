@@ -25,7 +25,7 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
   const [icon, setIcon] = useState(existingNode?.icon || '🤖');
   const [color, setColor] = useState(existingNode?.color || '#a78bfa');
   const [url, setUrl] = useState(existingNode?.url || '');
-  const [status, setStatus] = useState<'todo' | 'doing' | 'done'>(existingNode?.status || 'todo');
+  const [status, setStatus] = useState<'waiting' | 'done' | 'error'>(existingNode?.status || 'waiting');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -219,11 +219,11 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
               <select
                 className="form-select"
                 value={status}
-                onChange={(e) => setStatus(e.target.value as 'todo' | 'doing' | 'done')}
+                onChange={(e) => setStatus(e.target.value as 'waiting' | 'done' | 'error')}
               >
-                <option value="todo">{t('todo', state.language)}</option>
-                <option value="doing">{t('doing', state.language)}</option>
+                <option value="waiting">{t('waiting', state.language)}</option>
                 <option value="done">{t('done', state.language)}</option>
+                <option value="error">{t('error', state.language)}</option>
               </select>
             </div>
           </div>

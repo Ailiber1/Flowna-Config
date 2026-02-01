@@ -214,14 +214,14 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     if (state.language === 'ja') {
       switch (status) {
         case 'done': return '完了';
-        case 'doing': return '作業中';
-        default: return '未着手';
+        case 'error': return 'エラー';
+        default: return '待機中';
       }
     }
     switch (status) {
       case 'done': return 'Done';
-      case 'doing': return 'In Progress';
-      default: return 'Todo';
+      case 'error': return 'Error';
+      default: return 'Waiting';
     }
   };
 

@@ -24,6 +24,8 @@ export function Sidebar() {
 
   // Click to add node to canvas
   const handlePaletteItemClick = (category: CustomCategory) => {
+    // RULE (green) nodes default to 'done', others default to 'waiting'
+    const isRuleNode = category.name.toUpperCase() === 'RULE';
     const newNode: FlowNode = {
       id: generateId(),
       title: category.displayName,
@@ -34,11 +36,11 @@ export function Sidebar() {
       icon: category.icon,
       color: category.color,
       url: '',
-      status: 'todo',
+      status: isRuleNode ? 'done' : 'waiting',
       memo: '',
       position: {
-        x: Math.max(0, (window.innerWidth / 2 - 280 - 110 - state.viewport.panX) / state.viewport.scale),
-        y: Math.max(0, (window.innerHeight / 2 - 80 - state.viewport.panY) / state.viewport.scale),
+        x: (window.innerWidth / 2 - 280 - 110 - state.viewport.panX) / state.viewport.scale,
+        y: (window.innerHeight / 2 - 80 - state.viewport.panY) / state.viewport.scale,
       },
       connectorLinks: [],
       createdAt: Date.now(),
@@ -61,8 +63,8 @@ export function Sidebar() {
       id: `cnode-${Date.now()}`,
       connectorId: connector.id,
       position: {
-        x: Math.max(0, (window.innerWidth / 2 - 280 - 32 - state.viewport.panX) / state.viewport.scale),
-        y: Math.max(0, (window.innerHeight / 2 - 32 - state.viewport.panY) / state.viewport.scale),
+        x: (window.innerWidth / 2 - 280 - 32 - state.viewport.panX) / state.viewport.scale,
+        y: (window.innerHeight / 2 - 32 - state.viewport.panY) / state.viewport.scale,
       },
       createdAt: Date.now(),
     };
@@ -88,7 +90,6 @@ export function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">F</div>
         <div className="sidebar-logo-text">
           <span className="sidebar-logo-title">
             {state.language === 'ja' ? 'フローナ' : 'FLOWNA'}
