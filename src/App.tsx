@@ -10,6 +10,7 @@ import {
   Toast,
   StatusBar,
 } from './components';
+import NodeActionMenu from './components/NodeActionMenu';
 import { ConnectorModal } from './components/ConnectorModal';
 import { Onboarding } from './components/Onboarding';
 import { autoInitializeFirebase, onAuthChange } from './services/firebase';
@@ -120,6 +121,9 @@ function AppContent() {
 
       {/* Context Menu */}
       <ContextMenu />
+
+      {/* Node Action Menu (UE Blueprint style) */}
+      <NodeActionMenu />
 
       {/* Toast Notifications */}
       <Toast />
