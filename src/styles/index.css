@@ -1681,7 +1681,8 @@ body {
   pointer-events: all;
   transition: all var(--transition-fast);
   z-index: 100;
-  top: 50%;
+  /* Position at center of the 96px circle (not center of container which includes label) */
+  top: 48px;
   transform: translateY(-50%);
 }
 
