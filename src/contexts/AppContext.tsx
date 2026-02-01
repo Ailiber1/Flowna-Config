@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import type { FlowNode, Connection, Folder, Connector, CustomCategory, Workflow, AppSettings, Viewport, ConnectorNode } from '../types';
+import type {
+  FlowNode, Connection, Folder, Connector, CustomCategory, Workflow, AppSettings, Viewport, ConnectorNode,
+  ExecutionMode, ExecutionPlan, RunLogEntry, NodeAction
+} from '../types';
 import { DEFAULT_FOLDERS, DEFAULT_CONNECTORS, DEFAULT_CATEGORIES } from '../types';
 import * as storage from '../utils/storage';
 import type { Language } from '../utils/i18n';
@@ -49,6 +52,16 @@ interface AppState {
 
   // Implementation state
   isImplementing: boolean;
+
+  // Create/Patch mode system
+  executionMode: ExecutionMode;
+  appCreated: boolean;
+  executionPlan: ExecutionPlan | null;
+  runLogs: RunLogEntry[];
+  currentRevision: number;
+  isActionMenuOpen: boolean;
+  actionMenuNodeId: string | null;
+  actionMenuPosition: { x: number; y: number } | null;
 }
 
 type AppAction =
@@ -116,7 +129,21 @@ type AppAction =
   | { type: 'IMPLEMENT_NODES'; payload: { success: boolean; errorNodeIds?: string[] } }
   | { type: 'UPDATE_NODE_STATUS'; payload: { nodeId: string; status: 'waiting' | 'done' | 'error' } }
   | { type: 'RESET_NODE_STATUSES' }
-  | { type: 'SET_IMPLEMENTING'; payload: boolean };
+  | { type: 'SET_IMPLEMENTING'; payload: boolean }
+  // Create/Patch mode actions
+  | { type: 'SET_EXECUTION_MODE'; payload: ExecutionMode }
+  | { type: 'SET_APP_CREATED'; payload: boolean }
+  | { type: 'SET_EXECUTION_PLAN'; payload: ExecutionPlan | null }
+  | { type: 'ADD_RUN_LOG'; payload: RunLogEntry }
+  | { type: 'CLEAR_RUN_LOGS' }
+  | { type: 'INCREMENT_REVISION' }
+  | { type: 'TOGGLE_NODE_RUN'; payload: string }
+  | { type: 'ADD_NODE_ACTION'; payload: { nodeId: string; action: NodeAction } }
+  | { type: 'REMOVE_NODE_ACTION'; payload: { nodeId: string; actionId: string } }
+  | { type: 'UPDATE_NODE_ACTION'; payload: { nodeId: string; action: NodeAction } }
+  | { type: 'UPDATE_NODE_LAST_RUN'; payload: { nodeId: string; inputHash: string; revision: number; result: 'success' | 'error' | 'skipped' } }
+  | { type: 'OPEN_ACTION_MENU'; payload: { nodeId: string; position: { x: number; y: number } } }
+  | { type: 'CLOSE_ACTION_MENU' };
 
 const initialState: AppState = {
   nodes: [],
@@ -155,6 +182,15 @@ const initialState: AppState = {
   ghostLineEnd: null,
   toast: null,
   isImplementing: false,
+  // Create/Patch mode system
+  executionMode: 'create',
+  appCreated: false,
+  executionPlan: null,
+  runLogs: [],
+  currentRevision: 0,
+  isActionMenuOpen: false,
+  actionMenuNodeId: null,
+  actionMenuPosition: null,
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -632,6 +668,114 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'SET_IMPLEMENTING':
       return { ...state, isImplementing: action.payload };
+
+    // ===== Create/Patch Mode Actions =====
+    case 'SET_EXECUTION_MODE':
+      return { ...state, executionMode: action.payload };
+
+    case 'SET_APP_CREATED':
+      return { ...state, appCreated: action.payload };
+
+    case 'SET_EXECUTION_PLAN':
+      return { ...state, executionPlan: action.payload };
+
+    case 'ADD_RUN_LOG':
+      return { ...state, runLogs: [...state.runLogs, action.payload] };
+
+    case 'CLEAR_RUN_LOGS':
+      return { ...state, runLogs: [] };
+
+    case 'INCREMENT_REVISION':
+      return { ...state, currentRevision: state.currentRevision + 1 };
+
+    case 'TOGGLE_NODE_RUN':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          n.id === action.payload
+            ? { ...n, runToggle: n.runToggle === undefined ? false : !n.runToggle, updatedAt: Date.now() }
+            : n
+        ),
+      };
+
+    case 'ADD_NODE_ACTION':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          n.id === action.payload.nodeId
+            ? {
+                ...n,
+                actions: [...(n.actions || []), action.payload.action],
+                updatedAt: Date.now(),
+              }
+            : n
+        ),
+      };
+
+    case 'REMOVE_NODE_ACTION':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          n.id === action.payload.nodeId
+            ? {
+                ...n,
+                actions: (n.actions || []).filter(a => a.id !== action.payload.actionId),
+                updatedAt: Date.now(),
+              }
+            : n
+        ),
+      };
+
+    case 'UPDATE_NODE_ACTION':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          n.id === action.payload.nodeId
+            ? {
+                ...n,
+                actions: (n.actions || []).map(a =>
+                  a.id === action.payload.action.id ? action.payload.action : a
+                ),
+                updatedAt: Date.now(),
+              }
+            : n
+        ),
+      };
+
+    case 'UPDATE_NODE_LAST_RUN':
+      return {
+        ...state,
+        nodes: state.nodes.map(n =>
+          n.id === action.payload.nodeId
+            ? {
+                ...n,
+                lastRun: {
+                  inputHash: action.payload.inputHash,
+                  revision: action.payload.revision,
+                  executedAt: Date.now(),
+                  result: action.payload.result,
+                },
+                updatedAt: Date.now(),
+              }
+            : n
+        ),
+      };
+
+    case 'OPEN_ACTION_MENU':
+      return {
+        ...state,
+        isActionMenuOpen: true,
+        actionMenuNodeId: action.payload.nodeId,
+        actionMenuPosition: action.payload.position,
+      };
+
+    case 'CLOSE_ACTION_MENU':
+      return {
+        ...state,
+        isActionMenuOpen: false,
+        actionMenuNodeId: null,
+        actionMenuPosition: null,
+      };
 
     default:
       return state;

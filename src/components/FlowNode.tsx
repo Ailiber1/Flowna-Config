@@ -1,6 +1,6 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
-import type { FlowNode as FlowNodeType } from '../types';
+import type { FlowNode as FlowNodeType, PlanNodeStatus } from '../types';
 
 interface FlowNodeProps {
   node: FlowNodeType;
@@ -201,6 +201,18 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
 
   const categoryClass = getCategoryClass(node.category);
 
+  // Get plan status for this node (for Patch mode badge)
+  const planStatus: PlanNodeStatus | null = useMemo(() => {
+    if (!state.executionPlan) return null;
+    const planItem = state.executionPlan.items.find(item => item.nodeId === node.id);
+    return planItem?.status || null;
+  }, [state.executionPlan, node.id]);
+
+  // Check if node has actions
+  const hasActions = (node.actions?.length || 0) > 0;
+  const hasPatchTarget = node.actions?.some(a => a.type === 'patch-target' && a.enabled) || false;
+  const hasConnectorInvoke = node.actions?.some(a => a.type === 'connector-invoke' && a.enabled) || false;
+
   const getCategoryLabel = (category: string): string => {
     const cat = category.toUpperCase();
     if (cat.includes('AGENT')) return 'SYS_NODE :: AGENT';
@@ -228,7 +240,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   return (
     <div
       ref={nodeRef}
-      className={`flow-node ${categoryClass} ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={`flow-node ${categoryClass} ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''} ${isDragging ? 'dragging' : ''} ${hasConnectorInvoke ? 'has-connector' : ''} ${hasPatchTarget ? 'patch-target' : ''}`}
       style={{
         left: node.position.x,
         top: node.position.y,
@@ -238,6 +250,26 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
+      {/* RUN/SKIP Badge (Patch Mode) */}
+      {state.executionMode === 'patch' && planStatus && (
+        <div className={`plan-status-badge ${planStatus}`}>
+          {planStatus === 'run' && 'RUN'}
+          {planStatus === 'skip' && 'SKIP'}
+          {planStatus === 'blocked' && 'BLOCKED'}
+        </div>
+      )}
+
+      {/* Action Indicators */}
+      {hasActions && (
+        <div className="action-indicators">
+          {hasPatchTarget && <span className="action-indicator patch-target" title="Patch Target">🎯</span>}
+          {hasConnectorInvoke && <span className="action-indicator connector" title="Connector Action">⚡</span>}
+          {!hasPatchTarget && !hasConnectorInvoke && (
+            <span className="action-indicator" title={`${node.actions?.length} actions`}>📌</span>
+          )}
+        </div>
+      )}
+
       {/* Memo Indicator */}
       {node.memo && (
         <span className="node-memo-indicator" title={node.memo}>

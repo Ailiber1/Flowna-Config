@@ -1,11 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
-import { executeWorkflow, validateWorkflow } from '../services/workflowEngine';
+import { executeWithPlan, validateWorkflow, generateExecutionPlan } from '../services/workflowEngine';
+import ModeSwitch from './ModeSwitch';
+import ExecutionPlanPreview, { PlanPreviewCompact } from './ExecutionPlanPreview';
 
 export function TopBar() {
   const { state, dispatch } = useApp();
   const [searchValue, setSearchValue] = useState('');
+  const [showPlanPreview, setShowPlanPreview] = useState(false);
+
+  // Generate plan when nodes/connections/mode change
+  useEffect(() => {
+    if (state.nodes.length > 0) {
+      const plan = generateExecutionPlan(
+        state.nodes,
+        state.connections,
+        state.executionMode,
+        state.appCreated,
+        state.currentRevision
+      );
+      dispatch({ type: 'SET_EXECUTION_PLAN', payload: plan });
+    } else {
+      dispatch({ type: 'SET_EXECUTION_PLAN', payload: null });
+    }
+  }, [state.nodes, state.connections, state.executionMode, state.appCreated, state.currentRevision, dispatch]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchValue(query);
@@ -109,6 +128,20 @@ export function TopBar() {
       return; // Already implementing
     }
 
+    // Check Create mode guard
+    if (state.executionMode === 'create' && state.appCreated) {
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: {
+          message: state.language === 'ja'
+            ? 'アプリは既に作成済みです。Patchモードに切り替えてください。'
+            : 'App already created. Please switch to Patch mode.',
+          type: 'warning',
+        },
+      });
+      return;
+    }
+
     // Validate workflow
     const errors = validateWorkflow(state.nodes, state.connections);
     if (errors.length > 0) {
@@ -122,21 +155,38 @@ export function TopBar() {
       return;
     }
 
+    // Check if plan exists and has nodes to run
+    if (!state.executionPlan || state.executionPlan.runCount === 0) {
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: {
+          message: state.language === 'ja'
+            ? '実行するノードがありません'
+            : 'No nodes to execute',
+          type: 'info',
+        },
+      });
+      return;
+    }
+
     // Reset node statuses before starting
     dispatch({ type: 'RESET_NODE_STATUSES' });
     dispatch({ type: 'SET_IMPLEMENTING', payload: true });
 
-    // Show implementation progress
+    // Show implementation progress with mode info
     dispatch({
       type: 'SHOW_TOAST',
       payload: {
-        message: state.language === 'ja' ? 'ワークフローを実装中...' : 'Implementing workflow...',
+        message: state.language === 'ja'
+          ? `${state.executionMode === 'create' ? 'Create' : 'Patch'}モードで実行中... (${state.executionPlan.runCount}ノード)`
+          : `Running in ${state.executionMode} mode... (${state.executionPlan.runCount} nodes)`,
         type: 'info',
       },
     });
 
     try {
-      const result = await executeWorkflow(
+      const result = await executeWithPlan(
+        state.executionPlan,
         state.nodes,
         state.connections,
         // Progress callback
@@ -165,16 +215,40 @@ export function TopBar() {
               status: nodeResult.status,
             },
           });
+          // Update node's lastRun info for idempotency
+          if (nodeResult.inputHash) {
+            dispatch({
+              type: 'UPDATE_NODE_LAST_RUN',
+              payload: {
+                nodeId: nodeResult.nodeId,
+                inputHash: nodeResult.inputHash,
+                revision: state.currentRevision,
+                result: nodeResult.status === 'done' ? 'success' : 'error',
+              },
+            });
+          }
         }
       );
 
       dispatch({ type: 'SET_IMPLEMENTING', payload: false });
 
-      if (result.success) {
+      // If Create mode and successful, mark app as created
+      if (result.success && state.executionMode === 'create') {
+        dispatch({ type: 'SET_APP_CREATED', payload: true });
         dispatch({
           type: 'SHOW_TOAST',
           payload: {
-            message: state.language === 'ja' ? '実装が完了しました' : 'Implementation completed successfully',
+            message: state.language === 'ja'
+              ? 'アプリが作成されました。今後は Patch モードをご利用ください。'
+              : 'App created! Use Patch mode for future modifications.',
+            type: 'success',
+          },
+        });
+      } else if (result.success) {
+        dispatch({
+          type: 'SHOW_TOAST',
+          payload: {
+            message: state.language === 'ja' ? 'パッチが適用されました' : 'Patch applied successfully',
             type: 'success',
           },
         });
@@ -184,12 +258,28 @@ export function TopBar() {
           type: 'SHOW_TOAST',
           payload: {
             message: state.language === 'ja'
-              ? `実装完了 (${errorCount}件のエラー)`
-              : `Implementation completed with ${errorCount} error(s)`,
+              ? `実行完了 (${errorCount}件のエラー)`
+              : `Execution completed with ${errorCount} error(s)`,
             type: 'warning',
           },
         });
       }
+
+      // Increment revision and add to run log
+      dispatch({ type: 'INCREMENT_REVISION' });
+      dispatch({
+        type: 'ADD_RUN_LOG',
+        payload: {
+          id: `run-${Date.now()}`,
+          revision: state.currentRevision,
+          mode: state.executionMode,
+          executedNodes: result.executedNodeIds,
+          skippedNodes: result.results.filter(r => r.status === 'done' && !result.executedNodeIds.includes(r.nodeId)).map(r => r.nodeId),
+          errorNodes: result.results.filter(r => r.status === 'error').map(r => r.nodeId),
+          startedAt: Date.now() - 1000, // Approximate
+          completedAt: Date.now(),
+        },
+      });
     } catch (error) {
       dispatch({ type: 'SET_IMPLEMENTING', payload: false });
       dispatch({
@@ -205,6 +295,9 @@ export function TopBar() {
 
   return (
     <div className="topbar">
+      {/* Mode Switch */}
+      <ModeSwitch />
+
       <div className="search-container">
         <input
           type="text"
@@ -216,6 +309,15 @@ export function TopBar() {
       </div>
 
       <div className="topbar-actions">
+        {/* Plan Preview (compact) */}
+        <button
+          className="topbar-btn plan-preview-btn"
+          onClick={() => setShowPlanPreview(true)}
+          title={state.language === 'ja' ? '実行プランを表示' : 'Show execution plan'}
+        >
+          <PlanPreviewCompact />
+        </button>
+
         <button className="topbar-btn" onClick={handleFitToScreen}>
           📐 {state.language === 'ja' ? 'フィット' : 'Fit'}
         </button>
@@ -223,12 +325,22 @@ export function TopBar() {
           ➕ {t('addNode', state.language)}
         </button>
         <button
-          className={`topbar-btn implement ${state.isImplementing ? 'implementing' : ''}`}
+          className={`topbar-btn implement ${state.isImplementing ? 'implementing' : ''} ${state.executionMode}`}
           onClick={handleImplement}
-          disabled={state.nodes.length === 0 || state.isImplementing}
-          title={state.language === 'ja' ? 'ワークフローを実装' : 'Implement workflow'}
+          disabled={state.nodes.length === 0 || state.isImplementing || (state.executionPlan?.runCount === 0)}
+          title={state.language === 'ja'
+            ? `${state.executionMode === 'create' ? 'Create' : 'Patch'}モードで実行`
+            : `Execute in ${state.executionMode} mode`}
         >
-          {state.isImplementing ? '⏳' : '🚀'} {state.language === 'ja' ? (state.isImplementing ? '実装中...' : '実装') : (state.isImplementing ? 'Running...' : 'Implement')}
+          {state.isImplementing ? '⏳' : (state.executionMode === 'create' ? '✨' : '🔧')}
+          {' '}
+          {state.language === 'ja'
+            ? (state.isImplementing
+                ? '実行中...'
+                : (state.executionMode === 'create' ? 'Create' : 'Patch'))
+            : (state.isImplementing
+                ? 'Running...'
+                : (state.executionMode === 'create' ? 'Create' : 'Patch'))}
         </button>
         <button className="topbar-btn primary" onClick={handleSaveWorkflow}>
           💾 {t('save', state.language)}
@@ -241,6 +353,18 @@ export function TopBar() {
           🌐 {state.language === 'ja' ? '日本語' : 'EN'}
         </button>
       </div>
+
+      {/* Plan Preview Modal */}
+      {showPlanPreview && (
+        <div className="plan-preview-modal-overlay" onClick={() => setShowPlanPreview(false)}>
+          <div onClick={e => e.stopPropagation()}>
+            <ExecutionPlanPreview
+              plan={state.executionPlan}
+              onClose={() => setShowPlanPreview(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

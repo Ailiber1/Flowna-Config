@@ -3,6 +3,104 @@ export type NodeCategory = 'AGENT' | 'LOGIC' | 'SYSTEM' | 'RULE' | string;
 export type ConnectorType = 'cicd' | 'ai' | 'storage' | 'custom';
 export type ConnectorStatus = 'connected' | 'disconnected' | 'error';
 
+// ===== Create/Patch Mode System =====
+export type ExecutionMode = 'create' | 'patch';
+export type PlanNodeStatus = 'run' | 'skip' | 'blocked';
+export type ActionCategory = 'conditions' | 'patch-target' | 'data-transform' | 'connector-invoke';
+
+// Node Action - UE Blueprint style function assignment
+export interface NodeAction {
+  id: string;
+  type: ActionCategory;
+  name: string;
+  icon: string;
+  enabled: boolean;
+  config: Record<string, unknown>;
+  createdAt: number;
+}
+
+// Predefined action types
+export interface ConditionAction extends NodeAction {
+  type: 'conditions';
+  config: {
+    operator: 'and' | 'or';
+    conditions: Array<{
+      field: string;
+      comparator: '==' | '!=' | '>' | '<' | 'contains';
+      value: string;
+    }>;
+  };
+}
+
+export interface PatchTargetAction extends NodeAction {
+  type: 'patch-target';
+  config: {
+    isPatchTarget: boolean;
+    targetFiles?: string[];
+    targetRange?: string;
+  };
+}
+
+export interface DataTransformAction extends NodeAction {
+  type: 'data-transform';
+  config: {
+    transformType: 'extract' | 'format' | 'filter';
+    expression: string;
+  };
+}
+
+export interface ConnectorInvokeAction extends NodeAction {
+  type: 'connector-invoke';
+  config: {
+    connectorId: string;
+    actionType: string;
+    parameters: Record<string, unknown>;
+  };
+}
+
+// Node execution tracking for idempotency
+export interface NodeRunInfo {
+  inputHash: string;
+  revision: number;
+  executedAt: number;
+  result: 'success' | 'error' | 'skipped';
+}
+
+// Execution plan item
+export interface ExecutionPlanItem {
+  nodeId: string;
+  nodeName: string;
+  status: PlanNodeStatus;
+  reason: string;
+  inputHash: string;
+  previousHash?: string;
+  actions: NodeAction[];
+}
+
+// Execution plan
+export interface ExecutionPlan {
+  id: string;
+  mode: ExecutionMode;
+  revision: number;
+  items: ExecutionPlanItem[];
+  createdAt: number;
+  runCount: number;
+  skipCount: number;
+  blockedCount: number;
+}
+
+// Run log entry
+export interface RunLogEntry {
+  id: string;
+  revision: number;
+  mode: ExecutionMode;
+  executedNodes: string[];
+  skippedNodes: string[];
+  errorNodes: string[];
+  startedAt: number;
+  completedAt: number;
+}
+
 export interface Position {
   x: number;
   y: number;
@@ -30,6 +128,10 @@ export interface FlowNode {
   connectorLinks: ConnectorLink[];
   createdAt: number;
   updatedAt: number;
+  // Create/Patch mode extensions
+  actions?: NodeAction[];
+  lastRun?: NodeRunInfo;
+  runToggle?: boolean; // For Patch mode: ON/SKIP toggle
 }
 
 export interface Connection {
