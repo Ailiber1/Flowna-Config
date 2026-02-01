@@ -109,7 +109,8 @@ type AppAction =
   | { type: 'DELETE_ALL_SELECTED' }
   | { type: 'SELECT_CONNECTOR_NODE'; payload: string }
   | { type: 'SELECT_CONNECTOR_NODES'; payload: string[] }
-  | { type: 'SELECT_ALL' };
+  | { type: 'SELECT_ALL' }
+  | { type: 'IMPLEMENT_NODES'; payload: { success: boolean; errorNodeIds?: string[] } };
 
 const initialState: AppState = {
   nodes: [],
@@ -183,8 +184,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? {
                 ...n,
                 position: {
-                  x: Math.max(0, action.payload.position.x),
-                  y: Math.max(0, action.payload.position.y),
+                  x: action.payload.position.x,
+                  y: action.payload.position.y,
                 },
                 updatedAt: Date.now(),
               }
@@ -200,8 +201,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? {
                 ...n,
                 position: {
-                  x: Math.max(0, n.position.x + action.payload.dx),
-                  y: Math.max(0, n.position.y + action.payload.dy),
+                  x: n.position.x + action.payload.dx,
+                  y: n.position.y + action.payload.dy,
                 },
                 updatedAt: Date.now(),
               }
@@ -478,8 +479,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? {
                 ...cn,
                 position: {
-                  x: Math.max(0, action.payload.position.x),
-                  y: Math.max(0, action.payload.position.y),
+                  x: action.payload.position.x,
+                  y: action.payload.position.y,
                 },
               }
             : cn
@@ -494,8 +495,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? {
                 ...cn,
                 position: {
-                  x: Math.max(0, cn.position.x + action.payload.dx),
-                  y: Math.max(0, cn.position.y + action.payload.dy),
+                  x: cn.position.x + action.payload.dx,
+                  y: cn.position.y + action.payload.dy,
                 },
               }
             : cn
@@ -510,8 +511,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? {
                 ...n,
                 position: {
-                  x: Math.max(0, n.position.x + action.payload.dx),
-                  y: Math.max(0, n.position.y + action.payload.dy),
+                  x: n.position.x + action.payload.dx,
+                  y: n.position.y + action.payload.dy,
                 },
                 updatedAt: Date.now(),
               }
@@ -522,8 +523,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? {
                 ...cn,
                 position: {
-                  x: Math.max(0, cn.position.x + action.payload.dx),
-                  y: Math.max(0, cn.position.y + action.payload.dy),
+                  x: cn.position.x + action.payload.dx,
+                  y: cn.position.y + action.payload.dy,
                 },
               }
             : cn
@@ -580,6 +581,27 @@ function appReducer(state: AppState, action: AppAction): AppState {
         selectedConnectorNodeIds: state.connectorNodes.map(cn => cn.id),
         selectedConnectionId: null,
       };
+
+    case 'IMPLEMENT_NODES': {
+      const { success, errorNodeIds = [] } = action.payload;
+      const errorNodeIdSet = new Set(errorNodeIds);
+      return {
+        ...state,
+        nodes: state.nodes.map(n => {
+          // Skip RULE nodes (they keep their 'done' status)
+          if (n.category.toUpperCase() === 'RULE') return n;
+          // Mark error nodes
+          if (errorNodeIdSet.has(n.id)) {
+            return { ...n, status: 'error' as const, updatedAt: Date.now() };
+          }
+          // Mark success nodes
+          if (success) {
+            return { ...n, status: 'done' as const, updatedAt: Date.now() };
+          }
+          return n;
+        }),
+      };
+    }
 
     default:
       return state;

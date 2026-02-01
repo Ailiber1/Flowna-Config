@@ -10,8 +10,7 @@ const CONNECTOR_NODE_SIZE = 96; // Size of connector node circle (increased for 
 // The port is in the node-footer which has padding: 8px 12px 10px
 // Port circle is 14px, so center is 7px from its edge
 // From bottom of node: 10px (padding) + 7px (half port) = 17px
-// Adjusted upward to better align with visual port position
-const PORT_OFFSET_FROM_BOTTOM = 24;
+const PORT_OFFSET_FROM_BOTTOM = 17;
 const PORT_OFFSET_X = 19;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {

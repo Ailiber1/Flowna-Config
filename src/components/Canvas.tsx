@@ -160,6 +160,8 @@ export function Canvas() {
 
       if (categoryData) {
         const category: CustomCategory = JSON.parse(categoryData);
+        // RULE (green) nodes default to 'done', others default to 'waiting'
+        const isRuleNode = category.name.toUpperCase() === 'RULE';
 
         const newNode: FlowNodeType = {
           id: generateId(),
@@ -171,7 +173,7 @@ export function Canvas() {
           icon: category.icon,
           color: category.color,
           url: '',
-          status: 'todo',
+          status: isRuleNode ? 'done' : 'waiting',
           memo: '',
           position: { x, y },
           connectorLinks: [],
