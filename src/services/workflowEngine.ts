@@ -1,9 +1,12 @@
 /**
  * Workflow Execution Engine
  * Handles the execution of workflow nodes in topological order
+ * Supports Create/Patch modes with execution plans and idempotency
  */
 
-import type { FlowNode, Connection, NodeStatus } from '../types';
+import type {
+  FlowNode, Connection, NodeStatus, ExecutionMode, ExecutionPlan, ExecutionPlanItem, PlanNodeStatus
+} from '../types';
 import { githubConnector, claudeConnector, geminiConnector } from './connectors';
 
 export interface ExecutionResult {
@@ -11,6 +14,7 @@ export interface ExecutionResult {
   status: NodeStatus;
   message?: string;
   data?: unknown;
+  inputHash?: string;
 }
 
 export interface ExecutionProgress {
@@ -22,6 +26,143 @@ export interface ExecutionProgress {
 
 export type ProgressCallback = (progress: ExecutionProgress) => void;
 export type NodeUpdateCallback = (result: ExecutionResult) => void;
+
+/**
+ * Calculate a hash of node inputs for idempotency checking
+ */
+export function calculateInputHash(node: FlowNode, connections: Connection[]): string {
+  // Get incoming connections
+  const incomingConnections = connections.filter(c => c.to === node.id && c.active);
+
+  // Create a deterministic string representation
+  const hashInput = JSON.stringify({
+    nodeId: node.id,
+    title: node.title,
+    description: node.description,
+    category: node.category,
+    actions: node.actions || [],
+    connectorLinks: node.connectorLinks,
+    incomingNodeIds: incomingConnections.map(c => c.from).sort(),
+    // Include memo and other relevant fields
+    memo: node.memo,
+    url: node.url,
+  });
+
+  // Simple hash function (for production, use a proper hash library)
+  let hash = 0;
+  for (let i = 0; i < hashInput.length; i++) {
+    const char = hashInput.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+/**
+ * Check if a node has a Patch Target action
+ */
+export function isPatchTarget(node: FlowNode): boolean {
+  return (node.actions || []).some(
+    action => action.type === 'patch-target' && action.enabled
+  );
+}
+
+/**
+ * Check if node should run based on mode and conditions
+ */
+export function shouldNodeRun(
+  node: FlowNode,
+  mode: ExecutionMode,
+  connections: Connection[],
+  appCreated: boolean
+): { status: PlanNodeStatus; reason: string } {
+  // RULE nodes are always skipped (they're informational)
+  if (node.category.toUpperCase() === 'RULE') {
+    return { status: 'skip', reason: 'Rule node - informational only' };
+  }
+
+  // Create mode logic
+  if (mode === 'create') {
+    if (appCreated) {
+      return { status: 'blocked', reason: 'App already created - switch to Patch mode' };
+    }
+    return { status: 'run', reason: 'Create mode - will execute' };
+  }
+
+  // Patch mode logic
+  if (mode === 'patch') {
+    // Check if run toggle is disabled
+    if (node.runToggle === false) {
+      return { status: 'skip', reason: 'Manually toggled to SKIP' };
+    }
+
+    // Check if node is a patch target
+    if (!isPatchTarget(node)) {
+      // Non-patch-target nodes may still run if they're dependencies
+      // For now, skip them unless explicitly marked
+      return { status: 'skip', reason: 'Not a patch target' };
+    }
+
+    // Check input hash for idempotency
+    const currentHash = calculateInputHash(node, connections);
+    if (node.lastRun && node.lastRun.inputHash === currentHash) {
+      return { status: 'skip', reason: 'Input unchanged since last run' };
+    }
+
+    return { status: 'run', reason: 'Patch target with changed input' };
+  }
+
+  return { status: 'run', reason: 'Default' };
+}
+
+/**
+ * Generate an execution plan without actually running anything
+ */
+export function generateExecutionPlan(
+  nodes: FlowNode[],
+  connections: Connection[],
+  mode: ExecutionMode,
+  appCreated: boolean,
+  currentRevision: number
+): ExecutionPlan {
+  const sortedNodes = topologicalSort(nodes, connections);
+  const items: ExecutionPlanItem[] = [];
+  let runCount = 0;
+  let skipCount = 0;
+  let blockedCount = 0;
+
+  for (const node of sortedNodes) {
+    const { status, reason } = shouldNodeRun(node, mode, connections, appCreated);
+    const inputHash = calculateInputHash(node, connections);
+
+    items.push({
+      nodeId: node.id,
+      nodeName: node.displayName || node.title,
+      status,
+      reason,
+      inputHash,
+      previousHash: node.lastRun?.inputHash,
+      actions: node.actions || [],
+    });
+
+    switch (status) {
+      case 'run': runCount++; break;
+      case 'skip': skipCount++; break;
+      case 'blocked': blockedCount++; break;
+    }
+  }
+
+  return {
+    id: `plan-${Date.now()}`,
+    mode,
+    revision: currentRevision,
+    items,
+    createdAt: Date.now(),
+    runCount,
+    skipCount,
+    blockedCount,
+  };
+}
 
 /**
  * Performs topological sort on nodes based on connections
@@ -283,4 +424,288 @@ export function validateWorkflow(
   }
 
   return errors;
+}
+
+/**
+ * Execute workflow based on a pre-generated plan
+ * This provides better control and prevents mid-execution changes
+ */
+export async function executeWithPlan(
+  plan: ExecutionPlan,
+  nodes: FlowNode[],
+  _connections: Connection[], // Reserved for future dependency validation
+  onProgress: ProgressCallback,
+  onNodeUpdate: NodeUpdateCallback
+): Promise<{ success: boolean; results: ExecutionResult[]; executedNodeIds: string[] }> {
+  const nodeMap = new Map(nodes.map(n => [n.id, n]));
+  const results: ExecutionResult[] = [];
+  const executedNodeIds: string[] = [];
+  let hasError = false;
+
+  // Only process items marked as 'run'
+  const itemsToRun = plan.items.filter(item => item.status === 'run');
+  const totalCount = itemsToRun.length;
+
+  for (let i = 0; i < itemsToRun.length; i++) {
+    const planItem = itemsToRun[i];
+    const node = nodeMap.get(planItem.nodeId);
+
+    if (!node) {
+      results.push({
+        nodeId: planItem.nodeId,
+        status: 'error',
+        message: 'Node not found',
+      });
+      hasError = true;
+      continue;
+    }
+
+    // Report progress
+    onProgress({
+      currentNodeId: node.id,
+      completedCount: i,
+      totalCount,
+      status: 'running',
+    });
+
+    // Execute the node
+    const result = await executeNode(node);
+    result.inputHash = planItem.inputHash;
+    results.push(result);
+    executedNodeIds.push(node.id);
+
+    // Report node update
+    onNodeUpdate(result);
+
+    if (result.status === 'error') {
+      hasError = true;
+    }
+  }
+
+  // Report skipped items
+  for (const planItem of plan.items) {
+    if (planItem.status !== 'run') {
+      results.push({
+        nodeId: planItem.nodeId,
+        status: planItem.status === 'blocked' ? 'error' : 'done',
+        message: planItem.reason,
+        inputHash: planItem.inputHash,
+      });
+    }
+  }
+
+  // Final progress report
+  onProgress({
+    currentNodeId: '',
+    completedCount: totalCount,
+    totalCount,
+    status: hasError ? 'error' : 'completed',
+  });
+
+  return {
+    success: !hasError,
+    results,
+    executedNodeIds,
+  };
+}
+
+/**
+ * Get available actions for a node type (UE Blueprint style)
+ */
+export interface AvailableAction {
+  type: string;
+  name: string;
+  icon: string;
+  description: string;
+  category: string;
+}
+
+export function getAvailableActions(): AvailableAction[] {
+  return [
+    // Conditions
+    {
+      type: 'condition-and',
+      name: 'AND Condition',
+      icon: '🔗',
+      description: 'All conditions must be true',
+      category: 'Conditions',
+    },
+    {
+      type: 'condition-or',
+      name: 'OR Condition',
+      icon: '⚡',
+      description: 'Any condition must be true',
+      category: 'Conditions',
+    },
+    {
+      type: 'condition-compare',
+      name: 'Compare Values',
+      icon: '⚖️',
+      description: 'Compare two values',
+      category: 'Conditions',
+    },
+    // Patch Target
+    {
+      type: 'patch-target',
+      name: 'Patch Target',
+      icon: '🎯',
+      description: 'Mark as patch modification target',
+      category: 'Patch Target',
+    },
+    {
+      type: 'diff-context',
+      name: 'Diff Context',
+      icon: '📋',
+      description: 'Get current state from GitHub for diff',
+      category: 'Patch Target',
+    },
+    // Data Transform
+    {
+      type: 'extract-data',
+      name: 'Extract Data',
+      icon: '🔍',
+      description: 'Extract specific data from input',
+      category: 'Data Transform',
+    },
+    {
+      type: 'format-data',
+      name: 'Format Data',
+      icon: '📝',
+      description: 'Format data for output',
+      category: 'Data Transform',
+    },
+    // Connector Invoke
+    {
+      type: 'github-commit',
+      name: 'GitHub Commit',
+      icon: '🐱',
+      description: 'Commit changes to GitHub',
+      category: 'Connector Invoke',
+    },
+    {
+      type: 'github-pr',
+      name: 'GitHub PR',
+      icon: '🔀',
+      description: 'Create Pull Request',
+      category: 'Connector Invoke',
+    },
+    {
+      type: 'claude-patch',
+      name: 'Claude Patch',
+      icon: '🦀',
+      description: 'Generate diff patch with Claude',
+      category: 'Connector Invoke',
+    },
+    {
+      type: 'claude-review',
+      name: 'Claude Review',
+      icon: '👁️',
+      description: 'Review code with Claude',
+      category: 'Connector Invoke',
+    },
+  ];
+}
+
+/**
+ * Create a new action with default values
+ */
+export function createAction(
+  type: string,
+  availableActions: AvailableAction[]
+): import('../types').NodeAction | null {
+  const actionDef = availableActions.find(a => a.type === type);
+  if (!actionDef) return null;
+
+  // Map type to ActionCategory
+  let actionCategory: import('../types').ActionCategory = 'conditions';
+  if (type.startsWith('patch-') || type.startsWith('diff-')) {
+    actionCategory = 'patch-target';
+  } else if (type.startsWith('extract-') || type.startsWith('format-')) {
+    actionCategory = 'data-transform';
+  } else if (type.startsWith('github-') || type.startsWith('claude-')) {
+    actionCategory = 'connector-invoke';
+  }
+
+  return {
+    id: `action-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    type: actionCategory,
+    name: actionDef.name,
+    icon: actionDef.icon,
+    enabled: true,
+    config: getDefaultConfig(type),
+    createdAt: Date.now(),
+  };
+}
+
+function getDefaultConfig(type: string): Record<string, unknown> {
+  switch (type) {
+    case 'condition-and':
+    case 'condition-or':
+      return {
+        operator: type === 'condition-and' ? 'and' : 'or',
+        conditions: [],
+      };
+    case 'condition-compare':
+      return {
+        field: '',
+        comparator: '==',
+        value: '',
+      };
+    case 'patch-target':
+      return {
+        isPatchTarget: true,
+        targetFiles: [],
+        targetRange: '',
+      };
+    case 'diff-context':
+      return {
+        repository: '',
+        branch: 'main',
+        files: [],
+      };
+    case 'extract-data':
+    case 'format-data':
+      return {
+        transformType: type === 'extract-data' ? 'extract' : 'format',
+        expression: '',
+      };
+    case 'github-commit':
+      return {
+        connectorId: 'github',
+        actionType: 'commit',
+        parameters: {
+          message: '',
+          branch: 'main',
+        },
+      };
+    case 'github-pr':
+      return {
+        connectorId: 'github',
+        actionType: 'create-pr',
+        parameters: {
+          title: '',
+          body: '',
+          baseBranch: 'main',
+        },
+      };
+    case 'claude-patch':
+      return {
+        connectorId: 'claude-code',
+        actionType: 'generate-patch',
+        parameters: {
+          instruction: '',
+          patchOnly: true,
+        },
+      };
+    case 'claude-review':
+      return {
+        connectorId: 'claude-code',
+        actionType: 'review',
+        parameters: {
+          focus: 'all',
+        },
+      };
+    default:
+      return {};
+  }
 }

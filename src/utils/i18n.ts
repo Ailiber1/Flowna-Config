@@ -76,6 +76,33 @@ export const translations = {
     logic: 'Logic',
     system: 'System',
     rule: 'Rule',
+
+    // Create/Patch Mode
+    createMode: 'Create',
+    patchMode: 'Patch',
+    createModeDesc: 'Create new app from scratch',
+    patchModeDesc: 'Modify existing app with targeted patches',
+    createModeBlocked: 'App already created. Use Patch mode.',
+
+    // Execution Plan
+    executionPlan: 'Execution Plan',
+    noPlan: 'No plan',
+    willRun: 'RUN',
+    willSkip: 'SKIP',
+    blocked: 'BLOCKED',
+    reason: 'Reason',
+    inputHash: 'Hash',
+    prevHash: 'Previous',
+    actions: 'Actions',
+
+    // Node Actions
+    searchActions: 'Search actions...',
+    addAction: 'Add Action',
+    removeAction: 'Remove',
+    currentActions: 'Current Actions',
+    actionAdded: 'Added',
+    actionRemoved: 'Action removed',
+    noActionsFound: 'No actions found',
   },
   ja: {
     // Sidebar
@@ -152,6 +179,33 @@ export const translations = {
     logic: 'ロジック',
     system: 'システム',
     rule: 'ルール',
+
+    // Create/Patch Mode
+    createMode: 'Create',
+    patchMode: 'Patch',
+    createModeDesc: '新規アプリを最初から作成',
+    patchModeDesc: '既存アプリを差分で修正',
+    createModeBlocked: 'アプリは作成済みです。Patchモードをご利用ください。',
+
+    // Execution Plan
+    executionPlan: '実行プラン',
+    noPlan: 'プランなし',
+    willRun: '実行',
+    willSkip: 'スキップ',
+    blocked: 'ブロック',
+    reason: '理由',
+    inputHash: 'ハッシュ',
+    prevHash: '前回',
+    actions: 'アクション',
+
+    // Node Actions
+    searchActions: 'アクションを検索...',
+    addAction: 'アクションを追加',
+    removeAction: '削除',
+    currentActions: '設定済みアクション',
+    actionAdded: '追加しました',
+    actionRemoved: 'アクションを削除しました',
+    noActionsFound: 'アクションが見つかりません',
   },
 };
 
@@ -159,4 +213,12 @@ export type TranslationKey = keyof typeof translations.en;
 
 export function t(key: TranslationKey, language: Language): string {
   return translations[language][key] || translations.en[key] || key;
+}
+
+// Hook for component use
+export function useTranslation(language: Language) {
+  return {
+    t: (key: TranslationKey) => t(key, language),
+    language,
+  };
 }

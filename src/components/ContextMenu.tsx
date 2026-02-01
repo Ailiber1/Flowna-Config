@@ -114,6 +114,34 @@ export function ContextMenu() {
     dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
   };
 
+  // Open NodeActionMenu (UE Blueprint style)
+  const handleAddAction = () => {
+    if (targetId) {
+      dispatch({
+        type: 'OPEN_ACTION_MENU',
+        payload: { nodeId: targetId, position: { x: x + 20, y: y + 20 } },
+      });
+    }
+    dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
+  };
+
+  // Toggle run for Patch mode
+  const handleToggleRun = () => {
+    if (targetId) {
+      dispatch({ type: 'TOGGLE_NODE_RUN', payload: targetId });
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: {
+          message: state.language === 'ja'
+            ? (node?.runToggle === false ? '実行を有効化しました' : '実行をスキップに設定しました')
+            : (node?.runToggle === false ? 'Enabled execution' : 'Set to skip'),
+          type: 'info',
+        },
+      });
+    }
+    dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
+  };
+
   // Position adjustment to keep menu in viewport
   const adjustedX = Math.min(x, window.innerWidth - 200);
   const adjustedY = Math.min(y, window.innerHeight - 300);
@@ -132,6 +160,26 @@ export function ContextMenu() {
           <div className="context-menu-item" onClick={handleDuplicate}>
             📋 {t('duplicateNode', state.language)}
           </div>
+          <div className="context-menu-divider" />
+          {/* UE Blueprint style - Add Action */}
+          <div className="context-menu-item action-menu-trigger" onClick={handleAddAction}>
+            🔍 {state.language === 'ja' ? 'アクションを追加...' : 'Add Action...'}
+          </div>
+          {/* Patch mode - Toggle Run/Skip */}
+          {state.executionMode === 'patch' && (
+            <div className="context-menu-item" onClick={handleToggleRun}>
+              {node?.runToggle === false ? '▶️' : '⏸️'}
+              {' '}
+              {state.language === 'ja'
+                ? (node?.runToggle === false ? 'RUN に設定' : 'SKIP に設定')
+                : (node?.runToggle === false ? 'Set to RUN' : 'Set to SKIP')}
+            </div>
+          )}
+          {node?.actions && node.actions.length > 0 && (
+            <div className="context-menu-info">
+              📌 {node.actions.length} {state.language === 'ja' ? 'アクション設定済み' : 'actions configured'}
+            </div>
+          )}
           <div className="context-menu-divider" />
           <div className="context-menu-item" onClick={() => handleSetStatus('waiting')}>
             ⬜ {t('waiting', state.language)}
