@@ -189,7 +189,7 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
   return (
     <div
       ref={nodeRef}
-      className={`connector-node-icon ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={`connector-node-icon ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''} ${connector.status === 'connected' ? 'configured' : ''}`}
       style={{
         left: connectorNode.position.x,
         top: connectorNode.position.y,
