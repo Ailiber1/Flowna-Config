@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
+import { executeWorkflow, validateWorkflow } from '../services/workflowEngine';
 
 export function TopBar() {
   const { state, dispatch } = useApp();
@@ -92,36 +93,84 @@ export function TopBar() {
     dispatch({ type: 'SET_LANGUAGE', payload: state.language === 'ja' ? 'en' : 'ja' });
   };
 
-  const handleImplement = () => {
-    if (state.connections.length === 0) {
+  const handleImplement = async () => {
+    if (state.nodes.length === 0) {
       dispatch({
         type: 'SHOW_TOAST',
         payload: {
-          message: state.language === 'ja' ? '接続がありません。ノードを接続してください。' : 'No connections. Please connect nodes first.',
+          message: state.language === 'ja' ? 'ノードがありません。' : 'No nodes to implement.',
           type: 'warning',
         },
       });
       return;
     }
 
+    if (state.isImplementing) {
+      return; // Already implementing
+    }
+
+    // Validate workflow
+    const errors = validateWorkflow(state.nodes, state.connections);
+    if (errors.length > 0) {
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: {
+          message: state.language === 'ja' ? 'ワークフローにエラーがあります' : 'Workflow has validation errors',
+          type: 'error',
+        },
+      });
+      return;
+    }
+
+    // Reset node statuses before starting
+    dispatch({ type: 'RESET_NODE_STATUSES' });
+    dispatch({ type: 'SET_IMPLEMENTING', payload: true });
+
     // Show implementation progress
     dispatch({
       type: 'SHOW_TOAST',
       payload: {
-        message: state.language === 'ja' ? `${state.connections.length}件の接続を実装中...` : `Implementing ${state.connections.length} connection(s)...`,
+        message: state.language === 'ja' ? 'ワークフローを実装中...' : 'Implementing workflow...',
         type: 'info',
       },
     });
 
-    // Simulate implementation process
-    // In a real app, this would connect to external services via connectors
-    setTimeout(() => {
-      try {
-        // Simulate success - all nodes completed
-        dispatch({
-          type: 'IMPLEMENT_NODES',
-          payload: { success: true },
-        });
+    try {
+      const result = await executeWorkflow(
+        state.nodes,
+        state.connections,
+        // Progress callback
+        (progress) => {
+          if (progress.status === 'running') {
+            const node = state.nodes.find(n => n.id === progress.currentNodeId);
+            if (node) {
+              dispatch({
+                type: 'SHOW_TOAST',
+                payload: {
+                  message: state.language === 'ja'
+                    ? `実行中: ${node.title} (${progress.completedCount + 1}/${progress.totalCount})`
+                    : `Executing: ${node.title} (${progress.completedCount + 1}/${progress.totalCount})`,
+                  type: 'info',
+                },
+              });
+            }
+          }
+        },
+        // Node update callback
+        (nodeResult) => {
+          dispatch({
+            type: 'UPDATE_NODE_STATUS',
+            payload: {
+              nodeId: nodeResult.nodeId,
+              status: nodeResult.status,
+            },
+          });
+        }
+      );
+
+      dispatch({ type: 'SET_IMPLEMENTING', payload: false });
+
+      if (result.success) {
         dispatch({
           type: 'SHOW_TOAST',
           payload: {
@@ -129,17 +178,29 @@ export function TopBar() {
             type: 'success',
           },
         });
-      } catch {
-        // On error, mark failed nodes
+      } else {
+        const errorCount = result.results.filter(r => r.status === 'error').length;
         dispatch({
           type: 'SHOW_TOAST',
           payload: {
-            message: state.language === 'ja' ? '実装中にエラーが発生しました' : 'Error occurred during implementation',
-            type: 'error',
+            message: state.language === 'ja'
+              ? `実装完了 (${errorCount}件のエラー)`
+              : `Implementation completed with ${errorCount} error(s)`,
+            type: 'warning',
           },
         });
       }
-    }, 1000);
+    } catch (error) {
+      dispatch({ type: 'SET_IMPLEMENTING', payload: false });
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: {
+          message: state.language === 'ja' ? '実装中にエラーが発生しました' : 'Error occurred during implementation',
+          type: 'error',
+        },
+      });
+      console.error('Implementation error:', error);
+    }
   };
 
   return (
@@ -162,12 +223,12 @@ export function TopBar() {
           ➕ {t('addNode', state.language)}
         </button>
         <button
-          className="topbar-btn implement"
+          className={`topbar-btn implement ${state.isImplementing ? 'implementing' : ''}`}
           onClick={handleImplement}
-          disabled={state.connections.length === 0}
-          title={state.language === 'ja' ? '接続したノードを実装' : 'Implement connected nodes'}
+          disabled={state.nodes.length === 0 || state.isImplementing}
+          title={state.language === 'ja' ? 'ワークフローを実装' : 'Implement workflow'}
         >
-          🚀 {state.language === 'ja' ? '実装' : 'Implement'}
+          {state.isImplementing ? '⏳' : '🚀'} {state.language === 'ja' ? (state.isImplementing ? '実装中...' : '実装') : (state.isImplementing ? 'Running...' : 'Implement')}
         </button>
         <button className="topbar-btn primary" onClick={handleSaveWorkflow}>
           💾 {t('save', state.language)}
