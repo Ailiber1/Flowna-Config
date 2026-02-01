@@ -38,16 +38,18 @@ export interface FirebaseConfig {
   measurementId?: string;
 }
 
-// Default Firebase configuration for Flowna Config
+// Firebase configuration from environment variables
+// In development: use .env file (not committed to git)
+// In production: set environment variables in your hosting platform
 const DEFAULT_FIREBASE_CONFIG: FirebaseConfig = {
-  apiKey: "AIzaSyA3-66jq9BQG1Vf0M8nrmBUl6q8255KuWo",
-  authDomain: "flowna-config.firebaseapp.com",
-  databaseURL: "https://flowna-config-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "flowna-config",
-  storageBucket: "flowna-config.firebasestorage.app",
-  messagingSenderId: "1051913712097",
-  appId: "1:1051913712097:web:e2036ca1b71c588cc022a0",
-  measurementId: "G-GWHNKHQ6JQ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ''
 };
 
 let app: FirebaseApp | null = null;
