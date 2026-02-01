@@ -85,7 +85,7 @@ export function ContextMenu() {
     dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
   };
 
-  const handleSetStatus = (status: 'todo' | 'doing' | 'done') => {
+  const handleSetStatus = (status: 'waiting' | 'done' | 'error') => {
     if (node) {
       dispatch({
         type: 'UPDATE_NODE',
@@ -133,14 +133,14 @@ export function ContextMenu() {
             📋 {t('duplicateNode', state.language)}
           </div>
           <div className="context-menu-divider" />
-          <div className="context-menu-item" onClick={() => handleSetStatus('todo')}>
-            ⬜ {t('todo', state.language)}
-          </div>
-          <div className="context-menu-item" onClick={() => handleSetStatus('doing')}>
-            🟨 {t('doing', state.language)}
+          <div className="context-menu-item" onClick={() => handleSetStatus('waiting')}>
+            ⬜ {t('waiting', state.language)}
           </div>
           <div className="context-menu-item" onClick={() => handleSetStatus('done')}>
             ✅ {t('done', state.language)}
+          </div>
+          <div className="context-menu-item" onClick={() => handleSetStatus('error')}>
+            ❌ {t('error', state.language)}
           </div>
           <div className="context-menu-divider" />
           <div
