@@ -91,15 +91,19 @@ export function shouldNodeRun(
 
   // Patch mode logic
   if (mode === 'patch') {
-    // Check if run toggle is disabled
+    // Check if run toggle is manually set
     if (node.runToggle === false) {
       return { status: 'skip', reason: 'Manually toggled to SKIP' };
     }
 
-    // Check if node is a patch target
+    // If manually set to run, always run
+    if (node.runToggle === true) {
+      return { status: 'run', reason: 'Manually toggled to RUN' };
+    }
+
+    // Check if node is a patch target (default behavior when not manually toggled)
     if (!isPatchTarget(node)) {
-      // Non-patch-target nodes may still run if they're dependencies
-      // For now, skip them unless explicitly marked
+      // Non-patch-target nodes are skipped by default
       return { status: 'skip', reason: 'Not a patch target' };
     }
 
