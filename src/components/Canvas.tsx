@@ -237,13 +237,17 @@ export function Canvas() {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check if user is typing in an input field
+      // Check if user is typing in an input field or interacting with a modal
       const target = e.target as HTMLElement;
       const isTypingInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      const isInModal = target.closest('.modal') !== null || target.closest('.modal-overlay') !== null;
+      const isAnyModalOpen = state.isAddNodeModalOpen || state.isEditNodeModalOpen ||
+                             state.isSaveWorkflowModalOpen || state.isConnectorModalOpen ||
+                             state.isActionMenuOpen;
 
-      // When typing in input fields, only handle Ctrl+S (save) and Escape
+      // When typing in input fields or when any modal is open, only handle Ctrl+S (save) and Escape
       // Let all other keys work normally for text editing
-      if (isTypingInInput) {
+      if (isTypingInInput || isInModal || isAnyModalOpen) {
         if (e.key === 'Escape') {
           dispatch({ type: 'DESELECT_ALL' });
           dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
@@ -253,7 +257,7 @@ export function Canvas() {
           e.preventDefault();
           dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
         }
-        return; // Don't process other shortcuts when typing
+        return; // Don't process other shortcuts when in modal
       }
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -322,7 +326,9 @@ export function Canvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.selectedNodeIds, state.selectedConnectorNodeIds, state.selectedConnectionId, state.language, dispatch]);
+  }, [state.selectedNodeIds, state.selectedConnectorNodeIds, state.selectedConnectionId, state.language,
+      state.isAddNodeModalOpen, state.isEditNodeModalOpen, state.isSaveWorkflowModalOpen,
+      state.isConnectorModalOpen, state.isActionMenuOpen, dispatch]);
 
   return (
     <div
