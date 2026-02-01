@@ -333,7 +333,7 @@ export function Canvas() {
   return (
     <div
       ref={canvasRef}
-      className={`canvas ${isPanning ? 'grabbing' : ''} ${state.isDraggingNode ? 'dragging-nodes' : ''}`}
+      className={`canvas ${isPanning ? 'grabbing' : ''} ${state.isDraggingNode ? 'dragging-nodes' : ''} ${state.isImplementing ? 'implementing' : ''}`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
