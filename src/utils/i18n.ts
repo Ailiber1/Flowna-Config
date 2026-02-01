@@ -24,14 +24,13 @@ export const translations = {
     memo: 'Memo',
 
     // Status
-    todo: 'Todo',
-    doing: 'Doing',
+    waiting: 'Waiting',
     done: 'Done',
+    error: 'Error',
 
     // Connector
     connected: 'Connected',
     disconnected: 'Disconnected',
-    error: 'Error',
     addConnector: 'Add Connector',
     settings: 'Settings',
     testConnection: 'Test Connection',
@@ -101,14 +100,13 @@ export const translations = {
     memo: 'メモ',
 
     // Status
-    todo: '未着手',
-    doing: '作業中',
+    waiting: '待機中',
     done: '完了',
+    error: 'エラー',
 
     // Connector
     connected: '接続済み',
     disconnected: '未接続',
-    error: 'エラー',
     addConnector: 'コネクタ追加',
     settings: '設定',
     testConnection: '接続テスト',
