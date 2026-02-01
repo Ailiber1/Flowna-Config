@@ -131,21 +131,38 @@ export function Canvas() {
     setIsMarqueeSelecting(false);
   }, [isMarqueeSelecting, marqueeStart, marqueeEnd, state.viewport, state.nodes, state.connectorNodes, dispatch]);
 
-  // Handle zoom
+  // Handle wheel/trackpad gestures (UE5-style)
+  // - Two-finger swipe: Pan the canvas
+  // - Pinch gesture (ctrlKey): Zoom in/out
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.min(2.0, Math.max(0.3, state.viewport.scale * delta));
 
-    dispatch({
-      type: 'ZOOM_VIEWPORT',
-      payload: {
-        scale: newScale,
-        centerX: e.clientX,
-        centerY: e.clientY,
-      },
-    });
-  }, [state.viewport.scale, dispatch]);
+    // Pinch gesture on trackpad sets ctrlKey to true
+    if (e.ctrlKey || e.metaKey) {
+      // Pinch to zoom
+      const delta = e.deltaY > 0 ? 0.95 : 1.05;
+      const newScale = Math.min(2.0, Math.max(0.3, state.viewport.scale * delta));
+
+      dispatch({
+        type: 'ZOOM_VIEWPORT',
+        payload: {
+          scale: newScale,
+          centerX: e.clientX,
+          centerY: e.clientY,
+        },
+      });
+    } else {
+      // Two-finger swipe to pan
+      dispatch({
+        type: 'SET_VIEWPORT',
+        payload: {
+          ...state.viewport,
+          panX: state.viewport.panX - e.deltaX,
+          panY: state.viewport.panY - e.deltaY,
+        },
+      });
+    }
+  }, [state.viewport, dispatch]);
 
   // Handle drop from palette
   const handleDrop = useCallback((e: React.DragEvent) => {
