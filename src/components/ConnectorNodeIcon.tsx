@@ -178,6 +178,14 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     setIsCreatingConnectionFromThis(true);
   }, [connectorNode.id, connectorNode.position, dispatch]);
 
+  // Right-click to open connector settings
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Open the connector settings modal
+    dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
+  }, [connector.id, dispatch]);
+
   return (
     <div
       ref={nodeRef}
@@ -187,6 +195,7 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
         top: connectorNode.position.y,
       }}
       onMouseDown={handleMouseDown}
+      onContextMenu={handleContextMenu}
     >
       {/* Input port (left side) */}
       <span
