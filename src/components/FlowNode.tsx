@@ -14,12 +14,24 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const nodePositionRef = useRef(node.position);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
+  // Refs to track current values without causing useEffect re-runs
+  const scaleRef = useRef(state.viewport.scale);
+  const isSelectedRef = useRef(isSelected);
+  const selectedCountRef = useRef({ nodes: 0, connectors: 0 });
+  const nodeIdRef = useRef(node.id);
   const [isDragging, setIsDragging] = useState(false);
   const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
   const [showMemo, setShowMemo] = useState(false);
 
-  // Keep position ref updated
+  // Keep refs updated with latest values
   nodePositionRef.current = node.position;
+  scaleRef.current = state.viewport.scale;
+  isSelectedRef.current = isSelected;
+  selectedCountRef.current = {
+    nodes: state.selectedNodeIds.length,
+    connectors: state.selectedConnectorNodeIds.length,
+  };
+  nodeIdRef.current = node.id;
 
   const getCategoryClass = (category: string): string => {
     const categoryLower = category.toLowerCase();
@@ -79,24 +91,27 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     }
   }, [node.id, state.viewport.scale, isSelected, dispatch]);
 
-  // Add global mouse listeners for dragging - define handlers inside useEffect
-  // to avoid dependency issues that cause event listener churn
+  // Add global mouse listeners for dragging
+  // IMPORTANT: Use refs for all values to prevent useEffect re-runs during drag
+  // which causes event listener churn and connection line misalignment
   useEffect(() => {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDraggingRef.current) return;
 
-      const currentX = e.clientX / state.viewport.scale;
-      const currentY = e.clientY / state.viewport.scale;
+      // Use refs for all values to get latest without causing re-renders
+      const scale = scaleRef.current;
+      const currentX = e.clientX / scale;
+      const currentY = e.clientY / scale;
 
       const dx = currentX - lastMousePosRef.current.x;
       const dy = currentY - lastMousePosRef.current.y;
 
       // Check if we have multiple items selected (nodes and/or connectors)
-      const totalSelected = state.selectedNodeIds.length + state.selectedConnectorNodeIds.length;
+      const totalSelected = selectedCountRef.current.nodes + selectedCountRef.current.connectors;
 
-      if (isSelected && totalSelected > 1) {
+      if (isSelectedRef.current && totalSelected > 1) {
         // Move all selected items (nodes and connectors) together
         dispatch({
           type: 'MOVE_ALL_SELECTED',
@@ -106,7 +121,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         // Use ref for latest position to avoid stale closure issues
         dispatch({
           type: 'MOVE_NODE',
-          payload: { id: node.id, position: { x: nodePositionRef.current.x + dx, y: nodePositionRef.current.y + dy } },
+          payload: { id: nodeIdRef.current, position: { x: nodePositionRef.current.x + dx, y: nodePositionRef.current.y + dy } },
         });
       }
 
@@ -126,7 +141,8 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, node.id, state.viewport.scale, isSelected, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, dispatch]);
+    // Only depend on isDragging and dispatch - all other values accessed via refs
+  }, [isDragging, dispatch]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
