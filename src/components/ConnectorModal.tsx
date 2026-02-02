@@ -174,8 +174,10 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
       });
     }
 
-    setMessage({ text: state.language === 'ja' ? '設定を保存しました' : 'Configuration saved', type: 'success' });
     dispatch({ type: 'SHOW_TOAST', payload: { message: state.language === 'ja' ? '設定を保存しました' : 'Configuration saved', type: 'success' } });
+
+    // Close the modal after saving
+    onClose();
   };
 
   const handleDisconnect = () => {
