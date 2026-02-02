@@ -186,6 +186,17 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
   }, [connector.id, dispatch]);
 
+  // Double-click to open URL
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (connector.url) {
+      window.open(connector.url, '_blank');
+    } else {
+      // If no URL is set, open the settings modal
+      dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
+    }
+  }, [connector.url, connector.id, dispatch]);
+
   return (
     <div
       ref={nodeRef}
@@ -195,6 +206,7 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
         top: connectorNode.position.y,
       }}
       onMouseDown={handleMouseDown}
+      onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
       {/* Input port (left side) */}
