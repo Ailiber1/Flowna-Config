@@ -220,12 +220,32 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     }
   }, [connector.url, connector.id, dispatch]);
 
-  const getStatusLabel = () => {
+  const getConnectionStatusLabel = () => {
     if (connector.status === 'connected') {
       return state.language === 'ja' ? '接続済' : 'Connected';
     }
     return state.language === 'ja' ? '未接続' : 'Not Connected';
   };
+
+  // Execution status label (same as FlowNode)
+  const getExecutionStatusLabel = (status: string): string => {
+    if (state.language === 'ja') {
+      switch (status) {
+        case 'running': return '実行中';
+        case 'done': return '完了';
+        case 'error': return 'エラー';
+        default: return '待機中';
+      }
+    }
+    switch (status) {
+      case 'running': return 'Running';
+      case 'done': return 'Done';
+      case 'error': return 'Error';
+      default: return 'Waiting';
+    }
+  };
+
+  const executionStatus = connectorNode.status || 'waiting';
 
   // Apply dragging class if this connector is being dragged OR if any drag is happening
   // This ensures CSS transitions are disabled during all drag operations
@@ -252,11 +272,15 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       <div className="connector-node-content">
         <span className="connector-node-icon">{connector.icon}</span>
         <span className="connector-node-name"># {connector.name}</span>
+        {/* Execution Status Badge - same as FlowNode */}
+        <span className={`node-status-badge ${executionStatus}`}>
+          {getExecutionStatusLabel(executionStatus)}
+        </span>
       </div>
 
-      {/* Status Badge */}
+      {/* Connection Status Badge */}
       <div className={`connector-status-badge ${connector.status === 'connected' ? 'connected' : 'disconnected'}`}>
-        {getStatusLabel()}
+        {getConnectionStatusLabel()}
       </div>
 
       {/* Side-positioned ports like FlowNode */}
