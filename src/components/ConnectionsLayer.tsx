@@ -14,7 +14,8 @@ const PORT_OFFSET_FROM_TOP = 95; // Adjusted to align with port circles
 const PORT_OFFSET_X = 19;
 
 // Connector node port offsets (must match ConnectorNodeIcon.tsx)
-const CONNECTOR_PORT_OFFSET_FROM_BOTTOM = 17;
+// With 35px bottom padding in CSS, ports are centered like FlowNode
+const CONNECTOR_PORT_OFFSET_FROM_BOTTOM = 35;
 const CONNECTOR_PORT_OFFSET_X = 15;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
