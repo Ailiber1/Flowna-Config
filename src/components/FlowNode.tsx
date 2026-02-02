@@ -12,8 +12,8 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const { state, dispatch } = useApp();
   const nodeRef = useRef<HTMLDivElement>(null);
   const nodePositionRef = useRef(node.position);
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
   const [showMemo, setShowMemo] = useState(false);
 
@@ -63,10 +63,10 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     setIsDragging(true);
     dispatch({ type: 'START_DRAGGING_NODE' });
 
-    setLastMousePos({
+    lastMousePosRef.current = {
       x: e.clientX / state.viewport.scale,
       y: e.clientY / state.viewport.scale,
-    });
+    };
 
     if (e.ctrlKey || e.metaKey) {
       dispatch({ type: 'SELECT_NODE', payload: node.id });
@@ -80,8 +80,8 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       const currentX = e.clientX / state.viewport.scale;
       const currentY = e.clientY / state.viewport.scale;
 
-      const dx = currentX - lastMousePos.x;
-      const dy = currentY - lastMousePos.y;
+      const dx = currentX - lastMousePosRef.current.x;
+      const dy = currentY - lastMousePosRef.current.y;
 
       // Check if we have multiple items selected (nodes and/or connectors)
       const totalSelected = state.selectedNodeIds.length + state.selectedConnectorNodeIds.length;
@@ -100,11 +100,11 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         });
       }
 
-      setLastMousePos({ x: currentX, y: currentY });
+      lastMousePosRef.current = { x: currentX, y: currentY };
     }
-    // Note: node.position removed from deps - using ref instead to prevent
-    // callback re-creation during drag which could cause misalignment
-  }, [isDragging, lastMousePos, node.id, state.viewport.scale, isSelected, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, dispatch]);
+    // Using refs for position and lastMousePos to prevent callback re-creation
+    // during drag which causes event listener updates and connection line drift
+  }, [isDragging, node.id, state.viewport.scale, isSelected, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, dispatch]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
