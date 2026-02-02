@@ -90,8 +90,14 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    dispatch({ type: 'OPEN_EDIT_NODE_MODAL', payload: node.id });
-  }, [node.id, dispatch]);
+    // If URL is set, open it in a new tab
+    if (node.url) {
+      window.open(node.url, '_blank');
+    } else {
+      // Otherwise, open the edit modal
+      dispatch({ type: 'OPEN_EDIT_NODE_MODAL', payload: node.id });
+    }
+  }, [node.id, node.url, dispatch]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
