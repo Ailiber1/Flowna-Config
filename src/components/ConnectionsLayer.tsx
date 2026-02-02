@@ -3,7 +3,7 @@ import { useApp } from '../contexts/AppContext';
 import type { FlowNode, Connection, ConnectorNode } from '../types';
 
 const NODE_WIDTH = 220;
-const NODE_HEIGHT = 165; // Fixed height of node
+const NODE_HEIGHT = 150; // Fixed height of node
 
 // Connector node card dimensions
 const CONNECTOR_NODE_WIDTH = 180;
