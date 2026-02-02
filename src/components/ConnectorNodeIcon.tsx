@@ -17,11 +17,23 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
   const isDraggingRef = useRef(false);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const connectorNodePositionRef = useRef(connectorNode.position);
+  // Refs to track current values without causing useEffect re-runs
+  const scaleRef = useRef(state.viewport.scale);
+  const isSelectedRef = useRef(isSelected);
+  const selectedCountRef = useRef({ nodes: 0, connectors: 0 });
+  const connectorNodeIdRef = useRef(connectorNode.id);
   const [isDragging, setIsDragging] = useState(false);
-
-  // Keep position ref updated
-  connectorNodePositionRef.current = connectorNode.position;
   const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
+
+  // Keep refs updated with latest values
+  connectorNodePositionRef.current = connectorNode.position;
+  scaleRef.current = state.viewport.scale;
+  isSelectedRef.current = isSelected;
+  selectedCountRef.current = {
+    nodes: state.selectedNodeIds.length,
+    connectors: state.selectedConnectorNodeIds.length,
+  };
+  connectorNodeIdRef.current = connectorNode.id;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // Don't start drag if clicking on port
@@ -47,23 +59,27 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     }
   }, [connectorNode.id, state.viewport.scale, isSelected, dispatch]);
 
+  // Add global mouse listeners for dragging
+  // IMPORTANT: Use refs for all values to prevent useEffect re-runs during drag
+  // which causes event listener churn and connection line misalignment
   useEffect(() => {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDraggingRef.current) return;
 
-      const currentX = e.clientX / state.viewport.scale;
-      const currentY = e.clientY / state.viewport.scale;
+      // Use refs for all values to get latest without causing re-renders
+      const scale = scaleRef.current;
+      const currentX = e.clientX / scale;
+      const currentY = e.clientY / scale;
 
       const dx = currentX - lastMousePosRef.current.x;
       const dy = currentY - lastMousePosRef.current.y;
 
       // Check if we have multiple items selected (nodes and/or connectors)
-      const hasMultipleSelection =
-        (state.selectedNodeIds.length + state.selectedConnectorNodeIds.length) > 1;
+      const totalSelected = selectedCountRef.current.nodes + selectedCountRef.current.connectors;
 
-      if (hasMultipleSelection && isSelected) {
+      if (isSelectedRef.current && totalSelected > 1) {
         // Move all selected items together
         dispatch({
           type: 'MOVE_ALL_SELECTED',
@@ -74,7 +90,7 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
         dispatch({
           type: 'MOVE_CONNECTOR_NODE',
           payload: {
-            id: connectorNode.id,
+            id: connectorNodeIdRef.current,
             position: {
               x: connectorNodePositionRef.current.x + dx,
               y: connectorNodePositionRef.current.y + dy,
@@ -99,9 +115,8 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-    // Note: connectorNode.position removed from deps - using ref instead to prevent
-    // useEffect re-runs during drag which would cause connection line misalignment
-  }, [isDragging, connectorNode.id, state.viewport.scale, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, isSelected, dispatch]);
+    // Only depend on isDragging and dispatch - all other values accessed via refs
+  }, [isDragging, dispatch]);
 
   // Connection creation from output port
   const handleConnectionMouseMove = useCallback((e: MouseEvent) => {
