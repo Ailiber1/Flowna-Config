@@ -211,6 +211,7 @@ export interface Connector {
   capabilities: string[];
   installedAt: number;
   lastUsedAt: number;
+  url?: string;  // Optional URL for quick access (e.g., dashboard, docs)
 }
 
 export interface AppSettings {
