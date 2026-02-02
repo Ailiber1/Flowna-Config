@@ -270,10 +270,13 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
-      {/* Header */}
+      {/* Header - Centered CONNECTOR label */}
       <div className="connector-node-header">
         <span className="connector-node-type">● CONNECTOR</span>
-        {/* Execution Status Badge - same position as FlowNode */}
+      </div>
+
+      {/* Status Badges Row */}
+      <div className="connector-badges-row">
         <span className={`node-status-badge ${executionStatus}`}>
           {getExecutionStatusLabel(executionStatus)}
         </span>
