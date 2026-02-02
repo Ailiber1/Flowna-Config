@@ -1,4 +1,4 @@
-export type NodeStatus = 'waiting' | 'done' | 'error';
+export type NodeStatus = 'waiting' | 'running' | 'done' | 'error';
 export type NodeCategory = 'AGENT' | 'LOGIC' | 'SYSTEM' | 'RULE' | string;
 export type ConnectorType = 'cicd' | 'ai' | 'storage' | 'custom';
 export type ConnectorStatus = 'connected' | 'disconnected' | 'error';
