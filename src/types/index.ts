@@ -112,6 +112,14 @@ export interface ConnectorLink {
   resourceName: string;
 }
 
+// Attached file to node
+export interface AttachedFile {
+  name: string;
+  content: string;
+  type: string; // 'txt' | 'md' | etc.
+  uploadedAt: number;
+}
+
 export interface FlowNode {
   id: string;
   title: string;
@@ -132,6 +140,8 @@ export interface FlowNode {
   actions?: NodeAction[];
   lastRun?: NodeRunInfo;
   runToggle?: boolean; // For Patch mode: ON/SKIP toggle
+  // Attached file (specification, etc.)
+  attachedFile?: AttachedFile;
 }
 
 export interface Connection {
