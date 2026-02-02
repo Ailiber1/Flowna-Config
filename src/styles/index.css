@@ -1043,9 +1043,9 @@ body {
 }
 
 .node-status-badge.waiting {
-  color: rgba(255, 255, 255, 0.5);
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.05);
+  color: #f59e0b;
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
 }
 
 .node-status-badge.done {
@@ -1055,9 +1055,9 @@ body {
 }
 
 .node-status-badge.running {
-  color: #f59e0b;
-  border-color: #f59e0b;
-  background: rgba(245, 158, 11, 0.15);
+  color: var(--status-connected);
+  border-color: var(--status-connected);
+  background: rgba(74, 222, 128, 0.15);
   animation: status-pulse 1.5s infinite;
 }
 
