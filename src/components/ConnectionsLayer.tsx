@@ -13,8 +13,8 @@ const CONNECTOR_NODE_HEIGHT = 140;
 const PORT_OFFSET_FROM_TOP = 95; // Adjusted to align with port circles
 const PORT_OFFSET_X = 19;
 
-// Connector node port offsets
-const CONNECTOR_PORT_OFFSET_FROM_BOTTOM = 15;
+// Connector node port offsets (must match ConnectorNodeIcon.tsx)
+const CONNECTOR_PORT_OFFSET_FROM_BOTTOM = 17;
 const CONNECTOR_PORT_OFFSET_X = 15;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
