@@ -4,7 +4,10 @@ import type { FlowNode, Connection, ConnectorNode } from '../types';
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 150; // Visual min-height of node
-const CONNECTOR_NODE_SIZE = 96; // Size of connector node circle (increased for better visibility)
+
+// Connector node card dimensions
+const CONNECTOR_NODE_WIDTH = 180;
+const CONNECTOR_NODE_HEIGHT = 140;
 
 // Port circle position - adjusted to match the visual position of green port circles
 // The port is in the node-footer which has padding: 8px 12px 10px
@@ -12,6 +15,10 @@ const CONNECTOR_NODE_SIZE = 96; // Size of connector node circle (increased for 
 // From bottom of node: 10px (padding) + 7px (half port) = 17px
 const PORT_OFFSET_FROM_BOTTOM = 17;
 const PORT_OFFSET_X = 19;
+
+// Connector node port offsets
+const CONNECTOR_PORT_OFFSET_FROM_BOTTOM = 15;
+const CONNECTOR_PORT_OFFSET_X = 15;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
   const portY = node.position.y + NODE_HEIGHT - PORT_OFFSET_FROM_BOTTOM;
@@ -24,13 +31,13 @@ function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: numbe
 }
 
 function getConnectorNodePort(connectorNode: ConnectorNode, portType: 'input' | 'output'): { x: number; y: number } {
-  // Port positions on connector node
-  const centerY = connectorNode.position.y + CONNECTOR_NODE_SIZE / 2;
+  // Port positions on connector node card (now similar to regular nodes)
+  const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT - CONNECTOR_PORT_OFFSET_FROM_BOTTOM;
 
   if (portType === 'input') {
-    return { x: connectorNode.position.x + 10, y: centerY };
+    return { x: connectorNode.position.x + CONNECTOR_PORT_OFFSET_X, y: portY };
   } else {
-    return { x: connectorNode.position.x + CONNECTOR_NODE_SIZE - 10, y: centerY };
+    return { x: connectorNode.position.x + CONNECTOR_NODE_WIDTH - CONNECTOR_PORT_OFFSET_X, y: portY };
   }
 }
 
