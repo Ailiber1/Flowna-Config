@@ -6,25 +6,19 @@ import type { NodeAction } from '../types';
 
 // Mapping from action type to translation keys
 const actionTranslations: Record<string, { name: TranslationKey; desc: TranslationKey }> = {
-  'condition-and': { name: 'actionConditionAnd', desc: 'descConditionAnd' },
-  'condition-or': { name: 'actionConditionOr', desc: 'descConditionOr' },
-  'condition-compare': { name: 'actionConditionCompare', desc: 'descConditionCompare' },
-  'patch-target': { name: 'actionPatchTarget', desc: 'descPatchTarget' },
-  'diff-context': { name: 'actionDiffContext', desc: 'descDiffContext' },
-  'extract-data': { name: 'actionExtractData', desc: 'descExtractData' },
-  'format-data': { name: 'actionFormatData', desc: 'descFormatData' },
-  'github-commit': { name: 'actionGithubCommit', desc: 'descGithubCommit' },
+  'firebase-create': { name: 'actionFirebaseCreate', desc: 'descFirebaseCreate' },
+  'github-repo': { name: 'actionGithubRepo', desc: 'descGithubRepo' },
+  'claude-develop': { name: 'actionClaudeDevelop', desc: 'descClaudeDevelop' },
+  'github-deploy': { name: 'actionGithubDeploy', desc: 'descGithubDeploy' },
   'github-pr': { name: 'actionGithubPr', desc: 'descGithubPr' },
-  'claude-patch': { name: 'actionClaudePatch', desc: 'descClaudePatch' },
-  'claude-review': { name: 'actionClaudeReview', desc: 'descClaudeReview' },
 };
 
 // Mapping from category to translation key
 const categoryTranslations: Record<string, TranslationKey> = {
-  'Conditions': 'catConditions',
-  'Patch Target': 'catPatchTarget',
-  'Data Transform': 'catDataTransform',
-  'Connector Invoke': 'catConnectorInvoke',
+  'Project Setup': 'catProjectSetup',
+  'Development': 'catDevelopment',
+  'Deploy': 'catDeploy',
+  'Update': 'catUpdate',
 };
 
 export default function NodeActionMenu() {

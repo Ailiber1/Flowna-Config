@@ -526,86 +526,44 @@ export interface AvailableAction {
 
 export function getAvailableActions(): AvailableAction[] {
   return [
-    // Conditions
+    // プロジェクト作成
     {
-      type: 'condition-and',
-      name: 'AND Condition',
-      icon: '🔗',
-      description: 'All conditions must be true',
-      category: 'Conditions',
+      type: 'firebase-create',
+      name: 'Firebase Project',
+      icon: '🔥',
+      description: 'Create Firebase project',
+      category: 'Project Setup',
     },
     {
-      type: 'condition-or',
-      name: 'OR Condition',
-      icon: '⚡',
-      description: 'Any condition must be true',
-      category: 'Conditions',
+      type: 'github-repo',
+      name: 'GitHub Repository',
+      icon: '🐙',
+      description: 'Create GitHub repository',
+      category: 'Project Setup',
     },
+    // 開発
     {
-      type: 'condition-compare',
-      name: 'Compare Values',
-      icon: '⚖️',
-      description: 'Compare two values',
-      category: 'Conditions',
+      type: 'claude-develop',
+      name: 'Claude Code Dev',
+      icon: '🤖',
+      description: 'Develop app with Claude Code',
+      category: 'Development',
     },
-    // Patch Target
+    // デプロイ
     {
-      type: 'patch-target',
-      name: 'Patch Target',
-      icon: '🎯',
-      description: 'Mark as patch modification target',
-      category: 'Patch Target',
+      type: 'github-deploy',
+      name: 'Deploy',
+      icon: '🚀',
+      description: 'Deploy to GitHub Pages',
+      category: 'Deploy',
     },
-    {
-      type: 'diff-context',
-      name: 'Diff Context',
-      icon: '📋',
-      description: 'Get current state from GitHub for diff',
-      category: 'Patch Target',
-    },
-    // Data Transform
-    {
-      type: 'extract-data',
-      name: 'Extract Data',
-      icon: '🔍',
-      description: 'Extract specific data from input',
-      category: 'Data Transform',
-    },
-    {
-      type: 'format-data',
-      name: 'Format Data',
-      icon: '📝',
-      description: 'Format data for output',
-      category: 'Data Transform',
-    },
-    // Connector Invoke
-    {
-      type: 'github-commit',
-      name: 'GitHub Commit',
-      icon: '🐱',
-      description: 'Commit changes to GitHub',
-      category: 'Connector Invoke',
-    },
+    // 更新
     {
       type: 'github-pr',
-      name: 'GitHub PR',
-      icon: '🔀',
-      description: 'Create Pull Request',
-      category: 'Connector Invoke',
-    },
-    {
-      type: 'claude-patch',
-      name: 'Claude Patch',
-      icon: '🦀',
-      description: 'Generate diff patch with Claude',
-      category: 'Connector Invoke',
-    },
-    {
-      type: 'claude-review',
-      name: 'Claude Review',
-      icon: '👁️',
-      description: 'Review code with Claude',
-      category: 'Connector Invoke',
+      name: 'Update (PR)',
+      icon: '🔄',
+      description: 'Create PR for updates',
+      category: 'Update',
     },
   ];
 }
@@ -621,12 +579,12 @@ export function createAction(
   if (!actionDef) return null;
 
   // Map type to ActionCategory
-  let actionCategory: import('../types').ActionCategory = 'conditions';
-  if (type.startsWith('patch-') || type.startsWith('diff-')) {
-    actionCategory = 'patch-target';
-  } else if (type.startsWith('extract-') || type.startsWith('format-')) {
-    actionCategory = 'data-transform';
-  } else if (type.startsWith('github-') || type.startsWith('claude-')) {
+  let actionCategory: import('../types').ActionCategory = 'connector-invoke';
+  if (type.startsWith('firebase-') || type.startsWith('github-repo')) {
+    actionCategory = 'connector-invoke';
+  } else if (type.startsWith('claude-')) {
+    actionCategory = 'connector-invoke';
+  } else if (type.startsWith('github-')) {
     actionCategory = 'connector-invoke';
   }
 
@@ -643,42 +601,36 @@ export function createAction(
 
 function getDefaultConfig(type: string): Record<string, unknown> {
   switch (type) {
-    case 'condition-and':
-    case 'condition-or':
+    case 'firebase-create':
       return {
-        operator: type === 'condition-and' ? 'and' : 'or',
-        conditions: [],
+        connectorId: 'firebase',
+        actionType: 'create-project',
+        parameters: {
+          projectName: '',
+        },
       };
-    case 'condition-compare':
-      return {
-        field: '',
-        comparator: '==',
-        value: '',
-      };
-    case 'patch-target':
-      return {
-        isPatchTarget: true,
-        targetFiles: [],
-        targetRange: '',
-      };
-    case 'diff-context':
-      return {
-        repository: '',
-        branch: 'main',
-        files: [],
-      };
-    case 'extract-data':
-    case 'format-data':
-      return {
-        transformType: type === 'extract-data' ? 'extract' : 'format',
-        expression: '',
-      };
-    case 'github-commit':
+    case 'github-repo':
       return {
         connectorId: 'github',
-        actionType: 'commit',
+        actionType: 'create-repo',
         parameters: {
-          message: '',
+          repoName: '',
+          private: false,
+        },
+      };
+    case 'claude-develop':
+      return {
+        connectorId: 'claude-code',
+        actionType: 'develop',
+        parameters: {
+          specFile: '',
+        },
+      };
+    case 'github-deploy':
+      return {
+        connectorId: 'github',
+        actionType: 'deploy-pages',
+        parameters: {
           branch: 'main',
         },
       };
@@ -690,23 +642,6 @@ function getDefaultConfig(type: string): Record<string, unknown> {
           title: '',
           body: '',
           baseBranch: 'main',
-        },
-      };
-    case 'claude-patch':
-      return {
-        connectorId: 'claude-code',
-        actionType: 'generate-patch',
-        parameters: {
-          instruction: '',
-          patchOnly: true,
-        },
-      };
-    case 'claude-review':
-      return {
-        connectorId: 'claude-code',
-        actionType: 'review',
-        parameters: {
-          focus: 'all',
         },
       };
     default:
