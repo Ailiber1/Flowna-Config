@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
-import { generateId, saveWorkflow } from '../utils/storage';
+import { generateId, saveWorkflow, getWorkflows } from '../utils/storage';
 import type { Workflow } from '../types';
 
 interface SaveWorkflowModalProps {
@@ -16,6 +16,7 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
   const [error, setError] = useState('');
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
   const [existingWorkflow, setExistingWorkflow] = useState<Workflow | null>(null);
+  const [duplicateIds, setDuplicateIds] = useState<string[]>([]);
 
   const createWorkflowData = (id: string, createdAt?: number): Workflow => {
     const customCategories = state.categories.filter(
@@ -39,16 +40,22 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
     };
   };
 
-  const doSave = (workflow: Workflow, isOverwrite: boolean) => {
+  const doSave = (workflow: Workflow, isOverwrite: boolean, duplicateIds?: string[]) => {
+    // If overwriting and there are duplicates, remove them first from localStorage
+    if (isOverwrite && duplicateIds && duplicateIds.length > 0) {
+      // Get current workflows from localStorage
+      let workflows = getWorkflows();
+      // Remove all duplicates except the one we're overwriting
+      workflows = workflows.filter(w => !duplicateIds.includes(w.id) || w.id === workflow.id);
+      localStorage.setItem('flowna_workflows', JSON.stringify(workflows));
+    }
+
     // Save to localStorage
     saveWorkflow(workflow);
 
-    // Update state
-    if (isOverwrite) {
-      dispatch({ type: 'UPDATE_WORKFLOW', payload: workflow });
-    } else {
-      dispatch({ type: 'ADD_WORKFLOW', payload: workflow });
-    }
+    // Reload workflows from localStorage to ensure state is in sync
+    const updatedWorkflows = getWorkflows();
+    dispatch({ type: 'SET_WORKFLOWS', payload: updatedWorkflows });
 
     dispatch({
       type: 'SHOW_TOAST',
@@ -71,10 +78,13 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
       return;
     }
 
-    // Check if workflow with same name already exists
-    const existing = state.workflows.find(w => w.name.toLowerCase() === name.trim().toLowerCase());
-    if (existing) {
-      setExistingWorkflow(existing);
+    // Check if workflow(s) with same name already exist (find all duplicates)
+    const duplicates = state.workflows.filter(w => w.name.toLowerCase() === name.trim().toLowerCase());
+    if (duplicates.length > 0) {
+      // Use the first one as the "main" existing workflow (keep its ID and createdAt)
+      setExistingWorkflow(duplicates[0]);
+      // Store all duplicate IDs (including the first one)
+      setDuplicateIds(duplicates.map(w => w.id));
       setShowOverwriteConfirm(true);
       return;
     }
@@ -87,12 +97,14 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
   const handleOverwriteConfirm = () => {
     if (!existingWorkflow) return;
     const workflow = createWorkflowData(existingWorkflow.id, existingWorkflow.createdAt);
-    doSave(workflow, true);
+    // Pass all duplicate IDs to remove them (except the one we're keeping)
+    doSave(workflow, true, duplicateIds);
   };
 
   const handleOverwriteCancel = () => {
     setShowOverwriteConfirm(false);
     setExistingWorkflow(null);
+    setDuplicateIds([]);
   };
 
   // Overwrite confirmation dialog
