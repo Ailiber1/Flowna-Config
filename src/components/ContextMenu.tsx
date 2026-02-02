@@ -108,16 +108,6 @@ export function ContextMenu() {
     dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
   };
 
-  const handleSetStatus = (status: 'waiting' | 'done' | 'error') => {
-    if (node) {
-      dispatch({
-        type: 'UPDATE_NODE',
-        payload: { ...node, status, updatedAt: Date.now() },
-      });
-    }
-    dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
-  };
-
   const handleOpenUrl = () => {
     if (node?.url) {
       window.open(node.url, '_blank');
@@ -492,16 +482,6 @@ Please provide:
               </div>
             </>
           )}
-          <div className="context-menu-divider" />
-          <div className="context-menu-item" onClick={() => handleSetStatus('waiting')}>
-            ⬜ {t('waiting', state.language)}
-          </div>
-          <div className="context-menu-item" onClick={() => handleSetStatus('done')}>
-            ✅ {t('done', state.language)}
-          </div>
-          <div className="context-menu-item" onClick={() => handleSetStatus('error')}>
-            ❌ {t('error', state.language)}
-          </div>
           <div className="context-menu-divider" />
           <div
             className={`context-menu-item ${!node?.url ? 'disabled' : ''}`}
