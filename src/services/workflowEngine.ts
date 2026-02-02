@@ -537,7 +537,7 @@ export function getAvailableActions(): AvailableAction[] {
     {
       type: 'github-repo',
       name: 'GitHub Repository',
-      icon: '🐙',
+      icon: '🐱',
       description: 'Create GitHub repository',
       category: 'Project Setup',
     },
@@ -545,7 +545,7 @@ export function getAvailableActions(): AvailableAction[] {
     {
       type: 'claude-develop',
       name: 'Claude Code Dev',
-      icon: '🤖',
+      icon: '🦀',
       description: 'Develop app with Claude Code',
       category: 'Development',
     },
@@ -561,7 +561,7 @@ export function getAvailableActions(): AvailableAction[] {
     {
       type: 'github-pr',
       name: 'Update (PR)',
-      icon: '🔄',
+      icon: '🐱',
       description: 'Create PR for updates',
       category: 'Update',
     },
