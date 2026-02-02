@@ -275,12 +275,11 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
         <span className="connector-node-type">● CONNECTOR</span>
       </div>
 
-      {/* Status Badges Row */}
+      {/* Badges row - status badge and RUN/SKIP side by side */}
       <div className="connector-badges-row">
         <span className={`node-status-badge ${executionStatus}`}>
           {getExecutionStatusLabel(executionStatus)}
         </span>
-        {/* Inline RUN/SKIP badge in Patch mode */}
         {state.executionMode === 'patch' && (
           <span className={`run-toggle-badge ${connectorNode.runToggle === false ? 'skip' : 'run'}`}>
             {connectorNode.runToggle === false ? 'SKIP' : 'RUN'}
