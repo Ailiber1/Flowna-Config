@@ -231,12 +231,14 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const getStatusLabel = (status: string): string => {
     if (state.language === 'ja') {
       switch (status) {
+        case 'running': return '実行中';
         case 'done': return '完了';
         case 'error': return 'エラー';
         default: return '待機中';
       }
     }
     switch (status) {
+      case 'running': return 'Running';
       case 'done': return 'Done';
       case 'error': return 'Error';
       default: return 'Waiting';

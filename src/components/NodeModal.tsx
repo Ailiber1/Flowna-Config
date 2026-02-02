@@ -4,19 +4,12 @@ import { t } from '../utils/i18n';
 import { generateId } from '../utils/storage';
 import type { FlowNode, AttachedFile } from '../types';
 
-const ICON_OPTIONS = ['🤖', '⚡', '⚙️', '📋', '💡', '🔧', '📁', '🎯', '📊', '🔗', '☁️', '🐙', '💎', '🚀', '📝'];
-const COLOR_OPTIONS = ['#a78bfa', '#60a5fa', '#ff8800', '#4ade80', '#f472b6', '#fbbf24', '#ef4444', '#06b6d4'];
 const ALLOWED_FILE_TYPES = ['.txt', '.md'];
 
-const getCategoryJapaneseName = (name: string): string => {
-  const map: Record<string, string> = {
-    'AGENT': 'エージェント',
-    'LOGIC': 'ロジック',
-    'SYSTEM': 'システム',
-    'RULE': 'ルール',
-  };
-  return map[name.toUpperCase()] || name;
-};
+// Default values for nodes (no user customization)
+const DEFAULT_CATEGORY = 'SYSTEM';
+const DEFAULT_ICON = '📋';
+const DEFAULT_COLOR = '#60a5fa';
 
 interface NodeModalProps {
   mode: 'add' | 'edit';
@@ -32,11 +25,7 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
 
   const [title, setTitle] = useState(existingNode?.title || '');
   const [description, setDescription] = useState(existingNode?.description || '');
-  const [category, setCategory] = useState(existingNode?.category || 'AGENT');
-  const [icon, setIcon] = useState(existingNode?.icon || '🤖');
-  const [color, setColor] = useState(existingNode?.color || '#a78bfa');
   const [url, setUrl] = useState(existingNode?.url || '');
-  const [status, setStatus] = useState<'waiting' | 'done' | 'error'>(existingNode?.status || 'waiting');
   const [attachedFile, setAttachedFile] = useState<AttachedFile | undefined>(existingNode?.attachedFile);
   const [error, setError] = useState('');
 
@@ -44,11 +33,7 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
     if (existingNode) {
       setTitle(existingNode.title);
       setDescription(existingNode.description);
-      setCategory(existingNode.category);
-      setIcon(existingNode.icon);
-      setColor(existingNode.color);
       setUrl(existingNode.url);
-      setStatus(existingNode.status);
       setAttachedFile(existingNode.attachedFile);
     }
   }, [existingNode]);
@@ -100,18 +85,22 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
       return;
     }
 
-    const categoryData = state.categories.find(c => c.name === category) || state.categories[0];
-
     // In edit mode, always use the existing node's ID
     const nodeId = mode === 'edit' && existingNode ? existingNode.id : generateId();
+
+    // Use existing values or defaults for hidden fields
+    const category = existingNode?.category || DEFAULT_CATEGORY;
+    const icon = existingNode?.icon || DEFAULT_ICON;
+    const color = existingNode?.color || DEFAULT_COLOR;
+    const status = existingNode?.status || 'waiting';
 
     const nodeData: FlowNode = {
       id: nodeId,
       title: title.trim(),
-      displayName: title.trim(),  // Use title as displayName (unified)
+      displayName: title.trim(),
       description: description.trim(),
       category,
-      categoryDisplayName: categoryData.displayName,
+      categoryDisplayName: category,
       icon,
       color,
       url: url.trim(),
@@ -144,15 +133,6 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
     onClose();
   };
 
-  const handleCategoryChange = (newCategory: string) => {
-    setCategory(newCategory);
-    const categoryData = state.categories.find(c => c.name === newCategory);
-    if (categoryData) {
-      setIcon(categoryData.icon);
-      setColor(categoryData.color);
-    }
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
@@ -183,52 +163,6 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
             </div>
 
             <div className="form-group">
-              <label className="form-label">{t('category', state.language)}</label>
-              <select
-                className="form-select"
-                value={category}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-              >
-                {state.categories.map(cat => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.icon} {state.language === 'ja' ? getCategoryJapaneseName(cat.name) : cat.displayName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">{t('icon', state.language)}</label>
-              <div className="icon-picker">
-                {ICON_OPTIONS.map(opt => (
-                  <button
-                    key={opt}
-                    type="button"
-                    className={`icon-option ${icon === opt ? 'selected' : ''}`}
-                    onClick={() => setIcon(opt)}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">{t('color', state.language)}</label>
-              <div className="color-picker">
-                {COLOR_OPTIONS.map(opt => (
-                  <button
-                    key={opt}
-                    type="button"
-                    className={`color-option ${color === opt ? 'selected' : ''}`}
-                    style={{ backgroundColor: opt }}
-                    onClick={() => setColor(opt)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
               <label className="form-label">{t('description', state.language)}</label>
               <textarea
                 className="form-textarea"
@@ -247,19 +181,6 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://..."
               />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">{t('status', state.language)}</label>
-              <select
-                className="form-select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'waiting' | 'done' | 'error')}
-              >
-                <option value="waiting">{t('waiting', state.language)}</option>
-                <option value="done">{t('done', state.language)}</option>
-                <option value="error">{t('error', state.language)}</option>
-              </select>
             </div>
 
             {/* File Upload Section */}
