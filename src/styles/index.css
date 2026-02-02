@@ -782,7 +782,9 @@ body {
 .flow-node {
   position: absolute;
   width: 220px;
-  min-height: 150px;
+  height: 165px;
+  display: flex;
+  flex-direction: column;
   background: rgba(15, 25, 40, 0.7);
   backdrop-filter: blur(10px);
   border-radius: 28px;
@@ -1193,6 +1195,7 @@ body {
 
 /* Node Footer (Ports) */
 .node-footer {
+  margin-top: auto;
   padding: 8px 12px 10px;
   display: flex;
   justify-content: space-between;
