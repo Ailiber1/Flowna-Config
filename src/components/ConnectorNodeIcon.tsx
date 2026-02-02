@@ -201,13 +201,20 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     setIsCreatingConnectionFromThis(true);
   }, [connectorNode.id, connectorNode.position, dispatch]);
 
-  // Right-click to open connector settings
+  // Right-click to open context menu (like FlowNode)
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Open the connector settings modal
-    dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
-  }, [connector.id, dispatch]);
+    dispatch({
+      type: 'SET_CONTEXT_MENU',
+      payload: {
+        x: e.clientX,
+        y: e.clientY,
+        type: 'node',
+        targetId: connectorNode.id,
+      },
+    });
+  }, [connectorNode.id, dispatch]);
 
   // Double-click to open URL
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
@@ -263,6 +270,13 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
+      {/* RUN/SKIP Badge (Patch Mode) - shown above node */}
+      {state.executionMode === 'patch' && (
+        <div className={`plan-status-badge ${connectorNode.runToggle === false ? 'skip' : 'run'}`}>
+          {connectorNode.runToggle === false ? 'SKIP' : 'RUN'}
+        </div>
+      )}
+
       {/* Header */}
       <div className="connector-node-header">
         <span className="connector-node-type">● CONNECTOR</span>
@@ -270,6 +284,12 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
         <span className={`node-status-badge ${executionStatus}`}>
           {getExecutionStatusLabel(executionStatus)}
         </span>
+        {/* Inline RUN/SKIP badge in Patch mode */}
+        {state.executionMode === 'patch' && (
+          <span className={`run-toggle-badge ${connectorNode.runToggle === false ? 'skip' : 'run'}`}>
+            {connectorNode.runToggle === false ? 'SKIP' : 'RUN'}
+          </span>
+        )}
       </div>
 
       {/* Icon and Name Section */}
