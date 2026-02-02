@@ -117,6 +117,68 @@ export class GitHubConnector {
     const issues = await this.request<unknown[]>(`/repos/${owner}/${repo}/issues?state=open&per_page=20`);
     return issues || [];
   }
+
+  async createRepository(options: {
+    name: string;
+    description?: string;
+    private?: boolean;
+  }, token?: string): Promise<ConnectorResult> {
+    // If a token is provided, use it temporarily
+    const originalToken = this.token;
+    if (token) {
+      this.token = token;
+    }
+
+    if (!this.isConfigured()) {
+      return { success: false, message: 'GitHub token not configured' };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/user/repos`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: options.name,
+          description: options.description || '',
+          private: options.private || false,
+          auto_init: true,
+        }),
+      });
+
+      // Restore original token
+      if (token) {
+        this.token = originalToken;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          success: false,
+          message: errorData.message || `Failed to create repository: ${response.status}`,
+        };
+      }
+
+      const repo = await response.json();
+      return {
+        success: true,
+        message: `Repository created: ${repo.full_name}`,
+        data: repo,
+      };
+    } catch (error) {
+      // Restore original token
+      if (token) {
+        this.token = originalToken;
+      }
+      return {
+        success: false,
+        message: `Failed to create repository: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
 }
 
 // ============================================

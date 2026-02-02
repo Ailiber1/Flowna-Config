@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
 import { generateId } from '../utils/storage';
-import type { FlowNode } from '../types';
+import type { FlowNode, AttachedFile } from '../types';
 
 const ICON_OPTIONS = ['🤖', '⚡', '⚙️', '📋', '💡', '🔧', '📁', '🎯', '📊', '🔗', '☁️', '🐙', '💎', '🚀', '📝'];
 const COLOR_OPTIONS = ['#a78bfa', '#60a5fa', '#ff8800', '#4ade80', '#f472b6', '#fbbf24', '#ef4444', '#06b6d4'];
+const ALLOWED_FILE_TYPES = ['.txt', '.md'];
 
 const getCategoryJapaneseName = (name: string): string => {
   const map: Record<string, string> = {
@@ -25,6 +26,7 @@ interface NodeModalProps {
 
 export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
   const { state, dispatch } = useApp();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const existingNode = nodeId ? state.nodes.find(n => n.id === nodeId) : null;
 
@@ -35,6 +37,7 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
   const [color, setColor] = useState(existingNode?.color || '#a78bfa');
   const [url, setUrl] = useState(existingNode?.url || '');
   const [status, setStatus] = useState<'waiting' | 'done' | 'error'>(existingNode?.status || 'waiting');
+  const [attachedFile, setAttachedFile] = useState<AttachedFile | undefined>(existingNode?.attachedFile);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -46,8 +49,42 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
       setColor(existingNode.color);
       setUrl(existingNode.url);
       setStatus(existingNode.status);
+      setAttachedFile(existingNode.attachedFile);
     }
   }, [existingNode]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!ALLOWED_FILE_TYPES.includes(ext)) {
+      setError(state.language === 'ja'
+        ? '対応ファイル形式: .txt, .md'
+        : 'Allowed file types: .txt, .md');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setAttachedFile({
+        name: file.name,
+        content,
+        type: ext.replace('.', ''),
+        uploadedAt: Date.now(),
+      });
+      setError('');
+    };
+    reader.readAsText(file);
+  };
+
+  const handleRemoveFile = () => {
+    setAttachedFile(undefined);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +124,7 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
       connectorLinks: existingNode?.connectorLinks || [],
       createdAt: existingNode?.createdAt || Date.now(),
       updatedAt: Date.now(),
+      attachedFile,
     };
 
     if (mode === 'add') {
@@ -222,6 +260,50 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
                 <option value="done">{t('done', state.language)}</option>
                 <option value="error">{t('error', state.language)}</option>
               </select>
+            </div>
+
+            {/* File Upload Section */}
+            <div className="form-group">
+              <label className="form-label">
+                {state.language === 'ja' ? '添付ファイル（仕様書等）' : 'Attached File (Spec, etc.)'}
+              </label>
+              {attachedFile ? (
+                <div className="attached-file-info">
+                  <div className="attached-file-display">
+                    <span className="attached-file-icon">📄</span>
+                    <span className="attached-file-name">{attachedFile.name}</span>
+                    <span className="attached-file-size">
+                      ({Math.round(attachedFile.content.length / 1024 * 10) / 10} KB)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-small btn-danger"
+                    onClick={handleRemoveFile}
+                  >
+                    {state.language === 'ja' ? '削除' : 'Remove'}
+                  </button>
+                </div>
+              ) : (
+                <div className="file-upload-area">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".txt,.md"
+                    onChange={handleFileUpload}
+                    className="file-input-hidden"
+                    id="file-upload"
+                  />
+                  <label htmlFor="file-upload" className="file-upload-label">
+                    <span className="file-upload-icon">📁</span>
+                    <span className="file-upload-text">
+                      {state.language === 'ja'
+                        ? 'クリックしてファイルを選択 (.txt, .md)'
+                        : 'Click to select file (.txt, .md)'}
+                    </span>
+                  </label>
+                </div>
+              )}
             </div>
           </div>
 
