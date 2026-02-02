@@ -270,23 +270,22 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
-      {/* Header - Centered CONNECTOR label */}
+      {/* Header - Centered CONNECTOR label with status badge */}
       <div className="connector-node-header">
         <span className="connector-node-type">● CONNECTOR</span>
-      </div>
-
-      {/* Status Badges Row */}
-      <div className="connector-badges-row">
         <span className={`node-status-badge ${executionStatus}`}>
           {getExecutionStatusLabel(executionStatus)}
         </span>
-        {/* Inline RUN/SKIP badge in Patch mode */}
-        {state.executionMode === 'patch' && (
+      </div>
+
+      {/* RUN/SKIP badge row (Patch mode only) */}
+      {state.executionMode === 'patch' && (
+        <div className="connector-badges-row">
           <span className={`run-toggle-badge ${connectorNode.runToggle === false ? 'skip' : 'run'}`}>
             {connectorNode.runToggle === false ? 'SKIP' : 'RUN'}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Icon and Name Section */}
       <div className="connector-node-content">
