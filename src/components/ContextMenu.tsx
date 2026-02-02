@@ -48,9 +48,6 @@ export function ContextMenu() {
 
   if (!state.contextMenu) return null;
 
-  // Don't show context menu for connectors
-  if (type === 'node' && isConnectorNode) return null;
-
   // Check if node has attached file
   const hasAttachedFile = !!node?.attachedFile;
 
@@ -138,7 +135,7 @@ export function ContextMenu() {
     dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
   };
 
-  // Toggle run for Patch mode
+  // Toggle run for Patch mode (Node)
   const handleToggleRun = () => {
     if (targetId && node) {
       // Determine what the new state will be after toggle
@@ -156,6 +153,34 @@ export function ContextMenu() {
           type: 'info',
         },
       });
+    }
+    dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
+  };
+
+  // Toggle run for Patch mode (Connector)
+  const handleToggleConnectorRun = () => {
+    if (targetId && connectorNode) {
+      const currentToggle = connectorNode.runToggle;
+      const willBeRun = currentToggle === false;
+
+      dispatch({ type: 'TOGGLE_CONNECTOR_RUN', payload: targetId });
+      dispatch({
+        type: 'SHOW_TOAST',
+        payload: {
+          message: state.language === 'ja'
+            ? (willBeRun ? 'コネクタを RUN に設定しました' : 'コネクタを SKIP に設定しました')
+            : (willBeRun ? 'Connector set to RUN' : 'Connector set to SKIP'),
+          type: 'info',
+        },
+      });
+    }
+    dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
+  };
+
+  // Open connector settings
+  const handleOpenConnectorSettings = () => {
+    if (connectorNode) {
+      dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connectorNode.connectorId });
     }
     dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
   };
@@ -501,6 +526,31 @@ Please provide:
         </>
       )}
 
+      {/* Connector Node Context Menu */}
+      {type === 'node' && isConnectorNode && (
+        <>
+          <div className="context-menu-item" onClick={handleOpenConnectorSettings}>
+            ⚙️ {state.language === 'ja' ? '設定' : 'Settings'}
+          </div>
+          {/* Patch mode - Toggle Run/Skip for Connector */}
+          {state.executionMode === 'patch' && (
+            <>
+              <div className="context-menu-divider" />
+              <div className="context-menu-item" onClick={handleToggleConnectorRun}>
+                {connectorNode?.runToggle === false ? '▶️' : '⏸️'}
+                {' '}
+                {state.language === 'ja'
+                  ? (connectorNode?.runToggle === false ? 'RUN に設定' : 'SKIP に設定')
+                  : (connectorNode?.runToggle === false ? 'Set to RUN' : 'Set to SKIP')}
+              </div>
+            </>
+          )}
+          <div className="context-menu-divider" />
+          <div className="context-menu-item danger" onClick={handleDelete}>
+            🗑️ {state.language === 'ja' ? 'コネクタを削除' : 'Delete Connector'}
+          </div>
+        </>
+      )}
 
       {type === 'connection' && (
         <>

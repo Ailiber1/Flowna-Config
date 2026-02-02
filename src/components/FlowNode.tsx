@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
-import type { FlowNode as FlowNodeType, PlanNodeStatus } from '../types';
+import type { FlowNode as FlowNodeType } from '../types';
 
 interface FlowNodeProps {
   node: FlowNodeType;
@@ -263,13 +263,6 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
 
   const categoryClass = getCategoryClass(node.category);
 
-  // Get plan status for this node (for Patch mode badge)
-  const planStatus: PlanNodeStatus | null = useMemo(() => {
-    if (!state.executionPlan) return null;
-    const planItem = state.executionPlan.items.find(item => item.nodeId === node.id);
-    return planItem?.status || null;
-  }, [state.executionPlan, node.id]);
-
   // Get all action icons for display
   const actionIcons = useMemo(() => {
     if (!node.actions || node.actions.length === 0) return [];
@@ -329,12 +322,10 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         </div>
       )}
 
-      {/* RUN/SKIP Badge (Patch Mode) */}
-      {state.executionMode === 'patch' && planStatus && (
-        <div className={`plan-status-badge ${planStatus}`}>
-          {planStatus === 'run' && 'RUN'}
-          {planStatus === 'skip' && 'SKIP'}
-          {planStatus === 'blocked' && 'BLOCKED'}
+      {/* RUN/SKIP Badge (Patch Mode) - shown above node */}
+      {state.executionMode === 'patch' && (
+        <div className={`plan-status-badge ${node.runToggle === false ? 'skip' : 'run'}`}>
+          {node.runToggle === false ? 'SKIP' : 'RUN'}
         </div>
       )}
 
@@ -366,6 +357,12 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         <span className={`node-status-badge ${node.status}`}>
           {getStatusLabel(node.status)}
         </span>
+        {/* Inline RUN/SKIP badge in Patch mode */}
+        {state.executionMode === 'patch' && (
+          <span className={`run-toggle-badge ${node.runToggle === false ? 'skip' : 'run'}`}>
+            {node.runToggle === false ? 'SKIP' : 'RUN'}
+          </span>
+        )}
       </div>
 
       {/* Divider Line */}

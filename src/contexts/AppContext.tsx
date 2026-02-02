@@ -151,6 +151,7 @@ type AppAction =
   | { type: 'CLEAR_RUN_LOGS' }
   | { type: 'INCREMENT_REVISION' }
   | { type: 'TOGGLE_NODE_RUN'; payload: string }
+  | { type: 'TOGGLE_CONNECTOR_RUN'; payload: string }
   | { type: 'ADD_NODE_ACTION'; payload: { nodeId: string; action: NodeAction } }
   | { type: 'REMOVE_NODE_ACTION'; payload: { nodeId: string; actionId: string } }
   | { type: 'UPDATE_NODE_ACTION'; payload: { nodeId: string; action: NodeAction } }
@@ -773,6 +774,16 @@ function appReducer(state: AppState, action: AppAction): AppState {
           n.id === action.payload
             ? { ...n, runToggle: n.runToggle === undefined ? false : !n.runToggle, updatedAt: Date.now() }
             : n
+        ),
+      };
+
+    case 'TOGGLE_CONNECTOR_RUN':
+      return {
+        ...state,
+        connectorNodes: state.connectorNodes.map(cn =>
+          cn.id === action.payload
+            ? { ...cn, runToggle: cn.runToggle === undefined ? false : !cn.runToggle }
+            : cn
         ),
       };
 
