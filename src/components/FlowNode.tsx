@@ -14,6 +14,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
+  const [showMemo, setShowMemo] = useState(false);
 
   const getCategoryClass = (category: string): string => {
     const categoryLower = category.toLowerCase();
@@ -23,6 +24,33 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     if (categoryLower.includes('rule')) return 'rule';
     return 'agent';
   };
+
+  // Handle single click to toggle memo display
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    // Don't toggle memo if clicking on ports
+    if ((e.target as HTMLElement).classList.contains('port-circle')) return;
+
+    // Toggle memo display only if node has description
+    if (node.description) {
+      setShowMemo(prev => !prev);
+    }
+  }, [node.description]);
+
+  // Hide memo when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (nodeRef.current && !nodeRef.current.contains(e.target as Node)) {
+        setShowMemo(false);
+      }
+    };
+
+    if (showMemo) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMemo]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).classList.contains('port-circle')) return;
@@ -214,10 +242,15 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     return planItem?.status || null;
   }, [state.executionPlan, node.id]);
 
-  // Check if node has actions
-  const hasActions = (node.actions?.length || 0) > 0;
-  const hasPatchTarget = node.actions?.some(a => a.type === 'patch-target' && a.enabled) || false;
-  const hasConnectorInvoke = node.actions?.some(a => a.type === 'connector-invoke' && a.enabled) || false;
+  // Get all action icons for display
+  const actionIcons = useMemo(() => {
+    if (!node.actions || node.actions.length === 0) return [];
+    return node.actions
+      .filter(a => a.enabled)
+      .map(a => ({ icon: a.icon, name: a.name }));
+  }, [node.actions]);
+
+  const hasActions = actionIcons.length > 0;
 
   const getCategoryLabel = (category: string): string => {
     const cat = category.toUpperCase();
@@ -248,16 +281,26 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   return (
     <div
       ref={nodeRef}
-      className={`flow-node ${categoryClass} ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''} ${isDragging ? 'dragging' : ''} ${hasConnectorInvoke ? 'has-connector' : ''} ${hasPatchTarget ? 'patch-target' : ''}`}
+      className={`flow-node ${categoryClass} ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''} ${isDragging ? 'dragging' : ''} ${hasActions ? 'has-actions' : ''}`}
       style={{
         left: node.position.x,
         top: node.position.y,
         borderColor: node.color ? `${node.color}80` : undefined,
       }}
+      onClick={handleClick}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
+      {/* Memo Popup - shows above node when clicked */}
+      {showMemo && node.description && (
+        <div className="node-memo-popup">
+          <div className="node-memo-content">
+            {node.description}
+          </div>
+        </div>
+      )}
+
       {/* RUN/SKIP Badge (Patch Mode) */}
       {state.executionMode === 'patch' && planStatus && (
         <div className={`plan-status-badge ${planStatus}`}>
@@ -267,24 +310,6 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         </div>
       )}
 
-      {/* Action Indicators */}
-      {hasActions && (
-        <div className="action-indicators">
-          {hasPatchTarget && <span className="action-indicator patch-target" title="Patch Target">🎯</span>}
-          {hasConnectorInvoke && <span className="action-indicator connector" title="Connector Action">⚡</span>}
-          {!hasPatchTarget && !hasConnectorInvoke && (
-            <span className="action-indicator" title={`${node.actions?.length} actions`}>📌</span>
-          )}
-        </div>
-      )}
-
-      {/* Memo Indicator */}
-      {node.memo && (
-        <span className="node-memo-indicator" title={node.memo}>
-          📝
-        </span>
-      )}
-
       {/* File Attachment Indicator */}
       {node.attachedFile && (
         <span
@@ -292,6 +317,13 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
           title={`${state.language === 'ja' ? '添付ファイル: ' : 'Attached: '}${node.attachedFile.name}`}
         >
           📄
+        </span>
+      )}
+
+      {/* Memo indicator - shows when there's description but popup is hidden */}
+      {node.description && !showMemo && (
+        <span className="node-memo-indicator" title={state.language === 'ja' ? 'クリックでメモ表示' : 'Click to show memo'}>
+          💬
         </span>
       )}
 
@@ -311,14 +343,20 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       {/* Divider Line */}
       <div className="node-divider" />
 
-      {/* Body - Description */}
-      <div className="node-body">
-        {node.description && (
-          <div className="node-description-box">
-            <p className="node-description">{node.description}</p>
-          </div>
-        )}
-      </div>
+      {/* Action Icons Bar - shows all action icons clearly */}
+      {hasActions && (
+        <div className="node-action-icons">
+          {actionIcons.map((action, index) => (
+            <span
+              key={index}
+              className="node-action-icon"
+              title={action.name}
+            >
+              {action.icon}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Footer with Ports */}
       <div className="node-footer">
