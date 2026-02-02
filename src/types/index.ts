@@ -159,6 +159,7 @@ export interface ConnectorNode {
   connectorId: string;
   position: Position;
   createdAt: number;
+  status?: NodeStatus; // Execution status (waiting/running/done/error)
 }
 
 export interface Folder {
