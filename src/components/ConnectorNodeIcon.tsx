@@ -8,7 +8,8 @@ interface ConnectorNodeIconProps {
   isSelected: boolean;
 }
 
-const CONNECTOR_NODE_SIZE = 96;
+const CONNECTOR_NODE_WIDTH = 180;
+const CONNECTOR_NODE_HEIGHT = 140;
 
 export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: ConnectorNodeIconProps) {
   const { state, dispatch } = useApp();
@@ -20,7 +21,7 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // Don't start drag if clicking on port
-    if ((e.target as HTMLElement).classList.contains('connector-port-circle')) return;
+    if ((e.target as HTMLElement).classList.contains('port-circle')) return;
 
     e.stopPropagation();
     isDraggingRef.current = true;
@@ -114,7 +115,7 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
   const handleConnectionMouseUp = useCallback((e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
-    if (!target.classList.contains('port-circle') && !target.classList.contains('connector-port-circle')) {
+    if (!target.classList.contains('port-circle')) {
       dispatch({ type: 'CANCEL_CONNECTION' });
     }
 
@@ -168,8 +169,8 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     dispatch({ type: 'START_CONNECTION', payload: connectorNode.id });
 
     // Set initial ghost line position to the output port location
-    const portX = connectorNode.position.x + CONNECTOR_NODE_SIZE - 10;
-    const portY = connectorNode.position.y + CONNECTOR_NODE_SIZE / 2;
+    const portX = connectorNode.position.x + CONNECTOR_NODE_WIDTH - 15;
+    const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT - 17;
     dispatch({
       type: 'UPDATE_GHOST_LINE',
       payload: { x: portX, y: portY },
@@ -197,10 +198,17 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     }
   }, [connector.url, connector.id, dispatch]);
 
+  const getStatusLabel = () => {
+    if (connector.status === 'connected') {
+      return state.language === 'ja' ? '接続済' : 'Connected';
+    }
+    return state.language === 'ja' ? '未接続' : 'Not Connected';
+  };
+
   return (
     <div
       ref={nodeRef}
-      className={`connector-node-icon ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''} ${connector.status === 'connected' ? 'configured' : ''}`}
+      className={`connector-node-card ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''} ${connector.status === 'connected' ? 'configured' : ''}`}
       style={{
         left: connectorNode.position.x,
         top: connectorNode.position.y,
@@ -209,23 +217,39 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
-      {/* Input port (left side) */}
-      <span
-        className="connector-port-circle input-port"
-        onMouseUp={handleInputPortMouseUp}
-      />
-
-      <div className="connector-node-circle">
-        <span className="connector-node-emoji">{connector.icon}</span>
+      {/* Header */}
+      <div className="connector-node-header">
+        <span className="connector-node-type">● CONNECTOR</span>
       </div>
 
-      {/* Output port (right side) */}
-      <span
-        className="connector-port-circle output-port"
-        onMouseDown={handleOutputPortMouseDown}
-      />
+      {/* Icon and Name Section */}
+      <div className="connector-node-content">
+        <span className="connector-node-icon">{connector.icon}</span>
+        <span className="connector-node-name"># {connector.name}</span>
+      </div>
 
-      <span className="connector-node-label">{connector.name}</span>
+      {/* Status Badge */}
+      <div className={`connector-status-badge ${connector.status === 'connected' ? 'connected' : 'disconnected'}`}>
+        {getStatusLabel()}
+      </div>
+
+      {/* Footer with Ports */}
+      <div className="connector-node-footer">
+        <div className="connector-port">
+          <span
+            className="port-circle input-port"
+            onMouseUp={handleInputPortMouseUp}
+          />
+          <span className="port-label">{state.language === 'ja' ? '入力' : 'Input'}</span>
+        </div>
+        <div className="connector-port">
+          <span className="port-label">{state.language === 'ja' ? '出力' : 'Output'}</span>
+          <span
+            className="port-circle output-port"
+            onMouseDown={handleOutputPortMouseDown}
+          />
+        </div>
+      </div>
     </div>
   );
 }
