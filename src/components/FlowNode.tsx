@@ -11,10 +11,14 @@ interface FlowNodeProps {
 export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const { state, dispatch } = useApp();
   const nodeRef = useRef<HTMLDivElement>(null);
+  const nodePositionRef = useRef(node.position);
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
   const [showMemo, setShowMemo] = useState(false);
+
+  // Keep position ref updated
+  nodePositionRef.current = node.position;
 
   const getCategoryClass = (category: string): string => {
     const categoryLower = category.toLowerCase();
@@ -89,15 +93,18 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
           payload: { dx, dy },
         });
       } else {
+        // Use ref for latest position to avoid stale closure issues
         dispatch({
           type: 'MOVE_NODE',
-          payload: { id: node.id, position: { x: node.position.x + dx, y: node.position.y + dy } },
+          payload: { id: node.id, position: { x: nodePositionRef.current.x + dx, y: nodePositionRef.current.y + dy } },
         });
       }
 
       setLastMousePos({ x: currentX, y: currentY });
     }
-  }, [isDragging, lastMousePos, node.id, node.position, state.viewport.scale, isSelected, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, dispatch]);
+    // Note: node.position removed from deps - using ref instead to prevent
+    // callback re-creation during drag which could cause misalignment
+  }, [isDragging, lastMousePos, node.id, state.viewport.scale, isSelected, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, dispatch]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);

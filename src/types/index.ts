@@ -193,6 +193,7 @@ export interface Workflow {
   folderId: string;
   nodes: FlowNode[];
   connections: Connection[];
+  connectorNodes?: ConnectorNode[];  // Optional for backward compatibility
   viewport: Viewport;
   customCategories: CustomCategory[];
   thumbnail: string;
