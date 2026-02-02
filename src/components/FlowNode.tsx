@@ -13,6 +13,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const nodePositionRef = useRef(node.position);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
+  const isDraggingRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
   const [showMemo, setShowMemo] = useState(false);
@@ -60,6 +61,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     if ((e.target as HTMLElement).classList.contains('port-circle')) return;
 
     e.stopPropagation();
+    isDraggingRef.current = true;
     setIsDragging(true);
     dispatch({ type: 'START_DRAGGING_NODE' });
 
@@ -71,12 +73,20 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
     if (e.ctrlKey || e.metaKey) {
       dispatch({ type: 'SELECT_NODE', payload: node.id });
     } else if (!isSelected) {
+      // Clear connector selections and select only this node
+      dispatch({ type: 'SELECT_CONNECTOR_NODES', payload: [] });
       dispatch({ type: 'SELECT_NODES', payload: [node.id] });
     }
   }, [node.id, state.viewport.scale, isSelected, dispatch]);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isDragging) {
+  // Add global mouse listeners for dragging - define handlers inside useEffect
+  // to avoid dependency issues that cause event listener churn
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+
       const currentX = e.clientX / state.viewport.scale;
       const currentY = e.clientY / state.viewport.scale;
 
@@ -101,27 +111,22 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
       }
 
       lastMousePosRef.current = { x: currentX, y: currentY };
-    }
-    // Using refs for position and lastMousePos to prevent callback re-creation
-    // during drag which causes event listener updates and connection line drift
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      setIsDragging(false);
+      dispatch({ type: 'STOP_DRAGGING_NODE' });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
   }, [isDragging, node.id, state.viewport.scale, isSelected, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, dispatch]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    dispatch({ type: 'STOP_DRAGGING_NODE' });
-  }, [dispatch]);
-
-  // Add global mouse listeners for dragging
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
