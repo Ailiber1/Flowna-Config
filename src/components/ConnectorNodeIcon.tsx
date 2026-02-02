@@ -16,7 +16,11 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
   const nodeRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
+  const connectorNodePositionRef = useRef(connectorNode.position);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Keep position ref updated
+  connectorNodePositionRef.current = connectorNode.position;
   const [isCreatingConnectionFromThis, setIsCreatingConnectionFromThis] = useState(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -66,14 +70,14 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
           payload: { dx, dy },
         });
       } else {
-        // Move only this connector
+        // Move only this connector - use ref for latest position
         dispatch({
           type: 'MOVE_CONNECTOR_NODE',
           payload: {
             id: connectorNode.id,
             position: {
-              x: connectorNode.position.x + dx,
-              y: connectorNode.position.y + dy,
+              x: connectorNodePositionRef.current.x + dx,
+              y: connectorNodePositionRef.current.y + dy,
             },
           },
         });
@@ -95,7 +99,9 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, connectorNode.id, connectorNode.position, state.viewport.scale, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, isSelected, dispatch]);
+    // Note: connectorNode.position removed from deps - using ref instead to prevent
+    // useEffect re-runs during drag which would cause connection line misalignment
+  }, [isDragging, connectorNode.id, state.viewport.scale, state.selectedNodeIds.length, state.selectedConnectorNodeIds.length, isSelected, dispatch]);
 
   // Connection creation from output port
   const handleConnectionMouseMove = useCallback((e: MouseEvent) => {
