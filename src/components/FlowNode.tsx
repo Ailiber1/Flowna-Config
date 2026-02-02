@@ -322,13 +322,6 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         </div>
       )}
 
-      {/* RUN/SKIP Badge (Patch Mode) - shown above node */}
-      {state.executionMode === 'patch' && (
-        <div className={`plan-status-badge ${node.runToggle === false ? 'skip' : 'run'}`}>
-          {node.runToggle === false ? 'SKIP' : 'RUN'}
-        </div>
-      )}
-
       {/* File Attachment Indicator */}
       {node.attachedFile && (
         <span
