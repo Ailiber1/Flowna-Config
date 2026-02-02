@@ -550,6 +550,10 @@ body {
   transition: none !important;
 }
 
+.canvas.dragging-nodes .connector-node-card {
+  transition: none !important;
+}
+
 .canvas.dragging-nodes .connection-line {
   transition: none !important;
 }
@@ -1832,7 +1836,7 @@ body {
 .connector-node-card {
   position: absolute;
   width: 180px;
-  min-height: 140px;
+  height: 140px; /* Fixed height like FlowNode for reliable port positioning */
   background: rgba(15, 25, 40, 0.7);
   backdrop-filter: blur(10px);
   border-radius: 20px;
