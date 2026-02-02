@@ -25,10 +25,6 @@ export function TopBar() {
     }
   }, [state.nodes, state.connections, state.executionMode, state.appCreated, state.currentRevision, dispatch]);
 
-  const handleAddNode = () => {
-    dispatch({ type: 'OPEN_ADD_NODE_MODAL' });
-  };
-
   const handleSaveWorkflow = () => {
     dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
   };
@@ -261,9 +257,6 @@ export function TopBar() {
 
         <button className="topbar-btn" onClick={handleFitToScreen}>
           📐 {state.language === 'ja' ? 'フィット' : 'Fit'}
-        </button>
-        <button className="topbar-btn" onClick={handleAddNode}>
-          ➕ {t('addNode', state.language)}
         </button>
         <button
           className={`topbar-btn implement ${state.isImplementing ? 'implementing' : ''} ${state.executionMode}`}
