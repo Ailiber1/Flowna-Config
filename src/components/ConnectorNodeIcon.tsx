@@ -270,13 +270,6 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
-      {/* RUN/SKIP Badge (Patch Mode) - shown above node */}
-      {state.executionMode === 'patch' && (
-        <div className={`plan-status-badge ${connectorNode.runToggle === false ? 'skip' : 'run'}`}>
-          {connectorNode.runToggle === false ? 'SKIP' : 'RUN'}
-        </div>
-      )}
-
       {/* Header */}
       <div className="connector-node-header">
         <span className="connector-node-type">● CONNECTOR</span>
