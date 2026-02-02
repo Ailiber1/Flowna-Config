@@ -9,20 +9,7 @@ export function ContextMenu() {
   const { state, dispatch } = useApp();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dispatch]);
-
-  if (!state.contextMenu) return null;
-
-  const { x, y, type, targetId } = state.contextMenu;
+  const { x, y, type, targetId } = state.contextMenu || { x: 0, y: 0, type: 'canvas', targetId: null };
   const node = targetId ? state.nodes.find(n => n.id === targetId) : null;
   const connectorNode = targetId ? state.connectorNodes.find(cn => cn.id === targetId) : null;
   // Connection is available for future use with connection-specific context menu items
@@ -31,9 +18,8 @@ export function ContextMenu() {
 
   // Determine if this is a connector node context menu - don't show context menu for connectors
   const isConnectorNode = !node && connectorNode;
-  if (type === 'node' && isConnectorNode) return null;
 
-  // Find connected connectors for this node
+  // Find connected connectors for this node (must be called unconditionally - React hooks rule)
   const connectedConnectors = useMemo(() => {
     if (!node) return [];
     // Find connections where this node is the source
@@ -48,6 +34,22 @@ export function ContextMenu() {
     });
     return state.connectors.filter(c => connectorIds.includes(c.id));
   }, [node, state.connections, state.connectorNodes, state.connectors]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        dispatch({ type: 'SET_CONTEXT_MENU', payload: null });
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dispatch]);
+
+  if (!state.contextMenu) return null;
+
+  // Don't show context menu for connectors
+  if (type === 'node' && isConnectorNode) return null;
 
   // Check if node has attached file
   const hasAttachedFile = !!node?.attachedFile;
