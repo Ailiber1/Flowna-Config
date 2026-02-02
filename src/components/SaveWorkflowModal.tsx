@@ -14,21 +14,16 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
+  const [existingWorkflow, setExistingWorkflow] = useState<Workflow | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!name.trim()) {
-      setError(state.language === 'ja' ? 'ワークフロー名は必須です' : 'Workflow name is required');
-      return;
-    }
-
+  const createWorkflowData = (id: string, createdAt?: number): Workflow => {
     const customCategories = state.categories.filter(
       cat => !['agent', 'logic', 'system', 'rule'].includes(cat.id)
     );
 
-    const workflow: Workflow = {
-      id: generateId(),
+    return {
+      id,
       name: name.trim(),
       description: description.trim(),
       folderId: 'default',
@@ -38,27 +33,116 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
       customCategories,
       thumbnail: '',
       tags: [],
-      createdAt: Date.now(),
+      createdAt: createdAt || Date.now(),
       updatedAt: Date.now(),
       lastOpenedAt: Date.now(),
     };
+  };
 
+  const doSave = (workflow: Workflow, isOverwrite: boolean) => {
     // Save to localStorage
     saveWorkflow(workflow);
 
     // Update state
-    dispatch({ type: 'ADD_WORKFLOW', payload: workflow });
+    if (isOverwrite) {
+      dispatch({ type: 'UPDATE_WORKFLOW', payload: workflow });
+    } else {
+      dispatch({ type: 'ADD_WORKFLOW', payload: workflow });
+    }
 
     dispatch({
       type: 'SHOW_TOAST',
       payload: {
-        message: state.language === 'ja' ? 'ワークフローを保存しました' : 'Workflow saved',
+        message: state.language === 'ja'
+          ? (isOverwrite ? 'ワークフローを上書き保存しました' : 'ワークフローを保存しました')
+          : (isOverwrite ? 'Workflow overwritten' : 'Workflow saved'),
         type: 'success',
       },
     });
 
     onClose();
   };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name.trim()) {
+      setError(state.language === 'ja' ? 'ワークフロー名は必須です' : 'Workflow name is required');
+      return;
+    }
+
+    // Check if workflow with same name already exists
+    const existing = state.workflows.find(w => w.name.toLowerCase() === name.trim().toLowerCase());
+    if (existing) {
+      setExistingWorkflow(existing);
+      setShowOverwriteConfirm(true);
+      return;
+    }
+
+    // No duplicate, save as new
+    const workflow = createWorkflowData(generateId());
+    doSave(workflow, false);
+  };
+
+  const handleOverwriteConfirm = () => {
+    if (!existingWorkflow) return;
+    const workflow = createWorkflowData(existingWorkflow.id, existingWorkflow.createdAt);
+    doSave(workflow, true);
+  };
+
+  const handleOverwriteCancel = () => {
+    setShowOverwriteConfirm(false);
+    setExistingWorkflow(null);
+  };
+
+  // Overwrite confirmation dialog
+  if (showOverwriteConfirm) {
+    return (
+      <div className="modal-overlay" onClick={handleOverwriteCancel}>
+        <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+          <div className="modal-header">
+            <h2 className="modal-title">
+              {state.language === 'ja' ? '上書き確認' : 'Confirm Overwrite'}
+            </h2>
+            <button className="modal-close" onClick={handleOverwriteCancel}>×</button>
+          </div>
+
+          <div className="modal-body">
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚠️</div>
+              <p style={{ color: 'var(--text-primary)', fontSize: '14px', marginBottom: '8px' }}>
+                {state.language === 'ja'
+                  ? `「${existingWorkflow?.name}」は既に存在します。`
+                  : `"${existingWorkflow?.name}" already exists.`}
+              </p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                {state.language === 'ja'
+                  ? '上書きしますか？'
+                  : 'Do you want to overwrite it?'}
+              </p>
+            </div>
+          </div>
+
+          <div className="modal-footer" style={{ justifyContent: 'center', gap: '12px' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleOverwriteCancel}
+            >
+              {state.language === 'ja' ? 'いいえ' : 'No'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleOverwriteConfirm}
+            >
+              {state.language === 'ja' ? 'はい' : 'Yes'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
