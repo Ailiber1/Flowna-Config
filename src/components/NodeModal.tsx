@@ -7,6 +7,16 @@ import type { FlowNode } from '../types';
 const ICON_OPTIONS = ['🤖', '⚡', '⚙️', '📋', '💡', '🔧', '📁', '🎯', '📊', '🔗', '☁️', '🐙', '💎', '🚀', '📝'];
 const COLOR_OPTIONS = ['#a78bfa', '#60a5fa', '#ff8800', '#4ade80', '#f472b6', '#fbbf24', '#ef4444', '#06b6d4'];
 
+const getCategoryJapaneseName = (name: string): string => {
+  const map: Record<string, string> = {
+    'AGENT': 'エージェント',
+    'LOGIC': 'ロジック',
+    'SYSTEM': 'システム',
+    'RULE': 'ルール',
+  };
+  return map[name.toUpperCase()] || name;
+};
+
 interface NodeModalProps {
   mode: 'add' | 'edit';
   nodeId?: string;
@@ -143,7 +153,7 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
               >
                 {state.categories.map(cat => (
                   <option key={cat.id} value={cat.name}>
-                    {cat.icon} {cat.displayName}
+                    {cat.icon} {state.language === 'ja' ? getCategoryJapaneseName(cat.name) : cat.displayName}
                   </option>
                 ))}
               </select>
