@@ -226,10 +226,14 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     return state.language === 'ja' ? '未接続' : 'Not Connected';
   };
 
+  // Apply dragging class if this connector is being dragged OR if any drag is happening
+  // This ensures CSS transitions are disabled during all drag operations
+  const shouldDisableTransition = isDragging || state.isDraggingNode;
+
   return (
     <div
       ref={nodeRef}
-      className={`connector-node-card ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''} ${connector.status === 'connected' ? 'configured' : ''}`}
+      className={`connector-node-card ${isSelected ? 'selected' : ''} ${shouldDisableTransition ? 'dragging' : ''} ${connector.status === 'connected' ? 'configured' : ''}`}
       style={{
         left: connectorNode.position.x,
         top: connectorNode.position.y,
