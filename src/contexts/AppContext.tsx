@@ -139,7 +139,7 @@ type AppAction =
   | { type: 'SELECT_CONNECTOR_NODES'; payload: string[] }
   | { type: 'SELECT_ALL' }
   | { type: 'IMPLEMENT_NODES'; payload: { success: boolean; errorNodeIds?: string[] } }
-  | { type: 'UPDATE_NODE_STATUS'; payload: { nodeId: string; status: 'waiting' | 'done' | 'error' } }
+  | { type: 'UPDATE_NODE_STATUS'; payload: { nodeId: string; status: 'waiting' | 'running' | 'done' | 'error' } }
   | { type: 'RESET_NODE_STATUSES' }
   | { type: 'SET_IMPLEMENTING'; payload: boolean }
   // Create/Patch mode actions

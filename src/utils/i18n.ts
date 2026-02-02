@@ -25,6 +25,7 @@ export const translations = {
 
     // Status
     waiting: 'Waiting',
+    running: 'Running',
     done: 'Done',
     error: 'Error',
 
@@ -163,6 +164,7 @@ export const translations = {
 
     // Status
     waiting: '待機中',
+    running: '実行中',
     done: '完了',
     error: 'エラー',
 
