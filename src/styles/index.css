@@ -1043,9 +1043,10 @@ body {
 }
 
 .node-status-badge.waiting {
-  color: #f59e0b;
-  border-color: #f59e0b;
-  background: rgba(245, 158, 11, 0.15);
+  color: var(--status-connected);
+  border-color: var(--status-connected);
+  background: rgba(74, 222, 128, 0.15);
+  animation: status-pulse 1.5s infinite;
 }
 
 .node-status-badge.done {
@@ -1055,9 +1056,9 @@ body {
 }
 
 .node-status-badge.running {
-  color: var(--status-connected);
-  border-color: var(--status-connected);
-  background: rgba(74, 222, 128, 0.15);
+  color: #3b82f6;
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
   animation: status-pulse 1.5s infinite;
 }
 
