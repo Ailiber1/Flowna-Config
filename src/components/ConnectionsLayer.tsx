@@ -13,10 +13,7 @@ const CONNECTOR_NODE_HEIGHT = 140;
 const PORT_OFFSET_FROM_TOP = 95; // Adjusted to align with port circles
 const PORT_OFFSET_X = 19;
 
-// Connector node port offsets (must match ConnectorNodeIcon.tsx)
-// With 35px bottom padding in CSS, ports are centered like FlowNode
-const CONNECTOR_PORT_OFFSET_FROM_BOTTOM = 35;
-const CONNECTOR_PORT_OFFSET_X = 15;
+// Connector ports are now side-positioned at vertical center
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
   const portY = node.position.y + PORT_OFFSET_FROM_TOP;
@@ -29,13 +26,15 @@ function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: numbe
 }
 
 function getConnectorNodePort(connectorNode: ConnectorNode, portType: 'input' | 'output'): { x: number; y: number } {
-  // Port positions on connector node card (now similar to regular nodes)
-  const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT - CONNECTOR_PORT_OFFSET_FROM_BOTTOM;
+  // Ports are now side-positioned at vertical center (top: 50%)
+  const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT / 2;
 
   if (portType === 'input') {
-    return { x: connectorNode.position.x + CONNECTOR_PORT_OFFSET_X, y: portY };
+    // Input port is on the left edge
+    return { x: connectorNode.position.x, y: portY };
   } else {
-    return { x: connectorNode.position.x + CONNECTOR_NODE_WIDTH - CONNECTOR_PORT_OFFSET_X, y: portY };
+    // Output port is on the right edge
+    return { x: connectorNode.position.x + CONNECTOR_NODE_WIDTH, y: portY };
   }
 }
 
