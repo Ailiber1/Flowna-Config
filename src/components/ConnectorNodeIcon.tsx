@@ -266,16 +266,16 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
       {/* Header */}
       <div className="connector-node-header">
         <span className="connector-node-type">● CONNECTOR</span>
+        {/* Execution Status Badge - same position as FlowNode */}
+        <span className={`node-status-badge ${executionStatus}`}>
+          {getExecutionStatusLabel(executionStatus)}
+        </span>
       </div>
 
       {/* Icon and Name Section */}
       <div className="connector-node-content">
         <span className="connector-node-icon">{connector.icon}</span>
         <span className="connector-node-name"># {connector.name}</span>
-        {/* Execution Status Badge - same as FlowNode */}
-        <span className={`node-status-badge ${executionStatus}`}>
-          {getExecutionStatusLabel(executionStatus)}
-        </span>
       </div>
 
       {/* Connection Status Badge */}
