@@ -5,9 +5,10 @@
  */
 
 import type {
-  FlowNode, Connection, NodeStatus, ExecutionMode, ExecutionPlan, ExecutionPlanItem, PlanNodeStatus
+  FlowNode, Connection, NodeStatus, ExecutionMode, ExecutionPlan, ExecutionPlanItem, PlanNodeStatus,
+  ConnectorNode, Connector
 } from '../types';
-import { githubConnector, claudeConnector, geminiConnector } from './connectors';
+import { githubConnector, claudeConnector } from './connectors';
 
 export interface ExecutionResult {
   nodeId: string;
@@ -68,6 +69,46 @@ export function isPatchTarget(node: FlowNode): boolean {
 }
 
 /**
+ * Check if connector should run based on mode and conditions
+ */
+export function shouldConnectorRun(
+  connectorNode: ConnectorNode,
+  connector: Connector,
+  mode: ExecutionMode,
+  appCreated: boolean
+): { status: PlanNodeStatus; reason: string } {
+  // Create mode logic
+  if (mode === 'create') {
+    if (appCreated) {
+      return { status: 'blocked', reason: 'App already created - switch to Patch mode' };
+    }
+    return { status: 'run', reason: 'Create mode - will execute' };
+  }
+
+  // Patch mode logic
+  if (mode === 'patch') {
+    // Check if run toggle is manually set
+    if (connectorNode.runToggle === false) {
+      return { status: 'skip', reason: 'Manually toggled to SKIP' };
+    }
+
+    // If manually set to run, always run
+    if (connectorNode.runToggle === true) {
+      return { status: 'run', reason: 'Manually toggled to RUN' };
+    }
+
+    // Default behavior - check connector status
+    if (connector.status === 'disconnected') {
+      return { status: 'skip', reason: 'Connector not configured' };
+    }
+
+    return { status: 'run', reason: 'Connector ready' };
+  }
+
+  return { status: 'run', reason: 'Default' };
+}
+
+/**
  * Check if node should run based on mode and conditions
  */
 export function shouldNodeRun(
@@ -121,13 +162,16 @@ export function shouldNodeRun(
 
 /**
  * Generate an execution plan without actually running anything
+ * Includes both nodes and connector nodes
  */
 export function generateExecutionPlan(
   nodes: FlowNode[],
   connections: Connection[],
   mode: ExecutionMode,
   appCreated: boolean,
-  currentRevision: number
+  currentRevision: number,
+  connectorNodes: ConnectorNode[] = [],
+  connectors: Connector[] = []
 ): ExecutionPlan {
   const sortedNodes = topologicalSort(nodes, connections);
   const items: ExecutionPlanItem[] = [];
@@ -135,6 +179,7 @@ export function generateExecutionPlan(
   let skipCount = 0;
   let blockedCount = 0;
 
+  // Process regular nodes
   for (const node of sortedNodes) {
     const { status, reason } = shouldNodeRun(node, mode, connections, appCreated);
     const inputHash = calculateInputHash(node, connections);
@@ -147,6 +192,32 @@ export function generateExecutionPlan(
       inputHash,
       previousHash: node.lastRun?.inputHash,
       actions: node.actions || [],
+    });
+
+    switch (status) {
+      case 'run': runCount++; break;
+      case 'skip': skipCount++; break;
+      case 'blocked': blockedCount++; break;
+    }
+  }
+
+  // Process connector nodes
+  const connectorMap = new Map(connectors.map(c => [c.id, c]));
+  for (const connectorNode of connectorNodes) {
+    const connector = connectorMap.get(connectorNode.connectorId);
+    if (!connector) continue;
+
+    const { status, reason } = shouldConnectorRun(connectorNode, connector, mode, appCreated);
+    const inputHash = `connector-${connectorNode.id}-${connector.status}`;
+
+    items.push({
+      nodeId: connectorNode.id,
+      nodeName: `🔌 ${connector.name}`,
+      status,
+      reason,
+      inputHash,
+      previousHash: undefined,
+      actions: [],
     });
 
     switch (status) {
@@ -304,12 +375,6 @@ async function executeConnectorAction(
       }
       // Could use Claude to process node descriptions or generate content
       return { success: true, message: 'Claude action completed' };
-
-    case 'gemini':
-      if (!geminiConnector.isConfigured()) {
-        return { success: true, message: 'Gemini not configured - skipping' };
-      }
-      return { success: true, message: 'Gemini action completed' };
 
     default:
       return { success: true, message: `Connector ${connectorId} executed` };

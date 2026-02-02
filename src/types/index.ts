@@ -246,6 +246,7 @@ export const DEFAULT_CATEGORIES: CustomCategory[] = [
 export const DEFAULT_FOLDERS: Folder[] = [];
 
 export const DEFAULT_CONNECTORS: Connector[] = [
+  // === CI/CD Connectors ===
   {
     id: 'github',
     name: 'GitHub',
@@ -259,6 +260,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
     installedAt: Date.now(),
     lastUsedAt: 0,
   },
+  // === AI Connectors ===
   {
     id: 'claude-code',
     name: 'Claude Code',
@@ -272,6 +274,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
     installedAt: Date.now(),
     lastUsedAt: 0,
   },
+  // === Storage Connectors ===
   {
     id: 'firebase',
     name: 'Firebase',
@@ -285,30 +288,19 @@ export const DEFAULT_CONNECTORS: Connector[] = [
     installedAt: Date.now(),
     lastUsedAt: 0,
   },
-  {
-    id: 'gemini',
-    name: 'Gemini Code',
-    icon: '💎',
-    description: 'AI code assistance with Gemini',
-    type: 'ai',
-    version: '1.0.0',
-    status: 'disconnected',
-    config: {},
-    capabilities: ['import', 'export'],
-    installedAt: Date.now(),
-    lastUsedAt: 0,
-  },
-  {
-    id: 'custom-api',
-    name: 'Custom API',
-    icon: '🔗',
-    description: 'Generic REST API connector',
-    type: 'custom',
-    version: '1.0.0',
-    status: 'disconnected',
-    config: {},
-    capabilities: ['import', 'export'],
-    installedAt: Date.now(),
-    lastUsedAt: 0,
-  },
+  // === Add new connectors here ===
+  // Example:
+  // {
+  //   id: 'new-connector',
+  //   name: 'New Connector',
+  //   icon: '🔌',
+  //   description: 'Description of the connector',
+  //   type: 'custom', // 'cicd' | 'ai' | 'storage' | 'custom'
+  //   version: '1.0.0',
+  //   status: 'disconnected',
+  //   config: {},
+  //   capabilities: ['import', 'export'],
+  //   installedAt: Date.now(),
+  //   lastUsedAt: 0,
+  // },
 ];
