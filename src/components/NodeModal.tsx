@@ -19,7 +19,6 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
   const existingNode = nodeId ? state.nodes.find(n => n.id === nodeId) : null;
 
   const [title, setTitle] = useState(existingNode?.title || '');
-  const [displayName, setDisplayName] = useState(existingNode?.displayName || '');
   const [description, setDescription] = useState(existingNode?.description || '');
   const [category, setCategory] = useState(existingNode?.category || 'AGENT');
   const [icon, setIcon] = useState(existingNode?.icon || '🤖');
@@ -31,7 +30,6 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
   useEffect(() => {
     if (existingNode) {
       setTitle(existingNode.title);
-      setDisplayName(existingNode.displayName);
       setDescription(existingNode.description);
       setCategory(existingNode.category);
       setIcon(existingNode.icon);
@@ -63,7 +61,7 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
     const nodeData: FlowNode = {
       id: nodeId,
       title: title.trim(),
-      displayName: displayName.trim() || title.trim(),
+      displayName: title.trim(),  // Use title as displayName (unified)
       description: description.trim(),
       category,
       categoryDisplayName: categoryData.displayName,
@@ -133,17 +131,6 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={state.language === 'ja' ? 'ノード名を入力' : 'Enter node name'}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">{t('displayName', state.language)}</label>
-              <input
-                type="text"
-                className="form-input"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder={state.language === 'ja' ? '表示名（空欄の場合はノード名を使用）' : 'Display name (uses node name if empty)'}
               />
             </div>
 

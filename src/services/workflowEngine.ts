@@ -141,7 +141,7 @@ export function generateExecutionPlan(
 
     items.push({
       nodeId: node.id,
-      nodeName: node.displayName || node.title,
+      nodeName: node.title,
       status,
       reason,
       inputHash,
