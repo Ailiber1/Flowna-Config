@@ -3,17 +3,14 @@ import { useApp } from '../contexts/AppContext';
 import type { FlowNode, Connection, ConnectorNode } from '../types';
 
 const NODE_WIDTH = 220;
-const NODE_HEIGHT = 150; // Fixed height of node
 
 // Connector node card dimensions
 const CONNECTOR_NODE_WIDTH = 180;
 const CONNECTOR_NODE_HEIGHT = 140;
 
-// Port circle position - adjusted to match the visual position of green port circles
-// The port is in the node-footer which has padding: 8px 12px 10px
-// Port circle is 14px, so center is 7px from its edge
-// From bottom of node: 10px (padding) + 7px (half port) = 17px
-const PORT_OFFSET_FROM_BOTTOM = 17;
+// Port circle position - calculated from top of node
+// Header ~24px + Title ~30px + Divider ~1px + Footer padding 8px + Port center 7px = ~70px
+const PORT_OFFSET_FROM_TOP = 115; // Adjusted for visual alignment
 const PORT_OFFSET_X = 19;
 
 // Connector node port offsets
@@ -21,7 +18,7 @@ const CONNECTOR_PORT_OFFSET_FROM_BOTTOM = 15;
 const CONNECTOR_PORT_OFFSET_X = 15;
 
 function getNodeCenter(node: FlowNode, portType: 'input' | 'output'): { x: number; y: number } {
-  const portY = node.position.y + NODE_HEIGHT - PORT_OFFSET_FROM_BOTTOM;
+  const portY = node.position.y + PORT_OFFSET_FROM_TOP;
 
   if (portType === 'input') {
     return { x: node.position.x + PORT_OFFSET_X, y: portY };
