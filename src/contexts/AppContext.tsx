@@ -860,14 +860,13 @@ const AppContext = createContext<AppContextType | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Load data from localStorage on mount
+  // Load data from localStorage on mount (but NOT the current workflow - start fresh)
   useEffect(() => {
     const settings = storage.getSettings();
     const folders = storage.getFolders();
     const workflows = storage.getWorkflows();
     const connectors = storage.getConnectors();
     const categories = storage.getCategories();
-    const currentWorkflow = storage.getCurrentWorkflowState();
 
     dispatch({ type: 'SET_SETTINGS', payload: settings });
     dispatch({ type: 'SET_FOLDERS', payload: folders });
@@ -875,19 +874,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_CONNECTORS', payload: connectors });
     dispatch({ type: 'SET_CATEGORIES', payload: categories });
 
-    if (currentWorkflow) {
-      dispatch({ type: 'SET_NODES', payload: currentWorkflow.nodes });
-      dispatch({ type: 'SET_CONNECTIONS', payload: currentWorkflow.connections });
-      dispatch({ type: 'SET_VIEWPORT', payload: currentWorkflow.viewport });
-    }
+    // Clear any previously saved current workflow state
+    storage.clearCurrentWorkflowState();
   }, []);
-
-  // Auto-save current state
-  useEffect(() => {
-    if (state.settings.autoSave && (state.nodes.length > 0 || state.connections.length > 0)) {
-      storage.saveCurrentWorkflowState(state.nodes, state.connections, state.viewport);
-    }
-  }, [state.nodes, state.connections, state.viewport, state.settings.autoSave]);
 
   // Save settings when they change
   useEffect(() => {
