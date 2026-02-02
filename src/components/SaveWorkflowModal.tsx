@@ -23,13 +23,22 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
       cat => !['agent', 'logic', 'system', 'rule'].includes(cat.id)
     );
 
+    // Filter to only valid connections (both endpoints must exist)
+    const validConnections = state.connections.filter(conn => {
+      const fromExists = state.nodes.some(n => n.id === conn.from) ||
+                         state.connectorNodes.some(cn => cn.id === conn.from);
+      const toExists = state.nodes.some(n => n.id === conn.to) ||
+                       state.connectorNodes.some(cn => cn.id === conn.to);
+      return fromExists && toExists;
+    });
+
     return {
       id,
       name: name.trim(),
       description: description.trim(),
       folderId: 'default',
       nodes: state.nodes,
-      connections: state.connections,
+      connections: validConnections,
       connectorNodes: state.connectorNodes,
       viewport: state.viewport,
       customCategories,
@@ -199,7 +208,15 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
                 {state.language === 'ja' ? '保存内容' : 'Content to save'}
               </div>
               <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-primary)' }}>
-                📊 {state.nodes.length} {state.language === 'ja' ? 'ノード' : 'nodes'}, {state.connections.length} {state.language === 'ja' ? '接続' : 'connections'}
+                📊 {state.nodes.length} {state.language === 'ja' ? 'ノード' : 'nodes'}
+                {state.connectorNodes.length > 0 && (
+                  <>, 🔌 {state.connectorNodes.length} {state.language === 'ja' ? 'コネクタ' : 'connectors'}</>
+                )}
+                , 🔗 {state.connections.filter(conn => {
+                  const fromExists = state.nodes.some(n => n.id === conn.from) || state.connectorNodes.some(cn => cn.id === conn.from);
+                  const toExists = state.nodes.some(n => n.id === conn.to) || state.connectorNodes.some(cn => cn.id === conn.to);
+                  return fromExists && toExists;
+                }).length} {state.language === 'ja' ? '接続' : 'connections'}
               </div>
             </div>
           </div>
