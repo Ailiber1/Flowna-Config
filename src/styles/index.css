@@ -1932,6 +1932,11 @@ body {
   margin-bottom: 8px;
 }
 
+/* Override margin-left: auto for badges inside connector row */
+.connector-badges-row .run-toggle-badge {
+  margin-left: 0;
+}
+
 .connector-node-content {
   display: flex;
   align-items: center;
