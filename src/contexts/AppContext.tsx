@@ -505,6 +505,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         nodes: action.payload.nodes,
         connections: action.payload.connections,
+        connectorNodes: action.payload.connectorNodes || [],
         viewport: action.payload.viewport,
         categories: [...DEFAULT_CATEGORIES, ...action.payload.customCategories],
       };

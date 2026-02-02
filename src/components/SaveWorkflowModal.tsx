@@ -30,6 +30,7 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
       folderId: 'default',
       nodes: state.nodes,
       connections: state.connections,
+      connectorNodes: state.connectorNodes,
       viewport: state.viewport,
       customCategories,
       thumbnail: '',
