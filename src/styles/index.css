@@ -1906,9 +1906,9 @@ body {
 
 .connector-node-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .connector-node-type {
@@ -1921,6 +1921,15 @@ body {
 
 .connector-node-card.configured .connector-node-type {
   color: rgba(74, 222, 128, 0.9);
+}
+
+/* Status badges row for connector */
+.connector-badges-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .connector-node-content {
