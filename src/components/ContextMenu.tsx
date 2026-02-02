@@ -140,14 +140,19 @@ export function ContextMenu() {
 
   // Toggle run for Patch mode
   const handleToggleRun = () => {
-    if (targetId) {
+    if (targetId && node) {
+      // Determine what the new state will be after toggle
+      // undefined -> false (SKIP), false -> true (RUN), true -> false (SKIP)
+      const currentToggle = node.runToggle;
+      const willBeRun = currentToggle === false; // false -> true means will be RUN
+
       dispatch({ type: 'TOGGLE_NODE_RUN', payload: targetId });
       dispatch({
         type: 'SHOW_TOAST',
         payload: {
           message: state.language === 'ja'
-            ? (node?.runToggle === false ? '実行を有効化しました' : '実行をスキップに設定しました')
-            : (node?.runToggle === false ? 'Enabled execution' : 'Set to skip'),
+            ? (willBeRun ? '実行を有効化しました (RUN)' : '実行をスキップに設定しました (SKIP)')
+            : (willBeRun ? 'Enabled execution (RUN)' : 'Set to skip (SKIP)'),
           type: 'info',
         },
       });
