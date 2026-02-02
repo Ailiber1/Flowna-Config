@@ -1102,10 +1102,73 @@ body {
   background: linear-gradient(90deg, transparent 0%, rgba(74, 222, 128, 0.4) 20%, rgba(74, 222, 128, 0.5) 50%, rgba(74, 222, 128, 0.4) 80%, transparent 100%);
 }
 
+/* Node Action Icons Bar */
+.node-action-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  min-height: 36px;
+}
+
+.node-action-icon {
+  font-size: 20px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: default;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.node-action-icon:hover {
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Node Memo Popup */
+.node-memo-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 10px;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.node-memo-content {
+  background: rgba(20, 25, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  max-width: 300px;
+  min-width: 150px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.node-memo-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
 /* Node Body */
 .node-body {
   padding: 0 12px 8px;
-  min-height: 30px;
+  min-height: 10px;
 }
 
 .node-description-box {
@@ -1113,6 +1176,7 @@ body {
   border-radius: 3px;
   padding: 8px 10px;
   background: rgba(0, 0, 0, 0.2);
+  display: none; /* Hide description inside node - show in popup instead */
 }
 
 .node-description {
@@ -1181,9 +1245,15 @@ body {
   position: absolute;
   top: 6px;
   right: 28px;
-  font-size: 11px;
-  cursor: help;
-  opacity: 0.7;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.node-memo-indicator:hover {
+  transform: scale(1.2);
+  opacity: 1;
 }
 
 .node-file-indicator {
