@@ -190,8 +190,9 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     dispatch({ type: 'START_CONNECTION', payload: connectorNode.id });
 
     // Set initial ghost line position to the output port location
+    // Port offset must match ConnectionsLayer.tsx CONNECTOR_PORT_OFFSET_FROM_BOTTOM (35px)
     const portX = connectorNode.position.x + CONNECTOR_NODE_WIDTH - 15;
-    const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT - 17;
+    const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT - 35;
     dispatch({
       type: 'UPDATE_GHOST_LINE',
       payload: { x: portX, y: portY },
