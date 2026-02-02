@@ -160,6 +160,7 @@ export interface ConnectorNode {
   position: Position;
   createdAt: number;
   status?: NodeStatus; // Execution status (waiting/running/done/error)
+  runToggle?: boolean; // For Patch mode: true = RUN, false = SKIP
 }
 
 export interface Folder {
