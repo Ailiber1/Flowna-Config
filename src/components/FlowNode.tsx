@@ -283,6 +283,16 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
         </span>
       )}
 
+      {/* File Attachment Indicator */}
+      {node.attachedFile && (
+        <span
+          className="node-file-indicator"
+          title={`${state.language === 'ja' ? '添付ファイル: ' : 'Attached: '}${node.attachedFile.name}`}
+        >
+          📄
+        </span>
+      )}
+
       {/* Header - System Node Type */}
       <div className="node-header">
         <span className="node-type-indicator">● {getCategoryLabel(node.category)}</span>
