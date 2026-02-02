@@ -9,21 +9,23 @@ export function TopBar() {
   const { state, dispatch } = useApp();
   const [showPlanPreview, setShowPlanPreview] = useState(false);
 
-  // Generate plan when nodes/connections/mode change
+  // Generate plan when nodes/connections/connectors/mode change
   useEffect(() => {
-    if (state.nodes.length > 0) {
+    if (state.nodes.length > 0 || state.connectorNodes.length > 0) {
       const plan = generateExecutionPlan(
         state.nodes,
         state.connections,
         state.executionMode,
         state.appCreated,
-        state.currentRevision
+        state.currentRevision,
+        state.connectorNodes,
+        state.connectors
       );
       dispatch({ type: 'SET_EXECUTION_PLAN', payload: plan });
     } else {
       dispatch({ type: 'SET_EXECUTION_PLAN', payload: null });
     }
-  }, [state.nodes, state.connections, state.executionMode, state.appCreated, state.currentRevision, dispatch]);
+  }, [state.nodes, state.connections, state.connectorNodes, state.connectors, state.executionMode, state.appCreated, state.currentRevision, dispatch]);
 
   const handleSaveWorkflow = () => {
     dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
