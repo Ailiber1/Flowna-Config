@@ -34,8 +34,8 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'ノードの追加',
       icon: '➕',
       content: [
-        '左側の「ノードパレット」からノードをドラッグ＆ドロップします。',
-        'または、キャンバスをダブルクリックして新しいノードを追加できます。',
+        '左側の「ノードパレット」のノードをクリックすると、キャンバスに追加されます。',
+        'Agent、Logic、System、Ruleなど、様々なタイプのノードがあります。',
       ],
       illustration: (
         <div className="help-illustration">
@@ -48,7 +48,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="illustration-canvas">
               <div className="drag-indicator">
                 <span className="drag-icon">👆</span>
-                <span className="drag-text">ドラッグ</span>
+                <span className="drag-text">クリック</span>
               </div>
             </div>
           </div>
@@ -199,8 +199,8 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'Adding Nodes',
       icon: '➕',
       content: [
-        'Drag and drop nodes from the "Node Palette" on the left.',
-        'Or double-click on the canvas to add a new node.',
+        'Click on a node in the "Node Palette" on the left to add it to the canvas.',
+        'There are various node types: Agent, Logic, System, Rule, etc.',
       ],
       illustration: (
         <div className="help-illustration">
@@ -213,7 +213,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="illustration-canvas">
               <div className="drag-indicator">
                 <span className="drag-icon">👆</span>
-                <span className="drag-text">Drag</span>
+                <span className="drag-text">Click</span>
               </div>
             </div>
           </div>
