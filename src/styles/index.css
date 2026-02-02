@@ -782,7 +782,7 @@ body {
 .flow-node {
   position: absolute;
   width: 220px;
-  height: 165px;
+  height: 150px;
   display: flex;
   flex-direction: column;
   background: rgba(15, 25, 40, 0.7);
