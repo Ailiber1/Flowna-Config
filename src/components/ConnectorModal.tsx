@@ -51,6 +51,7 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
   const [apiToken, setApiToken] = useState('');
   const [customApiUrl, setCustomApiUrl] = useState('');
   const [customAuthType, setCustomAuthType] = useState<'none' | 'bearer' | 'apikey' | 'basic'>('bearer');
+  const [connectorUrl, setConnectorUrl] = useState('');  // URL for quick access
 
   // Load existing config
   useEffect(() => {
@@ -67,7 +68,11 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         setCustomAuthType((config.authType as 'none' | 'bearer' | 'apikey' | 'basic') || 'bearer');
       }
     }
-  }, [connectorId]);
+    // Load connector URL from connector object
+    if (connector) {
+      setConnectorUrl(connector.url || '');
+    }
+  }, [connectorId, connector]);
 
   if (!connector) return null;
 
@@ -159,6 +164,14 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           });
           break;
       }
+    }
+
+    // Save connector URL to the connector object
+    if (connector) {
+      dispatch({
+        type: 'UPDATE_CONNECTOR',
+        payload: { ...connector, url: connectorUrl, lastUsedAt: Date.now() },
+      });
     }
 
     setMessage({ text: state.language === 'ja' ? '設定を保存しました' : 'Configuration saved', type: 'success' });
@@ -531,6 +544,25 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
 
           {/* Custom API */}
           {connectorId === 'custom-api' && renderCustomApiConfig()}
+
+          {/* Quick Access URL - for all connectors */}
+          <div className="form-group" style={{ marginTop: '20px' }}>
+            <label className="form-label">
+              {state.language === 'ja' ? 'クイックアクセスURL' : 'Quick Access URL'}
+            </label>
+            <input
+              type="url"
+              className="form-input"
+              value={connectorUrl}
+              onChange={(e) => setConnectorUrl(e.target.value)}
+              placeholder={state.language === 'ja' ? 'https://example.com (ダブルクリックで開く)' : 'https://example.com (double-click to open)'}
+            />
+            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              {state.language === 'ja'
+                ? 'コネクタをダブルクリックすると、このURLが開きます'
+                : 'Double-click the connector to open this URL'}
+            </p>
+          </div>
 
           {/* Status */}
           <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(13, 33, 55, 0.5)', borderRadius: '8px' }}>
