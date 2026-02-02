@@ -758,23 +758,23 @@ body {
   }
 }
 
-/* Connector node glow during execution */
-.canvas.implementing .connector-node-circle {
-  animation: connectorExecutingGlow 1.5s ease-in-out infinite;
+/* Connector node card glow during execution */
+.canvas.implementing .connector-node-card {
+  animation: connectorCardExecutingGlow 1.5s ease-in-out infinite;
 }
 
-@keyframes connectorExecutingGlow {
+@keyframes connectorCardExecutingGlow {
   0%, 100% {
     box-shadow:
-      0 0 25px rgba(33, 150, 243, 0.6),
-      0 0 50px rgba(33, 150, 243, 0.3),
-      inset 0 0 20px rgba(33, 150, 243, 0.2);
+      0 0 20px rgba(33, 150, 243, 0.5),
+      0 0 40px rgba(33, 150, 243, 0.25),
+      inset 0 0 15px rgba(33, 150, 243, 0.15);
   }
   50% {
     box-shadow:
-      0 0 40px rgba(100, 181, 246, 0.9),
-      0 0 80px rgba(33, 150, 243, 0.5),
-      inset 0 0 30px rgba(100, 181, 246, 0.3);
+      0 0 35px rgba(100, 181, 246, 0.8),
+      0 0 70px rgba(33, 150, 243, 0.4),
+      inset 0 0 25px rgba(100, 181, 246, 0.25);
   }
 }
 
@@ -1664,138 +1664,175 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Connector Node Icons on Canvas */
-.connector-node-icon {
+/* Connector Node Card on Canvas - Yellow Frame */
+.connector-node-card {
   position: absolute;
+  width: 180px;
+  min-height: 140px;
+  background: rgba(15, 25, 40, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 2px solid rgba(251, 191, 36, 0.7);
+  cursor: move;
+  transition: all var(--transition-fast);
+  user-select: none;
+  z-index: 20;
+  box-shadow:
+    0 0 15px rgba(251, 191, 36, 0.3),
+    0 0 30px rgba(251, 191, 36, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: move;
-  z-index: 20;
-  transition: transform var(--transition-fast);
+  padding: 10px;
 }
 
-.connector-node-icon:hover {
-  transform: scale(1.05);
+.connector-node-card:hover {
+  background: rgba(15, 25, 40, 0.8);
+  box-shadow:
+    0 0 25px rgba(251, 191, 36, 0.4),
+    0 0 50px rgba(251, 191, 36, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.connector-node-icon.dragging {
+.connector-node-card.selected {
+  background: rgba(15, 25, 40, 0.9);
+  border-color: var(--accent-cyan);
+  box-shadow:
+    0 0 30px rgba(0, 255, 255, 0.8),
+    0 0 60px rgba(0, 255, 255, 0.5),
+    0 0 90px rgba(0, 255, 255, 0.2),
+    inset 0 0 30px rgba(0, 255, 255, 0.15);
+  z-index: 100;
+}
+
+.connector-node-card.selected::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border: 2px solid var(--accent-cyan);
+  border-radius: 24px;
+  pointer-events: none;
+  animation: selection-glow 1.5s ease-in-out infinite;
+}
+
+.connector-node-card.dragging {
   cursor: grabbing;
   transition: none;
 }
 
-.connector-node-circle {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: rgba(15, 25, 40, 0.8);
-  border: 3px solid var(--sidebar-accent);
+/* Configured connector (API key set) - Green border */
+.connector-node-card.configured {
+  border-color: rgba(74, 222, 128, 0.7);
+  box-shadow:
+    0 0 15px rgba(74, 222, 128, 0.3),
+    0 0 30px rgba(74, 222, 128, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.connector-node-card.configured:hover {
+  box-shadow:
+    0 0 25px rgba(74, 222, 128, 0.5),
+    0 0 50px rgba(74, 222, 128, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.connector-node-header {
+  margin-bottom: 8px;
+}
+
+.connector-node-type {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: rgba(251, 191, 36, 0.9);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.connector-node-card.configured .connector-node-type {
+  color: rgba(74, 222, 128, 0.9);
+}
+
+.connector-node-content {
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 0 25px rgba(33, 150, 243, 0.5),
-    0 0 50px rgba(33, 150, 243, 0.25),
-    inset 0 0 20px rgba(33, 150, 243, 0.15);
-  transition: all var(--transition-fast);
+  gap: 10px;
+  flex: 1;
+  padding: 5px 0;
 }
 
-.connector-node-icon:hover .connector-node-circle {
-  box-shadow:
-    0 0 30px rgba(33, 150, 243, 0.6),
-    0 0 60px rgba(33, 150, 243, 0.3),
-    inset 0 0 20px rgba(33, 150, 243, 0.15);
+.connector-node-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
-.connector-node-icon.selected .connector-node-circle {
-  border-color: var(--accent-cyan);
-  box-shadow:
-    0 0 40px rgba(0, 255, 255, 0.7),
-    0 0 80px rgba(0, 255, 255, 0.4),
-    inset 0 0 25px rgba(0, 255, 255, 0.2);
-  animation: connector-selection-glow 1.5s ease-in-out infinite;
-}
-
-@keyframes connector-selection-glow {
-  0%, 100% {
-    box-shadow:
-      0 0 40px rgba(0, 255, 255, 0.7),
-      0 0 80px rgba(0, 255, 255, 0.4),
-      inset 0 0 25px rgba(0, 255, 255, 0.2);
-  }
-  50% {
-    box-shadow:
-      0 0 60px rgba(0, 255, 255, 0.9),
-      0 0 100px rgba(0, 255, 255, 0.5),
-      inset 0 0 35px rgba(0, 255, 255, 0.3);
-  }
-}
-
-/* Configured connector (API key set, connected) */
-.connector-node-icon.configured .connector-node-circle {
-  border-color: var(--status-connected);
-  box-shadow:
-    0 0 25px rgba(74, 222, 128, 0.6),
-    0 0 50px rgba(74, 222, 128, 0.3),
-    inset 0 0 20px rgba(74, 222, 128, 0.2);
-}
-
-.connector-node-icon.configured:hover .connector-node-circle {
-  box-shadow:
-    0 0 30px rgba(74, 222, 128, 0.7),
-    0 0 60px rgba(74, 222, 128, 0.4),
-    inset 0 0 20px rgba(74, 222, 128, 0.25);
-}
-
-.connector-node-icon.configured .connector-node-label {
-  border-color: rgba(74, 222, 128, 0.5);
-}
-
-.connector-node-emoji {
-  font-size: 42px;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
-}
-
-.connector-node-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 13px;
+.connector-node-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
   color: var(--text-primary);
-  background: rgba(10, 25, 41, 0.9);
-  padding: 4px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(33, 150, 243, 0.4);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-/* Connector Node Ports */
-.connector-port-circle {
-  position: absolute;
-  width: 14px;
-  height: 14px;
+.connector-status-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.connector-status-badge.connected {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+}
+
+.connector-status-badge.disconnected {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.connector-node-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.connector-node-card.configured .connector-node-footer {
+  border-top-color: rgba(74, 222, 128, 0.2);
+}
+
+.connector-port {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.connector-port .port-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.connector-port .port-circle {
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid var(--accent-neon-green);
   cursor: crosshair;
-  pointer-events: all;
   transition: all var(--transition-fast);
-  z-index: 100;
-  /* Position at center of the 96px circle (not center of container which includes label) */
-  top: 48px;
-  transform: translateY(-50%);
 }
 
-.connector-port-circle.input-port {
-  left: -7px;
-}
-
-.connector-port-circle.output-port {
-  right: -7px;
-}
-
-.connector-port-circle:hover {
+.connector-port .port-circle:hover {
   background: var(--accent-neon-green);
   box-shadow: 0 0 15px var(--accent-neon-green);
-  transform: translateY(-50%) scale(1.3);
+  transform: scale(1.3);
 }
 
 /* Scrollbar */
