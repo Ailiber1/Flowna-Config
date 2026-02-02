@@ -100,6 +100,7 @@ type AppAction =
   | { type: 'DELETE_FOLDER'; payload: string }
   | { type: 'SET_WORKFLOWS'; payload: Workflow[] }
   | { type: 'ADD_WORKFLOW'; payload: Workflow }
+  | { type: 'UPDATE_WORKFLOW'; payload: Workflow }
   | { type: 'DELETE_WORKFLOW'; payload: string }
   | { type: 'SET_CONNECTORS'; payload: Connector[] }
   | { type: 'UPDATE_CONNECTOR'; payload: Connector }
@@ -397,6 +398,14 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'ADD_WORKFLOW':
       return { ...state, workflows: [...state.workflows, action.payload] };
+
+    case 'UPDATE_WORKFLOW':
+      return {
+        ...state,
+        workflows: state.workflows.map(w =>
+          w.id === action.payload.id ? action.payload : w
+        ),
+      };
 
     case 'DELETE_WORKFLOW':
       return { ...state, workflows: state.workflows.filter(w => w.id !== action.payload) };
