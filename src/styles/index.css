@@ -1052,7 +1052,8 @@ body {
 .node-status-badge.done {
   color: var(--status-connected);
   border-color: var(--status-connected);
-  background: rgba(74, 222, 128, 0.1);
+  background: rgba(74, 222, 128, 0.15);
+  animation: status-pulse 1.5s infinite;
 }
 
 .node-status-badge.running {
