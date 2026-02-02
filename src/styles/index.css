@@ -1851,7 +1851,7 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  padding: 10px 10px 35px 10px; /* Extra bottom padding to center ports like FlowNode */
+  padding: 10px;
 }
 
 .connector-node-card:hover {
@@ -1962,45 +1962,57 @@ body {
   border: 1px solid rgba(251, 191, 36, 0.4);
 }
 
-.connector-node-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 8px;
-  border-top: 1px solid rgba(251, 191, 36, 0.2);
-}
-
-.connector-node-card.configured .connector-node-footer {
-  border-top-color: rgba(74, 222, 128, 0.2);
-}
-
-.connector-port {
+/* Side-positioned ports for connector nodes (like FlowNode) */
+.connector-port-left,
+.connector-port-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 6px;
 }
 
-.connector-port .port-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
+.connector-port-left {
+  left: -7px;
 }
 
-.connector-port .port-circle {
-  width: 12px;
-  height: 12px;
+.connector-port-right {
+  right: -7px;
+}
+
+.connector-port-left .port-circle,
+.connector-port-right .port-circle {
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid var(--accent-neon-green);
   cursor: crosshair;
   transition: all var(--transition-fast);
+  z-index: 100;
 }
 
-.connector-port .port-circle:hover {
+.connector-port-left .port-circle:hover,
+.connector-port-right .port-circle:hover {
   background: var(--accent-neon-green);
   box-shadow: 0 0 15px var(--accent-neon-green);
   transform: scale(1.3);
+}
+
+.connector-port-left .port-label,
+.connector-port-right .port-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+.connector-port-left .port-label {
+  margin-left: 6px;
+}
+
+.connector-port-right .port-label {
+  margin-right: 6px;
 }
 
 /* Scrollbar */

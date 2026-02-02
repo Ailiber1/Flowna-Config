@@ -190,9 +190,9 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
     dispatch({ type: 'START_CONNECTION', payload: connectorNode.id });
 
     // Set initial ghost line position to the output port location
-    // Port offset must match ConnectionsLayer.tsx CONNECTOR_PORT_OFFSET_FROM_BOTTOM (35px)
-    const portX = connectorNode.position.x + CONNECTOR_NODE_WIDTH - 15;
-    const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT - 35;
+    // Output port is at right edge, vertical center
+    const portX = connectorNode.position.x + CONNECTOR_NODE_WIDTH;
+    const portY = connectorNode.position.y + CONNECTOR_NODE_HEIGHT / 2;
     dispatch({
       type: 'UPDATE_GHOST_LINE',
       payload: { x: portX, y: portY },
@@ -259,22 +259,20 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
         {getStatusLabel()}
       </div>
 
-      {/* Footer with Ports */}
-      <div className="connector-node-footer">
-        <div className="connector-port">
-          <span
-            className="port-circle input-port"
-            onMouseUp={handleInputPortMouseUp}
-          />
-          <span className="port-label">{state.language === 'ja' ? '入力' : 'Input'}</span>
-        </div>
-        <div className="connector-port">
-          <span className="port-label">{state.language === 'ja' ? '出力' : 'Output'}</span>
-          <span
-            className="port-circle output-port"
-            onMouseDown={handleOutputPortMouseDown}
-          />
-        </div>
+      {/* Side-positioned ports like FlowNode */}
+      <div className="connector-port-left">
+        <span
+          className="port-circle input-port"
+          onMouseUp={handleInputPortMouseUp}
+        />
+        <span className="port-label">{state.language === 'ja' ? '入力' : 'In'}</span>
+      </div>
+      <div className="connector-port-right">
+        <span className="port-label">{state.language === 'ja' ? '出力' : 'Out'}</span>
+        <span
+          className="port-circle output-port"
+          onMouseDown={handleOutputPortMouseDown}
+        />
       </div>
     </div>
   );
