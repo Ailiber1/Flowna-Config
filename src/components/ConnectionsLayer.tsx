@@ -10,7 +10,7 @@ const CONNECTOR_NODE_HEIGHT = 140;
 
 // Port circle position - calculated from top of node
 // Header ~24px + Title ~30px + Divider ~1px + Footer padding 8px + Port center 7px = ~70px
-const PORT_OFFSET_FROM_TOP = 115; // Adjusted for visual alignment
+const PORT_OFFSET_FROM_TOP = 95; // Adjusted to align with port circles
 const PORT_OFFSET_X = 19;
 
 // Connector node port offsets
