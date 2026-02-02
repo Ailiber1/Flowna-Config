@@ -4,10 +4,12 @@ import { t } from '../utils/i18n';
 import { executeWithPlan, validateWorkflow, generateExecutionPlan } from '../services/workflowEngine';
 import ModeSwitch from './ModeSwitch';
 import ExecutionPlanPreview, { PlanPreviewCompact } from './ExecutionPlanPreview';
+import HelpGuide from './HelpGuide';
 
 export function TopBar() {
   const { state, dispatch } = useApp();
   const [showPlanPreview, setShowPlanPreview] = useState(false);
+  const [showHelpGuide, setShowHelpGuide] = useState(false);
 
   // Generate plan when nodes/connections/connectors/mode change
   useEffect(() => {
@@ -278,6 +280,13 @@ export function TopBar() {
           💾 {t('save', state.language)}
         </button>
         <button
+          className="topbar-btn help-btn"
+          onClick={() => setShowHelpGuide(true)}
+          title={state.language === 'ja' ? '使い方ガイド' : 'Help Guide'}
+        >
+          ❓
+        </button>
+        <button
           className="topbar-btn language-btn"
           onClick={handleLanguageToggle}
           title={state.language === 'ja' ? 'Switch to English' : '日本語に切り替え'}
@@ -296,6 +305,11 @@ export function TopBar() {
             />
           </div>
         </div>
+      )}
+
+      {/* Help Guide Modal */}
+      {showHelpGuide && (
+        <HelpGuide onClose={() => setShowHelpGuide(false)} />
       )}
     </div>
   );
