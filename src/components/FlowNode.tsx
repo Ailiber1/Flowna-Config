@@ -290,7 +290,7 @@ export function FlowNode({ node, isSelected, isHighlighted }: FlowNodeProps) {
 
       {/* Title Section */}
       <div className="node-title-section">
-        <span className="node-title"># {node.displayName || node.title}</span>
+        <span className="node-title"># {node.title}</span>
         <span className={`node-status-badge ${node.status}`}>
           {getStatusLabel(node.status)}
         </span>
