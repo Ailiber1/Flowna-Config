@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useApp } from '../contexts/AppContext';
 import type { FlowNode, Connection, ConnectorNode } from '../types';
 
@@ -48,17 +48,14 @@ function createBezierPath(start: { x: number; y: number }, end: { x: number; y: 
 export function ConnectionsLayer() {
   const { state, dispatch } = useApp();
 
-  const nodesMap = useMemo(() => {
-    const map = new Map<string, FlowNode>();
-    state.nodes.forEach(node => map.set(node.id, node));
-    return map;
-  }, [state.nodes]);
+  // Create maps directly without useMemo to ensure fresh data on every render
+  // This is necessary because during drag operations, the connection line
+  // needs to update in sync with node positions
+  const nodesMap = new Map<string, FlowNode>();
+  state.nodes.forEach(node => nodesMap.set(node.id, node));
 
-  const connectorNodesMap = useMemo(() => {
-    const map = new Map<string, ConnectorNode>();
-    state.connectorNodes.forEach(cn => map.set(cn.id, cn));
-    return map;
-  }, [state.connectorNodes]);
+  const connectorNodesMap = new Map<string, ConnectorNode>();
+  state.connectorNodes.forEach(cn => connectorNodesMap.set(cn.id, cn));
 
   const handleConnectionClick = (e: React.MouseEvent, connectionId: string) => {
     e.stopPropagation();
