@@ -1,142 +1,109 @@
 # アプリ自動作成テンプレート（Claude Code用）
 
-このファイルを `~/.claude/CLAUDE.md` に保存すると、すべてのプロジェクトで自動的に読み込まれます。
+## 保存場所
+このファイルを `~/.claude/CLAUDE.md` に保存してください。
 
 ---
 
 ## あなたの役割
 
-ユーザーがアプリの仕様書を渡したら、以下を**すべて自動で実行**してください。
-確認は最小限にし、可能な限り自動で進めてください。
+ユーザーが仕様書を渡したら、**確認なしで**以下をすべて自動実行してください。
 
-## 自動実行フロー
+---
 
-### 1. 仕様の理解
-- 仕様書からアプリ名、機能、技術スタックを抽出
-- 不明点があれば簡潔に質問（1回のみ）
+## 自動実行する内容（この順番で）
 
-### 2. GitHubリポジトリ作成
+### 1. GitHubリポジトリ作成
 ```bash
 gh repo create [アプリ名] --public --clone
 cd [アプリ名]
 ```
 
-### 3. プロジェクト初期化
-仕様に基づいて適切なフレームワークを選択：
-- React/Vite: `npm create vite@latest . -- --template react-ts`
-- Next.js: `npx create-next-app@latest . --typescript --tailwind --app`
-- シンプルなHTML/CSS/JS: 直接ファイル作成
-
-### 4. 依存関係インストール
+### 2. Firebaseプロジェクト作成
 ```bash
-npm install
+firebase projects:create [アプリ名]-[ランダム4桁]
+firebase use [作成したプロジェクトID]
 ```
-必要なライブラリも追加：
-- UI: tailwindcss, shadcn/ui, など
-- 状態管理: zustand, jotai など
-- その他仕様に応じて
 
-### 5. コード生成
-仕様書に従って以下を作成：
-- コンポーネント
-- ページ
-- スタイル
-- 型定義
-- ユーティリティ
+### 3. プロジェクト初期化 & コード生成
+仕様書に基づいてフレームワーク選択、コード生成
 
-### 6. Firebase設定（必要な場合）
+### 4. Firebase Hosting設定
 ```bash
 firebase init hosting
+# public: dist
+# SPA: Yes
 ```
-設定値：
-- public directory: `dist` または `out`
-- Single-page app: Yes（SPAの場合）
-- GitHub Actions: No
 
-### 7. ビルド確認
+### 5. ビルド & デプロイ
 ```bash
 npm run build
-```
-エラーがあれば自動修正
-
-### 8. デプロイ
-```bash
 firebase deploy
 ```
 
-### 9. Git コミット＆プッシュ
+### 6. Google Cloud セキュリティ設定
+```bash
+# Firebase Hostingのドメインを許可リストに追加
+gcloud services enable iap.googleapis.com --project=[プロジェクトID]
+```
+
+Firebase Console で以下を設定するよう指示：
+- Authentication > Settings > Authorized domains にデプロイURLを追加
+- Firestore > Rules で適切なセキュリティルール設定
+
+### 7. Git コミット & プッシュ
 ```bash
 git add .
 git commit -m "Initial commit: [アプリ名]"
 git push -u origin main
 ```
 
-### 10. 完了報告
+### 8. 完了報告
 以下を表示：
-- デプロイURL
-- GitHubリポジトリURL
-- 実装した機能一覧
+```
+========================================
+  デプロイ完了
+========================================
+
+デプロイURL: https://[プロジェクトID].web.app
+GitHub: https://github.com/[ユーザー名]/[アプリ名]
+
+Firebase Console: https://console.firebase.google.com/project/[プロジェクトID]
+Google Cloud Console: https://console.cloud.google.com/home/dashboard?project=[プロジェクトID]
+
+実装した機能:
+- [機能1]
+- [機能2]
+- ...
+========================================
+```
 
 ---
 
 ## 重要なルール
 
-1. **確認を最小限に** - 仕様書があれば確認せず進める
-2. **エラーは自動修正** - ビルドエラーは自分で直す
-3. **完了まで止まらない** - 途中で止まらず最後まで実行
-4. **URLを必ず報告** - 最後にデプロイURLを表示
+1. **確認しない** - 仕様書があれば質問せず進める
+2. **止まらない** - エラーは自動修正して続行
+3. **全部やる** - GitHub、Firebase、デプロイ、セキュリティ全部
+4. **URL報告** - 最後に必ずすべてのURLを表示
 
 ---
 
-## 使用例
+## 使い方
 
-ユーザー入力：
-```
-TODOアプリを作成してください。
+ユーザーはターミナルで以下を実行：
 
-機能：
-- タスクの追加・削除・完了
-- ローカルストレージで保存
-- ダークモード対応
-
-技術：
-- React + TypeScript
-- Tailwind CSS
-- Firebase Hosting
+```bash
+claude
 ```
 
-あなたの動作：
-1. gh repo create todo-app --public --clone
-2. npm create vite@latest . -- --template react-ts
-3. npm install -D tailwindcss postcss autoprefixer
-4. コンポーネント作成（App, TodoList, TodoItem, AddTodo）
-5. スタイル適用
-6. firebase init hosting
-7. npm run build
-8. firebase deploy
-9. git add . && git commit && git push
-10. URL報告
-
----
-
-## 技術スタック早見表
-
-| 要件 | 選択 |
-|------|------|
-| シンプルなWebアプリ | React + Vite |
-| SSR/SEO重要 | Next.js |
-| 静的サイト | Astro |
-| スタイル | Tailwind CSS |
-| 状態管理（小規模） | useState + Context |
-| 状態管理（中規模） | Zustand |
-| データベース | Firebase Firestore |
-| 認証 | Firebase Auth |
-| ホスティング | Firebase Hosting |
+その後、仕様書を貼り付けるだけ。
 
 ---
 
 ## 前提条件（ユーザー側で準備済み）
 
-- GitHub CLI (`gh`) インストール・認証済み
-- Firebase CLI インストール・ログイン済み
-- Node.js (v18+) インストール済み
+- `gh` (GitHub CLI) - インストール・認証済み
+- `firebase` (Firebase CLI) - インストール・ログイン済み
+- `gcloud` (Google Cloud CLI) - インストール・認証済み
+- `node` (v18+) - インストール済み
