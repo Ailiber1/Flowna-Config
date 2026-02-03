@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../contexts/AppContext';
 
 interface HelpGuideProps {
@@ -346,7 +347,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
 
-  return (
+  return createPortal(
     <div
       className="help-guide-overlay"
       onClick={onClose}
@@ -361,7 +362,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 9999,
+        zIndex: 99999,
       }}
     >
       <div
@@ -523,6 +524,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
