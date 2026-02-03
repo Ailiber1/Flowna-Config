@@ -347,8 +347,39 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
   const isLastStep = currentStep === steps.length - 1;
 
   return (
-    <div className="help-guide-overlay" onClick={onClose}>
-      <div className="help-guide-modal" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="help-guide-overlay"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(10px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+      }}
+    >
+      <div
+        className="help-guide-modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '90%',
+          maxWidth: '600px',
+          maxHeight: '85vh',
+          background: 'linear-gradient(180deg, #0a1929 0%, #05111c 100%)',
+          borderRadius: '20px',
+          border: '1px solid #1e4976',
+          boxShadow: '0 25px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(33, 150, 243, 0.15)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column' as const,
+        }}
+      >
         {/* Header */}
         <div className="help-guide-header">
           <div className="help-guide-title">
