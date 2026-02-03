@@ -664,6 +664,217 @@ export function createAction(
   };
 }
 
+/**
+ * Generate Claude Code instructions from workflow
+ * This creates a comprehensive prompt that can be copied to Claude Code
+ */
+export function generateClaudeCodeInstructions(
+  nodes: FlowNode[],
+  connections: Connection[],
+  connectorNodes: ConnectorNode[],
+  _connectors: Connector[],
+  language: 'ja' | 'en' = 'ja'
+): { prompt: string; specContent: string | null; appName: string | null } {
+  const sortedNodes = topologicalSort(nodes, connections);
+
+  // Find spec node (仕様書)
+  const specNode = sortedNodes.find(n =>
+    n.title.includes('仕様') ||
+    n.title.toLowerCase().includes('spec') ||
+    n.category.toUpperCase() === 'RULE'
+  );
+
+  // Get spec content from attached file
+  let specContent: string | null = null;
+  let appName: string | null = null;
+
+  if (specNode?.attachedFile) {
+    specContent = specNode.attachedFile.content;
+    // Try to extract app name from spec or node title
+    const appNameMatch = specContent.match(/アプリ名[:：]\s*(.+)/);
+    if (appNameMatch) {
+      appName = appNameMatch[1].trim();
+    }
+  }
+
+  if (!appName) {
+    // Fallback: use first non-rule node title or a default
+    const firstNode = sortedNodes.find(n => n.category.toUpperCase() !== 'RULE');
+    appName = firstNode?.title || 'my-app';
+  }
+
+  // Clean app name for use in repo/project names
+  const cleanAppName = appName
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'my-app';
+
+  // Identify involved connectors from canvas
+  const involvedConnectorIds = new Set<string>();
+  for (const cn of connectorNodes) {
+    involvedConnectorIds.add(cn.connectorId);
+  }
+
+  // Build step-by-step instructions
+  const steps: string[] = [];
+  let stepNum = 1;
+
+  // Analyze workflow structure to determine what needs to be done
+  const hasGitHub = involvedConnectorIds.has('github');
+  const hasFirebase = involvedConnectorIds.has('firebase');
+  const hasClaudeCode = involvedConnectorIds.has('claude-code');
+  const hasGoogleCloud = involvedConnectorIds.has('google-cloud');
+
+  // Find nodes by their likely purpose
+  const repoNode = sortedNodes.find(n =>
+    n.title.includes('リポジトリ') || n.title.toLowerCase().includes('repo')
+  );
+  const projectNode = sortedNodes.find(n =>
+    n.title.includes('プロジェクト') || n.title.toLowerCase().includes('project')
+  );
+  const deployNode = sortedNodes.find(n =>
+    n.title.includes('デプロイ') || n.title.toLowerCase().includes('deploy')
+  );
+
+  if (language === 'ja') {
+    steps.push(`# ${appName} 開発ワークフロー\n`);
+    steps.push(`このプロンプトはFlownaで設計されたワークフローから自動生成されました。\n`);
+
+    if (specContent) {
+      steps.push(`## 仕様書\n\`\`\`\n${specContent}\n\`\`\`\n`);
+    }
+
+    steps.push(`## 実行手順\n`);
+
+    // GitHub repo creation
+    if (hasGitHub && repoNode) {
+      steps.push(`### ステップ${stepNum++}: GitHubリポジトリ作成`);
+      steps.push(`\`\`\`bash`);
+      steps.push(`gh repo create ${cleanAppName} --public --clone`);
+      steps.push(`cd ${cleanAppName}`);
+      steps.push(`\`\`\`\n`);
+    }
+
+    // Firebase project
+    if (hasFirebase && projectNode) {
+      steps.push(`### ステップ${stepNum++}: Firebaseプロジェクト設定`);
+      steps.push(`\`\`\`bash`);
+      steps.push(`firebase projects:list  # 既存プロジェクト確認`);
+      steps.push(`firebase use ${cleanAppName}  # または新規作成後に設定`);
+      steps.push(`firebase init hosting firestore storage`);
+      steps.push(`\`\`\`\n`);
+    }
+
+    // Development with Claude Code
+    if (hasClaudeCode) {
+      steps.push(`### ステップ${stepNum++}: アプリ開発`);
+      steps.push(`上記の仕様書に基づいてアプリを開発してください。`);
+      if (hasFirebase) {
+        steps.push(`- Firebase SDKを使用してバックエンドを構築`);
+        steps.push(`- Firestoreでデータ永続化`);
+      }
+      if (hasGitHub) {
+        steps.push(`- コードをGitHubにコミット`);
+      }
+      steps.push(``);
+    }
+
+    // Deploy
+    if (deployNode) {
+      steps.push(`### ステップ${stepNum++}: デプロイ`);
+      if (hasFirebase) {
+        steps.push(`\`\`\`bash`);
+        steps.push(`npm run build`);
+        steps.push(`firebase deploy`);
+        steps.push(`\`\`\`\n`);
+      } else if (hasGitHub) {
+        steps.push(`GitHub Actionsでデプロイを設定するか、GitHub Pagesを有効化してください。\n`);
+      }
+    }
+
+    // Google Cloud security
+    if (hasGoogleCloud) {
+      steps.push(`### ステップ${stepNum++}: セキュリティ設定`);
+      steps.push(`Google Cloud Consoleで以下を設定:`);
+      steps.push(`- APIキーの制限（HTTPリファラー）`);
+      steps.push(`- 必要に応じてCloud Armorを設定`);
+      steps.push(``);
+    }
+
+    steps.push(`## 完了後`);
+    steps.push(`デプロイURLをユーザーに共有してください。`);
+
+  } else {
+    // English version
+    steps.push(`# ${appName} Development Workflow\n`);
+    steps.push(`This prompt was auto-generated from a workflow designed in Flowna.\n`);
+
+    if (specContent) {
+      steps.push(`## Specification\n\`\`\`\n${specContent}\n\`\`\`\n`);
+    }
+
+    steps.push(`## Execution Steps\n`);
+
+    if (hasGitHub && repoNode) {
+      steps.push(`### Step ${stepNum++}: Create GitHub Repository`);
+      steps.push(`\`\`\`bash`);
+      steps.push(`gh repo create ${cleanAppName} --public --clone`);
+      steps.push(`cd ${cleanAppName}`);
+      steps.push(`\`\`\`\n`);
+    }
+
+    if (hasFirebase && projectNode) {
+      steps.push(`### Step ${stepNum++}: Configure Firebase Project`);
+      steps.push(`\`\`\`bash`);
+      steps.push(`firebase projects:list`);
+      steps.push(`firebase use ${cleanAppName}`);
+      steps.push(`firebase init hosting firestore storage`);
+      steps.push(`\`\`\`\n`);
+    }
+
+    if (hasClaudeCode) {
+      steps.push(`### Step ${stepNum++}: Develop Application`);
+      steps.push(`Develop the app based on the specification above.`);
+      if (hasFirebase) {
+        steps.push(`- Use Firebase SDK for backend`);
+        steps.push(`- Persist data with Firestore`);
+      }
+      if (hasGitHub) {
+        steps.push(`- Commit code to GitHub`);
+      }
+      steps.push(``);
+    }
+
+    if (deployNode) {
+      steps.push(`### Step ${stepNum++}: Deploy`);
+      if (hasFirebase) {
+        steps.push(`\`\`\`bash`);
+        steps.push(`npm run build`);
+        steps.push(`firebase deploy`);
+        steps.push(`\`\`\`\n`);
+      }
+    }
+
+    if (hasGoogleCloud) {
+      steps.push(`### Step ${stepNum++}: Security Configuration`);
+      steps.push(`Configure in Google Cloud Console:`);
+      steps.push(`- API key restrictions (HTTP referrer)`);
+      steps.push(`- Cloud Armor if needed`);
+      steps.push(``);
+    }
+
+    steps.push(`## After Completion`);
+    steps.push(`Share the deployment URL with the user.`);
+  }
+
+  return {
+    prompt: steps.join('\n'),
+    specContent,
+    appName: cleanAppName,
+  };
+}
+
 function getDefaultConfig(type: string): Record<string, unknown> {
   switch (type) {
     case 'firebase-create':
