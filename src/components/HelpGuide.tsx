@@ -381,61 +381,142 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
         }}
       >
         {/* Header */}
-        <div className="help-guide-header">
-          <div className="help-guide-title">
-            <span className="help-icon">❓</span>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '18px 24px',
+          background: 'rgba(19, 47, 76, 0.3)',
+          borderBottom: '1px solid #1e4976',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: 600, color: '#fff' }}>
+            <span>❓</span>
             <span>{isJa ? '使い方ガイド' : 'How to Use'}</span>
           </div>
-          <button className="help-guide-close" onClick={onClose}>×</button>
+          <button
+            onClick={onClose}
+            style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#8ab4f8',
+              fontSize: '20px',
+              cursor: 'pointer',
+            }}
+          >×</button>
         </div>
 
         {/* Progress */}
-        <div className="help-guide-progress">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          padding: '16px',
+          borderBottom: '1px solid rgba(30, 73, 118, 0.3)',
+        }}>
           {steps.map((_, index) => (
             <div
               key={index}
-              className={`progress-dot ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`}
               onClick={() => setCurrentStep(index)}
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                background: index === currentStep ? '#2196f3' : index < currentStep ? '#00ff88' : 'rgba(107, 138, 153, 0.4)',
+                cursor: 'pointer',
+                boxShadow: index === currentStep ? '0 0 10px #2196f3' : 'none',
+                transform: index === currentStep ? 'scale(1.3)' : 'scale(1)',
+              }}
             />
           ))}
         </div>
 
         {/* Content */}
-        <div className="help-guide-content">
-          <div className="step-header">
-            <span className="step-icon">{currentStepData.icon}</span>
-            <h2 className="step-title">{currentStepData.title}</h2>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <span style={{ fontSize: '32px' }}>{currentStepData.icon}</span>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>{currentStepData.title}</h2>
           </div>
 
           {currentStepData.illustration}
 
-          <div className="step-description">
+          <div style={{ marginTop: '16px' }}>
             {currentStepData.content.map((text, i) => (
-              <p key={i}>{text}</p>
+              <p key={i} style={{
+                fontSize: '15px',
+                lineHeight: 1.7,
+                color: '#fff',
+                margin: '0 0 10px 0',
+                paddingLeft: '8px',
+                borderLeft: '2px solid #1e4976',
+              }}>{text}</p>
             ))}
           </div>
         </div>
 
         {/* Navigation */}
-        <div className="help-guide-nav">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 24px',
+          background: 'rgba(19, 47, 76, 0.2)',
+          borderTop: '1px solid #1e4976',
+        }}>
           <button
-            className="nav-btn prev"
             onClick={() => setCurrentStep(prev => prev - 1)}
             disabled={isFirstStep}
+            style={{
+              padding: '10px 20px',
+              background: isFirstStep ? 'rgba(26, 58, 82, 0.2)' : 'rgba(26, 58, 82, 0.4)',
+              border: '1px solid #1e4976',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: isFirstStep ? 'rgba(255,255,255,0.4)' : '#fff',
+              cursor: isFirstStep ? 'not-allowed' : 'pointer',
+            }}
           >
             ← {isJa ? '前へ' : 'Back'}
           </button>
-          <span className="step-counter">
+          <span style={{ fontSize: '12px', color: '#8ab4f8' }}>
             {currentStep + 1} / {steps.length}
           </span>
           {isLastStep ? (
-            <button className="nav-btn finish" onClick={onClose}>
+            <button
+              onClick={onClose}
+              style={{
+                padding: '10px 20px',
+                background: 'rgba(0, 255, 136, 0.2)',
+                border: '1px solid #00ff88',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#fff',
+                cursor: 'pointer',
+              }}
+            >
               {isJa ? '完了' : 'Done'} ✓
             </button>
           ) : (
             <button
-              className="nav-btn next"
               onClick={() => setCurrentStep(prev => prev + 1)}
+              style={{
+                padding: '10px 20px',
+                background: 'rgba(33, 150, 243, 0.2)',
+                border: '1px solid #2196f3',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#fff',
+                cursor: 'pointer',
+              }}
             >
               {isJa ? '次へ' : 'Next'} →
             </button>
