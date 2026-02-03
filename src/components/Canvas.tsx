@@ -3,8 +3,8 @@ import { useApp } from '../contexts/AppContext';
 import { FlowNode } from './FlowNode';
 import { ConnectionsLayer } from './ConnectionsLayer';
 import { ConnectorNodeIcon } from './ConnectorNodeIcon';
-import { generateId } from '../utils/storage';
-import type { FlowNode as FlowNodeType, CustomCategory, ConnectorNode } from '../types';
+import { generateId, saveWorkflow, getWorkflows } from '../utils/storage';
+import type { FlowNode as FlowNodeType, CustomCategory, ConnectorNode, Workflow } from '../types';
 
 export function Canvas() {
   const { state, dispatch } = useApp();
@@ -234,6 +234,64 @@ export function Canvas() {
     }
   }, [dispatch]);
 
+  // Quick save function for Cmd+S when workflow is loaded
+  const performQuickSave = useCallback(() => {
+    if (!state.currentWorkflowId) return false;
+
+    const currentWorkflow = state.workflows.find(w => w.id === state.currentWorkflowId);
+    if (!currentWorkflow) return false;
+
+    // Create workflow data
+    const customCategories = state.categories.filter(
+      cat => !['agent', 'logic', 'system', 'rule'].includes(cat.id)
+    );
+
+    const validConnections = state.connections.filter(conn => {
+      const fromExists = state.nodes.some(n => n.id === conn.from) ||
+                         state.connectorNodes.some(cn => cn.id === conn.from);
+      const toExists = state.nodes.some(n => n.id === conn.to) ||
+                       state.connectorNodes.some(cn => cn.id === conn.to);
+      return fromExists && toExists;
+    });
+
+    const workflow: Workflow = {
+      id: currentWorkflow.id,
+      name: currentWorkflow.name,
+      description: currentWorkflow.description,
+      folderId: currentWorkflow.folderId,
+      nodes: state.nodes,
+      connections: validConnections,
+      connectorNodes: state.connectorNodes,
+      viewport: state.viewport,
+      customCategories,
+      thumbnail: '',
+      tags: currentWorkflow.tags,
+      createdAt: currentWorkflow.createdAt,
+      updatedAt: Date.now(),
+      lastOpenedAt: Date.now(),
+    };
+
+    // Save to localStorage
+    saveWorkflow(workflow);
+
+    // Reload workflows to sync state
+    const updatedWorkflows = getWorkflows();
+    dispatch({ type: 'SET_WORKFLOWS', payload: updatedWorkflows });
+
+    dispatch({
+      type: 'SHOW_TOAST',
+      payload: {
+        message: state.language === 'ja'
+          ? `「${currentWorkflow.name}」を上書き保存しました`
+          : `Saved "${currentWorkflow.name}"`,
+        type: 'success',
+      },
+    });
+
+    return true;
+  }, [state.currentWorkflowId, state.workflows, state.categories, state.nodes,
+      state.connections, state.connectorNodes, state.viewport, state.language, dispatch]);
+
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -255,7 +313,10 @@ export function Canvas() {
         }
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
           e.preventDefault();
-          dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
+          // Quick save if workflow is loaded, otherwise open modal
+          if (!performQuickSave()) {
+            dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
+          }
         }
         return; // Don't process other shortcuts when in modal
       }
@@ -276,10 +337,12 @@ export function Canvas() {
         dispatch({ type: 'CANCEL_CONNECTION' });
       }
 
-      // Ctrl+S for save
+      // Ctrl+S for save (quick save if workflow loaded, otherwise open modal)
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
+        if (!performQuickSave()) {
+          dispatch({ type: 'OPEN_SAVE_WORKFLOW_MODAL' });
+        }
       }
 
       // Ctrl+N for new node
@@ -328,7 +391,7 @@ export function Canvas() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [state.selectedNodeIds, state.selectedConnectorNodeIds, state.selectedConnectionId, state.language,
       state.isAddNodeModalOpen, state.isEditNodeModalOpen, state.isSaveWorkflowModalOpen,
-      state.isConnectorModalOpen, state.isActionMenuOpen, dispatch]);
+      state.isConnectorModalOpen, state.isActionMenuOpen, performQuickSave, dispatch]);
 
   return (
     <div
