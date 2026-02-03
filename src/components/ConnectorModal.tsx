@@ -268,63 +268,108 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
 
   const renderFirebaseConfig = () => (
     <div>
-      <div className="form-group">
-        <label className="form-label required">API Key</label>
-        <input
-          type="password"
-          className="form-input"
-          value={firebaseConfig.apiKey}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, apiKey: e.target.value })}
-          placeholder="AIzaSy..."
-        />
+      {/* Step 1: Create or link project */}
+      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 87, 34, 0.1))', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)', marginBottom: '20px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-orange)' }}>
+          🔥 {state.language === 'ja' ? 'ステップ1: プロジェクト作成' : 'Step 1: Create Project'}
+        </p>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => window.open('https://console.firebase.google.com/u/0/', '_blank')}
+          style={{ width: '100%', background: 'var(--accent-orange)' }}
+        >
+          {state.language === 'ja' ? 'Firebaseコンソールで作成' : 'Create in Firebase Console'}
+        </button>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px', textAlign: 'center' }}>
+          {state.language === 'ja'
+            ? '仕様書のアプリ名でプロジェクトを作成してください'
+            : 'Create a project with the app name from your spec'}
+        </p>
       </div>
-      <div className="form-group">
-        <label className="form-label required">Project ID</label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.projectId}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, projectId: e.target.value })}
-          placeholder="your-project-id"
-        />
+
+      {/* Step 2: Enter Project ID */}
+      <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
+          📝 {state.language === 'ja' ? 'ステップ2: プロジェクトIDを入力' : 'Step 2: Enter Project ID'}
+        </p>
+        <div className="form-group" style={{ marginBottom: '0' }}>
+          <input
+            type="text"
+            className="form-input"
+            value={firebaseConfig.projectId}
+            onChange={(e) => {
+              const projectId = e.target.value;
+              setFirebaseConfig({
+                ...firebaseConfig,
+                projectId,
+                authDomain: projectId ? `${projectId}.firebaseapp.com` : '',
+                storageBucket: projectId ? `${projectId}.firebasestorage.app` : '',
+              });
+            }}
+            placeholder={state.language === 'ja' ? 'プロジェクトID（例: my-app-12345）' : 'Project ID (e.g., my-app-12345)'}
+            style={{ fontSize: '14px' }}
+          />
+        </div>
       </div>
-      <div className="form-group">
-        <label className="form-label required">Auth Domain</label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.authDomain}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, authDomain: e.target.value })}
-          placeholder="your-app.firebaseapp.com"
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Storage Bucket</label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.storageBucket}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, storageBucket: e.target.value })}
-          placeholder="your-app.appspot.com"
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label">App ID</label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.appId}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, appId: e.target.value })}
-          placeholder="1:123456789:web:abc123"
-        />
-      </div>
+
+      {/* Step 3: Claude Code Integration */}
+      {firebaseConfig.projectId && (
+        <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
+          <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-purple)' }}>
+            🤖 {state.language === 'ja' ? 'ステップ3: Claude Codeで設定' : 'Step 3: Configure with Claude Code'}
+          </p>
+          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+            {state.language === 'ja'
+              ? '以下をClaude Codeにコピーして、Firebaseの設定を自動化してください：'
+              : 'Copy the following to Claude Code to automate Firebase setup:'}
+          </p>
+          <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)', marginBottom: '12px' }}>
+            <div style={{ marginBottom: '8px', color: 'var(--accent-cyan)' }}>
+              {state.language === 'ja' ? '# Firebase プロジェクト設定' : '# Firebase Project Setup'}
+            </div>
+            <div>firebase use {firebaseConfig.projectId}</div>
+            <div style={{ marginTop: '8px', color: 'var(--text-secondary)' }}>
+              {state.language === 'ja'
+                ? '# Firestoreルール、Storageルール、認証設定を\n# アプリの仕様に応じて自動設定してください'
+                : '# Auto-configure Firestore rules, Storage rules,\n# and auth settings based on app requirements'}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              const text = state.language === 'ja'
+                ? `Firebase プロジェクト: ${firebaseConfig.projectId}\n\n以下を設定してください：\n1. Firestoreセキュリティルール（アプリの用途に応じて）\n2. Storageルール（必要な場合）\n3. Authentication設定（Google, Email等）\n4. firebase.json の設定\n\nコマンド: firebase use ${firebaseConfig.projectId}`
+                : `Firebase Project: ${firebaseConfig.projectId}\n\nPlease configure:\n1. Firestore security rules (based on app requirements)\n2. Storage rules (if needed)\n3. Authentication settings (Google, Email, etc.)\n4. firebase.json configuration\n\nCommand: firebase use ${firebaseConfig.projectId}`;
+              navigator.clipboard.writeText(text);
+              setMessage({ text: state.language === 'ja' ? 'コピーしました！Claude Codeに貼り付けてください' : 'Copied! Paste to Claude Code', type: 'success' });
+            }}
+            style={{ width: '100%', fontSize: '12px' }}
+          >
+            📋 {state.language === 'ja' ? 'Claude Code用にコピー' : 'Copy for Claude Code'}
+          </button>
+        </div>
+      )}
+
+      {!firebaseConfig.projectId && (
+        <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(138, 43, 226, 0.05)', borderRadius: '8px', border: '1px dashed rgba(138, 43, 226, 0.3)' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+            🤖 {state.language === 'ja'
+              ? 'プロジェクトIDを入力すると、Claude Code連携オプションが表示されます'
+              : 'Enter Project ID to see Claude Code integration options'}
+          </p>
+        </div>
+      )}
     </div>
   );
 
   const renderApiKeyConfig = () => (
     <div className="form-group">
       <label className="form-label required">
-        {connectorId === 'github' ? 'Personal Access Token' : 'API Key'}
+        {connectorId === 'github'
+          ? (state.language === 'ja' ? 'パーソナルアクセストークン' : 'Personal Access Token')
+          : (state.language === 'ja' ? 'APIキー' : 'API Key')}
       </label>
       <input
         type="password"
@@ -346,7 +391,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
   const renderCustomApiConfig = () => (
     <>
       <div className="form-group">
-        <label className="form-label required">Base URL</label>
+        <label className="form-label required">
+          {state.language === 'ja' ? 'ベースURL' : 'Base URL'}
+        </label>
         <input
           type="url"
           className="form-input"
@@ -356,21 +403,25 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         />
       </div>
       <div className="form-group">
-        <label className="form-label">Auth Type</label>
+        <label className="form-label">
+          {state.language === 'ja' ? '認証タイプ' : 'Auth Type'}
+        </label>
         <select
           className="form-select"
           value={customAuthType}
           onChange={(e) => setCustomAuthType(e.target.value as 'none' | 'bearer' | 'apikey' | 'basic')}
         >
-          <option value="none">None</option>
-          <option value="bearer">Bearer Token</option>
-          <option value="apikey">API Key</option>
-          <option value="basic">Basic Auth</option>
+          <option value="none">{state.language === 'ja' ? 'なし' : 'None'}</option>
+          <option value="bearer">{state.language === 'ja' ? 'Bearerトークン' : 'Bearer Token'}</option>
+          <option value="apikey">{state.language === 'ja' ? 'APIキー' : 'API Key'}</option>
+          <option value="basic">{state.language === 'ja' ? 'Basic認証' : 'Basic Auth'}</option>
         </select>
       </div>
       {customAuthType !== 'none' && (
         <div className="form-group">
-          <label className="form-label">Auth Value</label>
+          <label className="form-label">
+            {state.language === 'ja' ? '認証値' : 'Auth Value'}
+          </label>
           <input
             type="password"
             className="form-input"
@@ -411,7 +462,7 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
                   fontSize: '14px',
                 }}
               >
-                {tab === 'auth' ? (state.language === 'ja' ? '認証設定' : 'Authentication') : (state.language === 'ja' ? 'データ同期' : 'Data Sync')}
+                {tab === 'auth' ? (state.language === 'ja' ? 'プロジェクト' : 'Project') : (state.language === 'ja' ? 'データ同期' : 'Data Sync')}
               </button>
             ))}
           </div>
@@ -432,61 +483,60 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
             </div>
           )}
 
-          {/* Firebase Configuration */}
+          {/* Firebase Configuration - Simplified */}
           {connectorId === 'firebase' && activeTab === 'auth' && (
             <>
-              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                {state.language === 'ja'
-                  ? 'Firebaseコンソール（console.firebase.google.com）から設定情報を取得してください。'
-                  : 'Get configuration from Firebase Console (console.firebase.google.com).'}
-              </p>
               {renderFirebaseConfig()}
-
-              <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--sidebar-highlight)' }}>
-                <p style={{ fontSize: '13px', marginBottom: '12px' }}>
-                  {state.language === 'ja' ? '認証方法:' : 'Sign in method:'}
-                </p>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => handleFirebaseSignIn('anonymous')}
-                    disabled={isLoading}
-                  >
-                    {state.language === 'ja' ? '匿名でログイン' : 'Anonymous Sign In'}
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => handleFirebaseSignIn('google')}
-                    disabled={isLoading}
-                  >
-                    🔵 Google {state.language === 'ja' ? 'でログイン' : 'Sign In'}
-                  </button>
-                </div>
-                {getCurrentUser() && (
-                  <div style={{ marginTop: '12px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--status-connected)' }}>
-                      ✓ {state.language === 'ja' ? 'ログイン中:' : 'Signed in:'} {getCurrentUser()?.email || getCurrentUser()?.uid}
-                    </span>
-                    <button
-                      onClick={handleFirebaseSignOut}
-                      style={{ marginLeft: '12px', fontSize: '12px', color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      {state.language === 'ja' ? 'ログアウト' : 'Sign Out'}
-                    </button>
-                  </div>
-                )}
-              </div>
             </>
           )}
 
           {/* Firebase Sync Tab */}
           {connectorId === 'firebase' && activeTab === 'sync' && (
             <div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
                 {state.language === 'ja'
-                  ? 'ワークフロー、フォルダ、設定をクラウドと同期します。'
-                  : 'Sync workflows, folders, and settings with cloud.'}
+                  ? 'Flownaのワークフローをクラウドにバックアップできます。'
+                  : 'Backup your Flowna workflows to the cloud.'}
               </p>
+
+              {/* Login section for sync */}
+              {!getCurrentUser() ? (
+                <div style={{ padding: '16px', background: 'rgba(255, 193, 7, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 193, 7, 0.3)', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--status-warning)', marginBottom: '12px' }}>
+                    ⚠️ {state.language === 'ja' ? '同期するにはログインが必要です' : 'Sign in required for sync'}
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => handleFirebaseSignIn('google')}
+                      disabled={isLoading}
+                      style={{ flex: 1, fontSize: '12px' }}
+                    >
+                      🔵 Google
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => handleFirebaseSignIn('anonymous')}
+                      disabled={isLoading}
+                      style={{ flex: 1, fontSize: '12px' }}
+                    >
+                      👤 {state.language === 'ja' ? '匿名' : 'Anonymous'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--status-connected)' }}>
+                    ✓ {getCurrentUser()?.email || getCurrentUser()?.uid}
+                  </span>
+                  <button
+                    onClick={handleFirebaseSignOut}
+                    style={{ marginLeft: '12px', fontSize: '11px', color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    {state.language === 'ja' ? 'ログアウト' : 'Sign Out'}
+                  </button>
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button
@@ -506,12 +556,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
                   📥 {state.language === 'ja' ? 'クラウドからダウンロード' : 'Download from Cloud'}
                 </button>
               </div>
-
-              {!getCurrentUser() && (
-                <p style={{ fontSize: '12px', color: 'var(--status-warning)', marginTop: '12px' }}>
-                  ⚠️ {state.language === 'ja' ? '同期するにはログインが必要です' : 'Sign in required for sync'}
-                </p>
-              )}
 
               <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(13, 33, 55, 0.5)', borderRadius: '8px' }}>
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
@@ -569,7 +613,7 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           {/* Status */}
           <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(13, 33, 55, 0.5)', borderRadius: '8px' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Status:{' '}
+              {state.language === 'ja' ? 'ステータス:' : 'Status:'}{' '}
             </span>
             <span style={{
               fontSize: '12px',
