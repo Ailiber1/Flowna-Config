@@ -268,6 +268,34 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
 
   const renderFirebaseConfig = () => (
     <div>
+      {/* Simplified: Just Project ID is essential */}
+      <div className="form-group">
+        <label className="form-label required">
+          {state.language === 'ja' ? 'プロジェクトID' : 'Project ID'}
+        </label>
+        <input
+          type="text"
+          className="form-input"
+          value={firebaseConfig.projectId}
+          onChange={(e) => {
+            const projectId = e.target.value;
+            // Auto-fill other fields based on project ID
+            setFirebaseConfig({
+              ...firebaseConfig,
+              projectId,
+              authDomain: projectId ? `${projectId}.firebaseapp.com` : '',
+              storageBucket: projectId ? `${projectId}.firebasestorage.app` : '',
+            });
+          }}
+          placeholder="your-project-id"
+        />
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          {state.language === 'ja'
+            ? 'FirebaseコンソールのプロジェクトIDを入力'
+            : 'Enter your Firebase project ID'}
+        </p>
+      </div>
+
       <div className="form-group">
         <label className="form-label required">
           {state.language === 'ja' ? 'APIキー' : 'API Key'}
@@ -280,53 +308,73 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           placeholder="AIzaSy..."
         />
       </div>
-      <div className="form-group">
-        <label className="form-label required">
-          {state.language === 'ja' ? 'プロジェクトID' : 'Project ID'}
-        </label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.projectId}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, projectId: e.target.value })}
-          placeholder="your-project-id"
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label required">
-          {state.language === 'ja' ? '認証ドメイン' : 'Auth Domain'}
-        </label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.authDomain}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, authDomain: e.target.value })}
-          placeholder="your-app.firebaseapp.com"
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label">
-          {state.language === 'ja' ? 'ストレージバケット' : 'Storage Bucket'}
-        </label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.storageBucket}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, storageBucket: e.target.value })}
-          placeholder="your-app.appspot.com"
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label">
-          {state.language === 'ja' ? 'アプリID' : 'App ID'}
-        </label>
-        <input
-          type="text"
-          className="form-input"
-          value={firebaseConfig.appId}
-          onChange={(e) => setFirebaseConfig({ ...firebaseConfig, appId: e.target.value })}
-          placeholder="1:123456789:web:abc123"
-        />
+
+      {/* Collapsible advanced settings */}
+      <details style={{ marginTop: '16px' }}>
+        <summary style={{ cursor: 'pointer', fontSize: '12px', color: 'var(--text-secondary)' }}>
+          {state.language === 'ja' ? '詳細設定（通常は自動入力されます）' : 'Advanced settings (usually auto-filled)'}
+        </summary>
+        <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(13, 33, 55, 0.3)', borderRadius: '8px' }}>
+          <div className="form-group">
+            <label className="form-label" style={{ fontSize: '11px' }}>
+              {state.language === 'ja' ? '認証ドメイン' : 'Auth Domain'}
+            </label>
+            <input
+              type="text"
+              className="form-input"
+              value={firebaseConfig.authDomain}
+              onChange={(e) => setFirebaseConfig({ ...firebaseConfig, authDomain: e.target.value })}
+              placeholder="your-app.firebaseapp.com"
+              style={{ fontSize: '12px' }}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{ fontSize: '11px' }}>
+              {state.language === 'ja' ? 'ストレージバケット' : 'Storage Bucket'}
+            </label>
+            <input
+              type="text"
+              className="form-input"
+              value={firebaseConfig.storageBucket}
+              onChange={(e) => setFirebaseConfig({ ...firebaseConfig, storageBucket: e.target.value })}
+              placeholder="your-app.firebasestorage.app"
+              style={{ fontSize: '12px' }}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{ fontSize: '11px' }}>
+              {state.language === 'ja' ? 'アプリID' : 'App ID'}
+            </label>
+            <input
+              type="text"
+              className="form-input"
+              value={firebaseConfig.appId}
+              onChange={(e) => setFirebaseConfig({ ...firebaseConfig, appId: e.target.value })}
+              placeholder="1:123456789:web:abc123"
+              style={{ fontSize: '12px' }}
+            />
+          </div>
+        </div>
+      </details>
+
+      {/* Quick action: Create new project */}
+      <div style={{ marginTop: '20px', padding: '16px', background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 87, 34, 0.1))', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
+        <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--accent-orange)' }}>
+          🔥 {state.language === 'ja' ? '新規プロジェクトを作成' : 'Create New Project'}
+        </p>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+          {state.language === 'ja'
+            ? 'Firebaseコンソールで新しいプロジェクトを作成し、プロジェクトIDとAPIキーを取得してください。'
+            : 'Create a new project in Firebase Console and get the Project ID and API Key.'}
+        </p>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => window.open('https://console.firebase.google.com/u/0/', '_blank')}
+          style={{ fontSize: '12px' }}
+        >
+          🌐 {state.language === 'ja' ? 'Firebaseコンソールを開く' : 'Open Firebase Console'}
+        </button>
       </div>
     </div>
   );
