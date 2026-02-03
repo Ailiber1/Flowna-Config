@@ -17,7 +17,6 @@ import {
 import {
   githubConnector,
   claudeConnector,
-  geminiConnector,
   customApiConnector,
   saveConnectorConfig,
   loadConnectorConfig,
@@ -97,10 +96,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           claudeConnector.setApiKey(apiToken);
           result = await claudeConnector.testConnection();
           break;
-        case 'gemini':
-          geminiConnector.setApiKey(apiToken);
-          result = await geminiConnector.testConnection();
-          break;
         case 'custom-api':
           customApiConnector.setConfig({
             baseUrl: customApiUrl,
@@ -147,9 +142,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           break;
         case 'claude-code':
           claudeConnector.setApiKey(apiToken);
-          break;
-        case 'gemini':
-          geminiConnector.setApiKey(apiToken);
           break;
         case 'custom-api':
           customApiConnector.setConfig({
@@ -303,8 +295,19 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         />
       </div>
 
+      {/* Quick link */}
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => window.open('https://console.firebase.google.com', '_blank')}
+        onDoubleClick={() => window.open('https://console.firebase.google.com', '_blank')}
+        style={{ width: '100%', fontSize: '13px', marginTop: '16px', marginBottom: '12px' }}
+      >
+        🔗 {state.language === 'ja' ? 'Firebaseコンソールを開いて確認' : 'Open Firebase Console to verify'}
+      </button>
+
       {/* Info note */}
-      <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+      <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
         <p style={{ fontSize: '12px', color: 'var(--status-connected)', margin: 0 }}>
           💡 {state.language === 'ja'
             ? 'プロジェクトがなくても、Claude Codeが自動で作成します'
@@ -331,6 +334,17 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           </div>
         </div>
       </div>
+
+      {/* Quick link */}
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => window.open('https://github.com', '_blank')}
+        onDoubleClick={() => window.open('https://github.com', '_blank')}
+        style={{ width: '100%', fontSize: '13px', marginBottom: '12px' }}
+      >
+        🔗 {state.language === 'ja' ? 'GitHubを開いて確認' : 'Open GitHub to verify'}
+      </button>
 
       {/* Info note */}
       <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
@@ -368,7 +382,7 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
       </div>
 
       {/* How to use - simplified */}
-      <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+      <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)', marginBottom: '12px' }}>
         <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--status-connected)', marginBottom: '12px' }}>
           ✓ {state.language === 'ja' ? '使い方' : 'How to Use'}
         </p>
@@ -378,22 +392,17 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           <li>{state.language === 'ja' ? '貼り付けてEnter → 自動実行' : 'Paste and Enter → Auto-execute'}</li>
         </ol>
       </div>
-    </div>
-  );
 
-  // Gemini - Simplified
-  const renderGeminiSetup = () => (
-    <div>
-      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(52, 168, 83, 0.15))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, color: '#4285f4', marginBottom: '8px' }}>
-          ✨ {state.language === 'ja' ? 'Geminiの役割' : 'Gemini Role'}
-        </p>
-        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-          {state.language === 'ja'
-            ? '代替AIオプション（現在はClaude Codeがメイン）'
-            : 'Alternative AI option (Claude Code is primary)'}
-        </p>
-      </div>
+      {/* Quick link */}
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => window.open('https://claude.ai', '_blank')}
+        onDoubleClick={() => window.open('https://claude.ai', '_blank')}
+        style={{ width: '100%', fontSize: '13px' }}
+      >
+        🔗 {state.language === 'ja' ? 'Claude.aiを開く' : 'Open Claude.ai'}
+      </button>
     </div>
   );
 
@@ -414,6 +423,17 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           </div>
         </div>
       </div>
+
+      {/* Quick link */}
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => window.open('https://console.cloud.google.com', '_blank')}
+        onDoubleClick={() => window.open('https://console.cloud.google.com', '_blank')}
+        style={{ width: '100%', fontSize: '13px', marginBottom: '12px' }}
+      >
+        🔗 {state.language === 'ja' ? 'Google Cloud Consoleを開いて確認' : 'Open Google Cloud Console to verify'}
+      </button>
 
       {/* Info note */}
       <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
@@ -611,9 +631,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
 
           {/* Claude Code Setup Guide */}
           {connectorId === 'claude-code' && renderClaudeCodeSetup()}
-
-          {/* Gemini Setup Guide */}
-          {connectorId === 'gemini' && renderGeminiSetup()}
 
           {/* Google Cloud Setup Guide */}
           {connectorId === 'google-cloud' && renderGoogleCloudSetup()}
