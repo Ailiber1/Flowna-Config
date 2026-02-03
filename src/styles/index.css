@@ -1340,6 +1340,30 @@ body {
   gap: 12px;
 }
 
+/* Claude Code Modal - Special styling for larger content */
+.claude-code-modal {
+  min-width: 600px !important;
+  max-width: 800px !important;
+  width: 90vw !important;
+  max-height: 85vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.claude-code-modal .modal-header {
+  flex-shrink: 0;
+}
+
+.claude-code-modal .modal-body {
+  flex: 1;
+  overflow: auto;
+  padding: 0 !important;
+}
+
+.claude-code-modal .modal-footer {
+  flex-shrink: 0;
+}
+
 /* Form Elements */
 .form-group {
   margin-bottom: 16px;
