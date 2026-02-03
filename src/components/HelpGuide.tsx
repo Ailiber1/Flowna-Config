@@ -35,7 +35,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'ノードの追加',
       icon: '➕',
       content: [
-        '左側の「ノードパレット」のノードをクリックすると、キャンバスに追加されます。',
+        '「ノードパレット」のノードをクリックすると、キャンバスに追加されます。',
         'Agent、Logic、System、Ruleなど、様々なタイプのノードがあります。',
       ],
       illustration: (
@@ -88,7 +88,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'コネクタの追加',
       icon: '🔌',
       content: [
-        '左側の「コネクタ」からGitHub、Claude Code、Firebaseなどを追加できます。',
+        '「コネクタ」からGitHub、Claude Code、Firebaseなどを追加できます。',
         'コネクタを使うと、外部サービスと連携できます。',
       ],
       illustration: (
@@ -147,7 +147,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '💾',
       content: [
         '画面上部の「保存」ボタンでワークフローを保存できます。',
-        '保存したワークフローは、左側の「保存済みワークフロー」から開けます。',
+        '保存したワークフローは、「保存済みワークフロー」から開けます。',
       ],
       illustration: (
         <div className="help-illustration">
@@ -204,7 +204,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'Adding Nodes',
       icon: '➕',
       content: [
-        'Click on a node in the "Node Palette" on the left to add it to the canvas.',
+        'Click on a node in the "Node Palette" to add it to the canvas.',
         'There are various node types: Agent, Logic, System, Rule, etc.',
       ],
       illustration: (
@@ -257,7 +257,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'Adding Connectors',
       icon: '🔌',
       content: [
-        'Add connectors like GitHub, Claude Code, or Firebase from the left panel.',
+        'Add connectors like GitHub, Claude Code, or Firebase from the "Connectors" section.',
         'Connectors allow integration with external services.',
       ],
       illustration: (
@@ -316,7 +316,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '💾',
       content: [
         'Click the "Save" button at the top to save your workflow.',
-        'Open saved workflows from "Saved Workflows" on the left.',
+        'Open saved workflows from "Saved Workflows".',
       ],
       illustration: (
         <div className="help-illustration">
