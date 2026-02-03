@@ -53,6 +53,28 @@ export default function ClaudeCodeModal({ prompt, onClose }: ClaudeCodeModalProp
     });
   };
 
+  const handleDownload = () => {
+    const blob = new Blob([prompt], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    link.download = `flowna-instructions-${timestamp}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    dispatch({
+      type: 'SHOW_TOAST',
+      payload: {
+        message: state.language === 'ja'
+          ? '指示書をダウンロードしました'
+          : 'Instructions downloaded',
+        type: 'success',
+      },
+    });
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -141,12 +163,20 @@ export default function ClaudeCodeModal({ prompt, onClose }: ClaudeCodeModalProp
           >
             {state.language === 'ja' ? '閉じる' : 'Close'}
           </button>
-          <button
-            className="btn btn-secondary"
-            onClick={handleOpenClaudeCode}
-          >
-            🌐 {state.language === 'ja' ? 'Claude.ai を開く' : 'Open Claude.ai'}
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={handleDownload}
+            >
+              💾 {state.language === 'ja' ? 'ダウンロード' : 'Download'}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleOpenClaudeCode}
+            >
+              🌐 {state.language === 'ja' ? 'Claude.ai を開く' : 'Open Claude.ai'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
