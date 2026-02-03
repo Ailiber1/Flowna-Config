@@ -288,6 +288,21 @@ export const DEFAULT_CONNECTORS: Connector[] = [
     installedAt: Date.now(),
     lastUsedAt: 0,
   },
+  // === Cloud Connectors ===
+  {
+    id: 'google-cloud',
+    name: 'Google Cloud',
+    icon: '☁️',
+    description: 'API key restriction for deployed apps',
+    type: 'storage',
+    version: '1.0.0',
+    status: 'disconnected',
+    config: {},
+    capabilities: ['api-key-restriction'],
+    installedAt: Date.now(),
+    lastUsedAt: 0,
+    url: 'https://console.cloud.google.com',
+  },
   // === Add new connectors here ===
   // Example:
   // {
