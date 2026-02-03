@@ -23,20 +23,28 @@ export function NodeModal({ mode, nodeId, onClose }: NodeModalProps) {
 
   const existingNode = nodeId ? state.nodes.find(n => n.id === nodeId) : null;
 
-  const [title, setTitle] = useState(existingNode?.title || '');
-  const [description, setDescription] = useState(existingNode?.description || '');
-  const [url, setUrl] = useState(existingNode?.url || '');
-  const [attachedFile, setAttachedFile] = useState<AttachedFile | undefined>(existingNode?.attachedFile);
+  // Initialize state only once on mount using initializer functions
+  // This prevents the useEffect from resetting values when existingNode reference changes
+  const [title, setTitle] = useState(() => existingNode?.title || '');
+  const [description, setDescription] = useState(() => existingNode?.description || '');
+  const [url, setUrl] = useState(() => existingNode?.url || '');
+  const [attachedFile, setAttachedFile] = useState<AttachedFile | undefined>(() => existingNode?.attachedFile);
   const [error, setError] = useState('');
 
+  // Only re-initialize if nodeId prop changes (opening a different node)
+  // This prevents resetting user's input when other state changes cause re-renders
   useEffect(() => {
-    if (existingNode) {
-      setTitle(existingNode.title);
-      setDescription(existingNode.description);
-      setUrl(existingNode.url);
-      setAttachedFile(existingNode.attachedFile);
+    if (nodeId) {
+      const node = state.nodes.find(n => n.id === nodeId);
+      if (node) {
+        setTitle(node.title);
+        setDescription(node.description);
+        setUrl(node.url);
+        setAttachedFile(node.attachedFile);
+      }
     }
-  }, [existingNode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeId]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
