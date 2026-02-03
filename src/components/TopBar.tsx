@@ -249,12 +249,11 @@ export function TopBar() {
       {/* Mode Switch */}
       <ModeSwitch />
 
-      {/* Help Button - between mode switch and actions */}
+      {/* Help Button - next to batch button */}
       <button
         className="topbar-btn help-btn"
         onClick={() => setShowHelpGuide(true)}
         title={state.language === 'ja' ? '使い方ガイド' : 'Help Guide'}
-        style={{ marginLeft: '16px' }}
       >
         ❓
       </button>
