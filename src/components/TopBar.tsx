@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { t } from '../utils/i18n';
-import { generateExecutionPlan, generateClaudeCodeInstructions } from '../services/workflowEngine';
+import { generateExecutionPlan } from '../services/workflowEngine';
+// import { generateClaudeCodeInstructions } from '../services/workflowEngine'; // メンテナンス中
 import ModeSwitch from './ModeSwitch';
 import ExecutionPlanPreview, { PlanPreviewCompact } from './ExecutionPlanPreview';
 import HelpGuide from './HelpGuide';
-import ClaudeCodeModal from './ClaudeCodeModal';
+// import ClaudeCodeModal from './ClaudeCodeModal'; // メンテナンス中
 
 export function TopBar() {
   const { state, dispatch } = useApp();
   const [showPlanPreview, setShowPlanPreview] = useState(false);
   const [showHelpGuide, setShowHelpGuide] = useState(false);
-  const [showClaudeCodeModal, setShowClaudeCodeModal] = useState(false);
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
+  // const [showClaudeCodeModal, setShowClaudeCodeModal] = useState(false); // メンテナンス中
+  // const [generatedPrompt, setGeneratedPrompt] = useState(''); // メンテナンス中
 
   // Generate plan when nodes/connections/connectors/mode change
   useEffect(() => {
@@ -67,6 +68,20 @@ export function TopBar() {
   };
 
   const handleImplement = async () => {
+    // 実行機能を一時的に無効化（メンテナンス中）
+    dispatch({
+      type: 'SHOW_TOAST',
+      payload: {
+        message: state.language === 'ja'
+          ? '🚧 この機能は現在メンテナンス中です'
+          : '🚧 This feature is currently under maintenance',
+        type: 'warning',
+      },
+    });
+    return;
+
+    // 以下は無効化中
+    /*
     if (state.nodes.length === 0 && state.connectorNodes.length === 0) {
       dispatch({
         type: 'SHOW_TOAST',
@@ -99,6 +114,7 @@ export function TopBar() {
         type: 'success',
       },
     });
+    */
   };
 
   return (
@@ -171,13 +187,14 @@ export function TopBar() {
         <HelpGuide onClose={() => setShowHelpGuide(false)} />
       )}
 
-      {/* Claude Code Instructions Modal */}
+      {/* Claude Code Instructions Modal - メンテナンス中
       {showClaudeCodeModal && (
         <ClaudeCodeModal
           prompt={generatedPrompt}
           onClose={() => setShowClaudeCodeModal(false)}
         />
       )}
+      */}
     </div>
   );
 }
