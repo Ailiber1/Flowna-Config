@@ -51,7 +51,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
   const [apiToken, setApiToken] = useState('');
   const [customApiUrl, setCustomApiUrl] = useState('');
   const [customAuthType, setCustomAuthType] = useState<'none' | 'bearer' | 'apikey' | 'basic'>('bearer');
-  const [connectorUrl, setConnectorUrl] = useState('');  // URL for quick access
 
   // Load existing config
   useEffect(() => {
@@ -68,11 +67,7 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         setCustomAuthType((config.authType as 'none' | 'bearer' | 'apikey' | 'basic') || 'bearer');
       }
     }
-    // Load connector URL from connector object
-    if (connector) {
-      setConnectorUrl(connector.url || '');
-    }
-  }, [connectorId, connector]);
+  }, [connectorId]);
 
   if (!connector) return null;
 
@@ -166,11 +161,11 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
       }
     }
 
-    // Save connector URL to the connector object
+    // Update connector's lastUsedAt
     if (connector) {
       dispatch({
         type: 'UPDATE_CONNECTOR',
-        payload: { ...connector, url: connectorUrl, lastUsedAt: Date.now() },
+        payload: { ...connector, lastUsedAt: Date.now() },
       });
     }
 
@@ -268,297 +263,164 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
 
   const renderFirebaseConfig = () => (
     <div>
-      {/* Step 1: Create or link project */}
-      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 87, 34, 0.1))', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)', marginBottom: '20px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-orange)' }}>
-          🔥 {state.language === 'ja' ? 'ステップ1: プロジェクト作成' : 'Step 1: Create Project'}
+      {/* Role explanation */}
+      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 87, 34, 0.1))', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-orange)', marginBottom: '8px' }}>
+          🔥 {state.language === 'ja' ? 'Firebaseの役割' : 'Firebase Role'}
         </p>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => window.open('https://console.firebase.google.com/u/0/', '_blank')}
-          style={{ width: '100%', background: 'var(--accent-orange)' }}
-        >
-          {state.language === 'ja' ? 'Firebaseコンソールで作成' : 'Create in Firebase Console'}
-        </button>
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px', textAlign: 'center' }}>
+        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
           {state.language === 'ja'
-            ? '仕様書のアプリ名でプロジェクトを作成してください'
-            : 'Create a project with the app name from your spec'}
+            ? 'ホスティング・データベース・認証を提供（Claude Codeが自動設定）'
+            : 'Provides hosting, database, auth (auto-configured by Claude Code)'}
         </p>
       </div>
 
-      {/* Step 2: Enter Project ID */}
+      {/* Project ID input - optional */}
       <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
-          📝 {state.language === 'ja' ? 'ステップ2: プロジェクトIDを入力' : 'Step 2: Enter Project ID'}
+        <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--accent-cyan)' }}>
+          📝 {state.language === 'ja' ? 'プロジェクトID（任意）' : 'Project ID (Optional)'}
         </p>
-        <div className="form-group" style={{ marginBottom: '0' }}>
-          <input
-            type="text"
-            className="form-input"
-            value={firebaseConfig.projectId}
-            onChange={(e) => {
-              const projectId = e.target.value;
-              setFirebaseConfig({
-                ...firebaseConfig,
-                projectId,
-                authDomain: projectId ? `${projectId}.firebaseapp.com` : '',
-                storageBucket: projectId ? `${projectId}.firebasestorage.app` : '',
-              });
-            }}
-            placeholder={state.language === 'ja' ? 'プロジェクトID（例: my-app-12345）' : 'Project ID (e.g., my-app-12345)'}
-            style={{ fontSize: '14px' }}
-          />
-        </div>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+          {state.language === 'ja'
+            ? '既存のプロジェクトがある場合のみ入力'
+            : 'Enter only if you have an existing project'}
+        </p>
+        <input
+          type="text"
+          className="form-input"
+          value={firebaseConfig.projectId}
+          onChange={(e) => {
+            const projectId = e.target.value;
+            setFirebaseConfig({
+              ...firebaseConfig,
+              projectId,
+              authDomain: projectId ? `${projectId}.firebaseapp.com` : '',
+              storageBucket: projectId ? `${projectId}.firebasestorage.app` : '',
+            });
+          }}
+          placeholder={state.language === 'ja' ? '例: my-app-12345' : 'e.g., my-app-12345'}
+          style={{ fontSize: '14px' }}
+        />
       </div>
 
-      {/* Step 3: Claude Code Integration */}
-      {firebaseConfig.projectId && (
-        <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
-          <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-purple)' }}>
-            🤖 {state.language === 'ja' ? 'ステップ3: Claude Codeで設定' : 'Step 3: Configure with Claude Code'}
-          </p>
-          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-            {state.language === 'ja'
-              ? '以下をClaude Codeにコピーして、Firebaseの設定を自動化してください：'
-              : 'Copy the following to Claude Code to automate Firebase setup:'}
-          </p>
-          <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)', marginBottom: '12px' }}>
-            <div style={{ marginBottom: '8px', color: 'var(--accent-cyan)' }}>
-              {state.language === 'ja' ? '# Firebase プロジェクト設定' : '# Firebase Project Setup'}
-            </div>
-            <div>firebase use {firebaseConfig.projectId}</div>
-            <div style={{ marginTop: '8px', color: 'var(--text-secondary)' }}>
-              {state.language === 'ja'
-                ? '# Firestoreルール、Storageルール、認証設定を\n# アプリの仕様に応じて自動設定してください'
-                : '# Auto-configure Firestore rules, Storage rules,\n# and auth settings based on app requirements'}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => {
-              const text = state.language === 'ja'
-                ? `Firebase プロジェクト: ${firebaseConfig.projectId}\n\n以下を設定してください：\n1. Firestoreセキュリティルール（アプリの用途に応じて）\n2. Storageルール（必要な場合）\n3. Authentication設定（Google, Email等）\n4. firebase.json の設定\n\nコマンド: firebase use ${firebaseConfig.projectId}`
-                : `Firebase Project: ${firebaseConfig.projectId}\n\nPlease configure:\n1. Firestore security rules (based on app requirements)\n2. Storage rules (if needed)\n3. Authentication settings (Google, Email, etc.)\n4. firebase.json configuration\n\nCommand: firebase use ${firebaseConfig.projectId}`;
-              navigator.clipboard.writeText(text);
-              setMessage({ text: state.language === 'ja' ? 'コピーしました！Claude Codeに貼り付けてください' : 'Copied! Paste to Claude Code', type: 'success' });
-            }}
-            style={{ width: '100%', fontSize: '12px' }}
-          >
-            📋 {state.language === 'ja' ? 'Claude Code用にコピー' : 'Copy for Claude Code'}
-          </button>
-        </div>
-      )}
-
-      {!firebaseConfig.projectId && (
-        <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(138, 43, 226, 0.05)', borderRadius: '8px', border: '1px dashed rgba(138, 43, 226, 0.3)' }}>
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
-            🤖 {state.language === 'ja'
-              ? 'プロジェクトIDを入力すると、Claude Code連携オプションが表示されます'
-              : 'Enter Project ID to see Claude Code integration options'}
-          </p>
-        </div>
-      )}
+      {/* Info note */}
+      <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+        <p style={{ fontSize: '12px', color: 'var(--status-connected)', margin: 0 }}>
+          💡 {state.language === 'ja'
+            ? 'プロジェクトがなくても、Claude Codeが自動で作成します'
+            : 'Claude Code will auto-create if no project exists'}
+        </p>
+      </div>
     </div>
   );
 
-  // GitHub CLI Setup Guide
+  // GitHub - Simplified (assumes gh CLI installed)
   const renderGitHubSetup = () => (
     <div>
-      {/* Step 1: Install gh CLI */}
-      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(36, 41, 46, 0.3), rgba(88, 96, 105, 0.2))', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '16px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#f0f0f0' }}>
-          ⚙️ {state.language === 'ja' ? 'ステップ1: GitHub CLIをインストール' : 'Step 1: Install GitHub CLI'}
+      {/* Role explanation */}
+      <div style={{ padding: '20px', background: 'linear-gradient(135deg, rgba(36, 41, 46, 0.3), rgba(88, 96, 105, 0.2))', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: '#f0f0f0', marginBottom: '16px' }}>
+          🐙 {state.language === 'ja' ? 'GitHubの役割' : 'GitHub Role'}
         </p>
-        <div style={{ background: 'rgba(0, 0, 0, 0.4)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
-          brew install gh
-        </div>
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
-          {state.language === 'ja'
-            ? 'Windows: winget install GitHub.cli'
-            : 'Windows: winget install GitHub.cli'}
-        </p>
-      </div>
-
-      {/* Step 2: Login */}
-      <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)', marginBottom: '16px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
-          🔐 {state.language === 'ja' ? 'ステップ2: ログイン' : 'Step 2: Login'}
-        </p>
-        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
-          gh auth login
-        </div>
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
-          {state.language === 'ja'
-            ? 'ブラウザで認証すると、ローカルで安全に認証情報が保存されます'
-            : 'Authenticate via browser - credentials stored securely on your machine'}
-        </p>
-      </div>
-
-      {/* Step 3: Verify */}
-      <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--status-connected)' }}>
-          ✓ {state.language === 'ja' ? 'ステップ3: 確認' : 'Step 3: Verify'}
-        </p>
-        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
-          gh auth status
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>📁 {state.language === 'ja' ? 'リポジトリ作成' : 'Create Repo'}</span>
+          </div>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>📤 {state.language === 'ja' ? 'コード管理' : 'Code Management'}</span>
+          </div>
         </div>
       </div>
 
-      {/* Info box */}
-      <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
-        <p style={{ fontSize: '12px', color: 'var(--accent-purple)' }}>
-          🤖 {state.language === 'ja'
-            ? 'Claude Codeがリポジトリ作成やプッシュを自動で行います。FlownaにAPIキーは不要です。'
-            : 'Claude Code handles repo creation and pushes automatically. No API key needed in Flowna.'}
+      {/* Info note */}
+      <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+        <p style={{ fontSize: '12px', color: 'var(--status-connected)', margin: 0 }}>
+          💡 {state.language === 'ja'
+            ? 'Claude Codeが gh コマンドで自動操作します'
+            : 'Claude Code auto-operates via gh command'}
         </p>
       </div>
     </div>
   );
 
-  // Claude Code CLI Setup Guide
+  // Claude Code - Simplified (assumes already installed)
   const renderClaudeCodeSetup = () => (
     <div>
-      {/* Step 1: Install Claude CLI */}
-      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(75, 0, 130, 0.15))', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)', marginBottom: '16px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-purple)' }}>
-          ⚙️ {state.language === 'ja' ? 'ステップ1: Claude CLIをインストール' : 'Step 1: Install Claude CLI'}
+      {/* Role explanation - main focus */}
+      <div style={{ padding: '20px', background: 'linear-gradient(135deg, rgba(138, 43, 226, 0.15), rgba(75, 0, 130, 0.1))', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent-purple)', marginBottom: '16px' }}>
+          🤖 {state.language === 'ja' ? 'Claude Codeが自動で実行すること' : 'What Claude Code Does Automatically'}
         </p>
-        <div style={{ background: 'rgba(0, 0, 0, 0.4)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
-          npm install -g @anthropic-ai/claude-code
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>📁 {state.language === 'ja' ? 'リポジトリ作成' : 'Create Repo'}</span>
+          </div>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>💻 {state.language === 'ja' ? 'コード生成' : 'Generate Code'}</span>
+          </div>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>🔥 {state.language === 'ja' ? 'Firebase設定' : 'Firebase Setup'}</span>
+          </div>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>🚀 {state.language === 'ja' ? 'デプロイ' : 'Deploy'}</span>
+          </div>
         </div>
       </div>
 
-      {/* Step 2: Login */}
-      <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)', marginBottom: '16px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
-          🔐 {state.language === 'ja' ? 'ステップ2: ログイン' : 'Step 2: Login'}
-        </p>
-        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
-          claude login
-        </div>
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
-          {state.language === 'ja'
-            ? 'ブラウザで認証 → APIキーはローカルに安全に保存'
-            : 'Authenticate via browser → API key stored securely locally'}
-        </p>
-      </div>
-
-      {/* Step 3: Verify */}
+      {/* How to use - simplified */}
       <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--status-connected)' }}>
-          ✓ {state.language === 'ja' ? 'ステップ3: 確認' : 'Step 3: Verify'}
+        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--status-connected)', marginBottom: '12px' }}>
+          ✓ {state.language === 'ja' ? '使い方' : 'How to Use'}
         </p>
-        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
-          claude --version
-        </div>
-      </div>
-
-      {/* Role explanation */}
-      <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(255, 152, 0, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--accent-orange)', marginBottom: '8px' }}>
-          🎯 {state.language === 'ja' ? 'Claude Codeの役割' : 'Claude Code\'s Role'}
-        </p>
-        <ul style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, paddingLeft: '20px' }}>
-          <li>{state.language === 'ja' ? '仕様書からコードを自動生成' : 'Auto-generate code from spec'}</li>
-          <li>{state.language === 'ja' ? 'GitHubリポジトリ作成・プッシュ' : 'Create GitHub repo & push'}</li>
-          <li>{state.language === 'ja' ? 'Firebaseルール設定' : 'Configure Firebase rules'}</li>
-          <li>{state.language === 'ja' ? 'デプロイ自動化' : 'Automate deployment'}</li>
-        </ul>
+        <ol style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0, paddingLeft: '20px', lineHeight: '2' }}>
+          <li>{state.language === 'ja' ? 'Flownaで「実行」→ コピー' : 'Click "Execute" in Flowna → Copy'}</li>
+          <li>{state.language === 'ja' ? 'ターミナルで claude と入力' : 'Type claude in terminal'}</li>
+          <li>{state.language === 'ja' ? '貼り付けてEnter → 自動実行' : 'Paste and Enter → Auto-execute'}</li>
+        </ol>
       </div>
     </div>
   );
 
-  // Gemini Setup Guide
+  // Gemini - Simplified
   const renderGeminiSetup = () => (
     <div>
-      {/* Info about Gemini */}
-      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(52, 168, 83, 0.15))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)', marginBottom: '16px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#4285f4' }}>
-          ✨ {state.language === 'ja' ? 'Google Gemini' : 'Google Gemini'}
+      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(52, 168, 83, 0.15))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, color: '#4285f4', marginBottom: '8px' }}>
+          ✨ {state.language === 'ja' ? 'Geminiの役割' : 'Gemini Role'}
         </p>
-        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
           {state.language === 'ja'
-            ? 'Geminiを使用する場合は、Google AI Studioでプロジェクトを設定してください。'
-            : 'To use Gemini, set up your project in Google AI Studio.'}
-        </p>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => window.open('https://aistudio.google.com/', '_blank')}
-          style={{ width: '100%', background: '#4285f4' }}
-        >
-          {state.language === 'ja' ? 'Google AI Studioを開く' : 'Open Google AI Studio'}
-        </button>
-      </div>
-
-      {/* Note about Claude Code */}
-      <div style={{ padding: '12px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
-        <p style={{ fontSize: '12px', color: 'var(--accent-purple)' }}>
-          💡 {state.language === 'ja'
-            ? '現在のワークフローではClaude Codeが開発を担当します。Geminiは代替オプションです。'
-            : 'In current workflow, Claude Code handles development. Gemini is an alternative option.'}
+            ? '代替AIオプション（現在はClaude Codeがメイン）'
+            : 'Alternative AI option (Claude Code is primary)'}
         </p>
       </div>
     </div>
   );
 
-  // Google Cloud Setup Guide
+  // Google Cloud - Simplified
   const renderGoogleCloudSetup = () => (
     <div>
-      {/* Step 1: Create Project */}
-      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(234, 67, 53, 0.1))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)', marginBottom: '16px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#4285f4' }}>
-          ☁️ {state.language === 'ja' ? 'ステップ1: プロジェクト作成' : 'Step 1: Create Project'}
+      {/* Role explanation */}
+      <div style={{ padding: '20px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(234, 67, 53, 0.1))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '15px', fontWeight: 600, color: '#4285f4', marginBottom: '16px' }}>
+          ☁️ {state.language === 'ja' ? 'Google Cloudの役割' : 'Google Cloud Role'}
         </p>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => window.open('https://console.cloud.google.com/', '_blank')}
-          style={{ width: '100%', background: '#4285f4' }}
-        >
-          {state.language === 'ja' ? 'Google Cloud Consoleを開く' : 'Open Google Cloud Console'}
-        </button>
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
-          {state.language === 'ja'
-            ? 'Firebaseプロジェクトと同じプロジェクトを使用できます'
-            : 'You can use the same project as Firebase'}
-        </p>
-      </div>
-
-      {/* Step 2: Install gcloud CLI */}
-      <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)', marginBottom: '16px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
-          ⚙️ {state.language === 'ja' ? 'ステップ2: gcloud CLIをインストール' : 'Step 2: Install gcloud CLI'}
-        </p>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => window.open('https://cloud.google.com/sdk/docs/install', '_blank')}
-          style={{ width: '100%', fontSize: '12px' }}
-        >
-          {state.language === 'ja' ? 'インストールガイドを見る' : 'View Installation Guide'}
-        </button>
-      </div>
-
-      {/* Step 3: Login */}
-      <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--status-connected)' }}>
-          🔐 {state.language === 'ja' ? 'ステップ3: ログイン' : 'Step 3: Login'}
-        </p>
-        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
-          gcloud auth login
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>🔒 {state.language === 'ja' ? 'セキュリティ' : 'Security'}</span>
+          </div>
+          <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>🛡️ {state.language === 'ja' ? 'API制限' : 'API Restrictions'}</span>
+          </div>
         </div>
       </div>
 
-      {/* Role explanation */}
-      <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(255, 152, 0, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
-        <p style={{ fontSize: '12px', color: 'var(--accent-orange)' }}>
-          🔒 {state.language === 'ja'
-            ? 'Google Cloudはセキュリティ設定（IAM、Cloud Armor等）を管理します。'
-            : 'Google Cloud manages security settings (IAM, Cloud Armor, etc.).'}
+      {/* Info note */}
+      <div style={{ padding: '12px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+        <p style={{ fontSize: '12px', color: 'var(--status-connected)', margin: 0 }}>
+          💡 {state.language === 'ja'
+            ? 'Claude Codeがセキュリティ設定を案内します'
+            : 'Claude Code will guide security setup'}
         </p>
       </div>
     </div>
@@ -758,61 +620,35 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
 
           {/* Custom API */}
           {connectorId === 'custom-api' && renderCustomApiConfig()}
-
-          {/* Quick Access URL - for all connectors */}
-          <div className="form-group" style={{ marginTop: '20px' }}>
-            <label className="form-label">
-              {state.language === 'ja' ? 'クイックアクセスURL' : 'Quick Access URL'}
-            </label>
-            <input
-              type="url"
-              className="form-input"
-              value={connectorUrl}
-              onChange={(e) => setConnectorUrl(e.target.value)}
-              placeholder={state.language === 'ja' ? 'https://example.com (ダブルクリックで開く)' : 'https://example.com (double-click to open)'}
-            />
-            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              {state.language === 'ja'
-                ? 'コネクタをダブルクリックすると、このURLが開きます'
-                : 'Double-click the connector to open this URL'}
-            </p>
-          </div>
-
-          {/* Status */}
-          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(13, 33, 55, 0.5)', borderRadius: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {state.language === 'ja' ? 'ステータス:' : 'Status:'}{' '}
-            </span>
-            <span style={{
-              fontSize: '12px',
-              color: connector.status === 'connected' ? 'var(--status-connected)' : connector.status === 'error' ? 'var(--status-error)' : 'var(--text-secondary)',
-            }}>
-              {connector.status === 'connected' ? '● ' : connector.status === 'error' ? '● ' : '○ '}
-              {t(connector.status, state.language)}
-            </span>
-          </div>
         </div>
 
-        <div className="modal-footer">
-          {/* Only show Test/Disconnect for Firebase sync and custom-api */}
-          {(connectorId === 'firebase' || connectorId === 'custom-api') && (
+        <div className="modal-footer" style={{ justifyContent: 'flex-end' }}>
+          {/* Firebase and Custom API need save/test functionality */}
+          {(connectorId === 'firebase' || connectorId === 'custom-api') ? (
             <>
               {connector.status === 'connected' && (
                 <button className="btn btn-danger" onClick={handleDisconnect} disabled={isLoading}>
                   {t('disconnect', state.language)}
                 </button>
               )}
-              <button className="btn btn-secondary" onClick={handleTestConnection} disabled={isLoading}>
-                {isLoading ? '...' : t('testConnection', state.language)}
+              {connectorId === 'custom-api' && (
+                <button className="btn btn-secondary" onClick={handleTestConnection} disabled={isLoading}>
+                  {isLoading ? '...' : t('testConnection', state.language)}
+                </button>
+              )}
+              <button className="btn btn-secondary" onClick={onClose}>
+                {t('cancel', state.language)}
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveConfig} disabled={isLoading}>
+                {t('save', state.language)}
               </button>
             </>
+          ) : (
+            /* Other connectors just need close button */
+            <button className="btn btn-primary" onClick={onClose}>
+              {state.language === 'ja' ? '閉じる' : 'Close'}
+            </button>
           )}
-          <button className="btn btn-secondary" onClick={onClose}>
-            {t('cancel', state.language)}
-          </button>
-          <button className="btn btn-primary" onClick={handleSaveConfig} disabled={isLoading}>
-            {t('save', state.language)}
-          </button>
         </div>
       </div>
     </div>
