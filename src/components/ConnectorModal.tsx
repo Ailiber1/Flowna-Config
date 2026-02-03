@@ -17,7 +17,6 @@ import {
 import {
   githubConnector,
   claudeConnector,
-  geminiConnector,
   customApiConnector,
   saveConnectorConfig,
   loadConnectorConfig,
@@ -97,10 +96,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           claudeConnector.setApiKey(apiToken);
           result = await claudeConnector.testConnection();
           break;
-        case 'gemini':
-          geminiConnector.setApiKey(apiToken);
-          result = await geminiConnector.testConnection();
-          break;
         case 'custom-api':
           customApiConnector.setConfig({
             baseUrl: customApiUrl,
@@ -147,9 +142,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           break;
         case 'claude-code':
           claudeConnector.setApiKey(apiToken);
-          break;
-        case 'gemini':
-          geminiConnector.setApiKey(apiToken);
           break;
         case 'custom-api':
           customApiConnector.setConfig({
@@ -414,33 +406,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
     </div>
   );
 
-  // Gemini - Simplified
-  const renderGeminiSetup = () => (
-    <div>
-      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(52, 168, 83, 0.15))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)', marginBottom: '12px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, color: '#4285f4', marginBottom: '8px' }}>
-          ✨ {state.language === 'ja' ? 'Geminiの役割' : 'Gemini Role'}
-        </p>
-        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-          {state.language === 'ja'
-            ? '代替AIオプション（現在はClaude Codeがメイン）'
-            : 'Alternative AI option (Claude Code is primary)'}
-        </p>
-      </div>
-
-      {/* Quick link */}
-      <button
-        type="button"
-        className="btn btn-secondary"
-        onClick={() => window.open('https://aistudio.google.com', '_blank')}
-        onDoubleClick={() => window.open('https://aistudio.google.com', '_blank')}
-        style={{ width: '100%', fontSize: '13px' }}
-      >
-        🔗 {state.language === 'ja' ? 'Google AI Studioを開く' : 'Open Google AI Studio'}
-      </button>
-    </div>
-  );
-
   // Google Cloud - Simplified
   const renderGoogleCloudSetup = () => (
     <div>
@@ -666,9 +631,6 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
 
           {/* Claude Code Setup Guide */}
           {connectorId === 'claude-code' && renderClaudeCodeSetup()}
-
-          {/* Gemini Setup Guide */}
-          {connectorId === 'gemini' && renderGeminiSetup()}
 
           {/* Google Cloud Setup Guide */}
           {connectorId === 'google-cloud' && renderGoogleCloudSetup()}
