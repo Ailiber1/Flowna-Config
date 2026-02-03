@@ -153,7 +153,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
         '🤖 Claude Codeで開発：仕様書を元にアプリを開発',
         '🚀 デプロイ：GitHub PagesにデプロイしてURLを取得',
         '🔄 修正・更新：PRを作成してマージ',
-        '🔐 Google Cloud APIキー制限：セキュリティ対策としてAPIキーをウェブサイトに制限',
+        '☁️ Google Cloud：デプロイしたノードと繋げてAPIキーにURLを設定',
       ],
       illustration: (
         <div className="help-illustration">
@@ -165,8 +165,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="action-item">🤖 Claude Codeで開発</div>
             <div className="action-item">🚀 デプロイ</div>
             <div className="action-item">🔄 修正・更新(PR)</div>
-            <div className="action-category">セキュリティ</div>
-            <div className="action-item">🔐 Google Cloud APIキー制限</div>
+            <div className="action-item">☁️ Google Cloud</div>
           </div>
         </div>
       ),
@@ -351,7 +350,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
         '🤖 Develop with Claude Code: Build apps based on specifications',
         '🚀 Deploy: Deploy to GitHub Pages and get URL',
         '🔄 Fix & Update: Create and merge PRs',
-        '🔐 Google Cloud API Key Restriction: Restrict API key to website for security',
+        '☁️ Google Cloud: Connect to deployed node to set URL in API key',
       ],
       illustration: (
         <div className="help-illustration">
@@ -363,8 +362,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="action-item">🤖 Develop with Claude Code</div>
             <div className="action-item">🚀 Deploy</div>
             <div className="action-item">🔄 Fix & Update (PR)</div>
-            <div className="action-category">Security</div>
-            <div className="action-item">🔐 Google Cloud API Key Restriction</div>
+            <div className="action-item">☁️ Google Cloud</div>
           </div>
         </div>
       ),
