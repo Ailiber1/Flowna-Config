@@ -219,8 +219,18 @@ export function ConnectorNodeIcon({ connectorNode, connector, isSelected }: Conn
   // Double-click to open URL
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (connector.url) {
-      window.open(connector.url, '_blank');
+
+    // Fallback URLs for connectors (in case old cached data doesn't have URL)
+    const fallbackUrls: Record<string, string> = {
+      'github': 'https://github.com',
+      'claude-code': 'https://claude.ai',
+      'firebase': 'https://console.firebase.google.com',
+      'google-cloud': 'https://console.cloud.google.com',
+    };
+
+    const url = connector.url || fallbackUrls[connector.id];
+    if (url) {
+      window.open(url, '_blank');
     } else {
       // If no URL is set, open the settings modal
       dispatch({ type: 'OPEN_CONNECTOR_MODAL', payload: connector.id });
