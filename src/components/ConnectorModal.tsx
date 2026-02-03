@@ -364,27 +364,203 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
     </div>
   );
 
-  const renderApiKeyConfig = () => (
-    <div className="form-group">
-      <label className="form-label required">
-        {connectorId === 'github'
-          ? (state.language === 'ja' ? 'パーソナルアクセストークン' : 'Personal Access Token')
-          : (state.language === 'ja' ? 'APIキー' : 'API Key')}
-      </label>
-      <input
-        type="password"
-        className="form-input"
-        value={apiToken}
-        onChange={(e) => setApiToken(e.target.value)}
-        placeholder={connectorId === 'github' ? 'ghp_xxxx...' : 'sk-...'}
-      />
-      {connectorId === 'github' && (
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-          {state.language === 'ja'
-            ? 'GitHub Settings → Developer settings → Personal access tokens で作成'
-            : 'Create at GitHub Settings → Developer settings → Personal access tokens'}
+  // GitHub CLI Setup Guide
+  const renderGitHubSetup = () => (
+    <div>
+      {/* Step 1: Install gh CLI */}
+      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(36, 41, 46, 0.3), rgba(88, 96, 105, 0.2))', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#f0f0f0' }}>
+          ⚙️ {state.language === 'ja' ? 'ステップ1: GitHub CLIをインストール' : 'Step 1: Install GitHub CLI'}
         </p>
-      )}
+        <div style={{ background: 'rgba(0, 0, 0, 0.4)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
+          brew install gh
+        </div>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+          {state.language === 'ja'
+            ? 'Windows: winget install GitHub.cli'
+            : 'Windows: winget install GitHub.cli'}
+        </p>
+      </div>
+
+      {/* Step 2: Login */}
+      <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
+          🔐 {state.language === 'ja' ? 'ステップ2: ログイン' : 'Step 2: Login'}
+        </p>
+        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
+          gh auth login
+        </div>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+          {state.language === 'ja'
+            ? 'ブラウザで認証すると、ローカルで安全に認証情報が保存されます'
+            : 'Authenticate via browser - credentials stored securely on your machine'}
+        </p>
+      </div>
+
+      {/* Step 3: Verify */}
+      <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--status-connected)' }}>
+          ✓ {state.language === 'ja' ? 'ステップ3: 確認' : 'Step 3: Verify'}
+        </p>
+        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
+          gh auth status
+        </div>
+      </div>
+
+      {/* Info box */}
+      <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
+        <p style={{ fontSize: '12px', color: 'var(--accent-purple)' }}>
+          🤖 {state.language === 'ja'
+            ? 'Claude Codeがリポジトリ作成やプッシュを自動で行います。FlownaにAPIキーは不要です。'
+            : 'Claude Code handles repo creation and pushes automatically. No API key needed in Flowna.'}
+        </p>
+      </div>
+    </div>
+  );
+
+  // Claude Code CLI Setup Guide
+  const renderClaudeCodeSetup = () => (
+    <div>
+      {/* Step 1: Install Claude CLI */}
+      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(75, 0, 130, 0.15))', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-purple)' }}>
+          ⚙️ {state.language === 'ja' ? 'ステップ1: Claude CLIをインストール' : 'Step 1: Install Claude CLI'}
+        </p>
+        <div style={{ background: 'rgba(0, 0, 0, 0.4)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
+          npm install -g @anthropic-ai/claude-code
+        </div>
+      </div>
+
+      {/* Step 2: Login */}
+      <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
+          🔐 {state.language === 'ja' ? 'ステップ2: ログイン' : 'Step 2: Login'}
+        </p>
+        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
+          claude login
+        </div>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+          {state.language === 'ja'
+            ? 'ブラウザで認証 → APIキーはローカルに安全に保存'
+            : 'Authenticate via browser → API key stored securely locally'}
+        </p>
+      </div>
+
+      {/* Step 3: Verify */}
+      <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--status-connected)' }}>
+          ✓ {state.language === 'ja' ? 'ステップ3: 確認' : 'Step 3: Verify'}
+        </p>
+        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
+          claude --version
+        </div>
+      </div>
+
+      {/* Role explanation */}
+      <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(255, 152, 0, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--accent-orange)', marginBottom: '8px' }}>
+          🎯 {state.language === 'ja' ? 'Claude Codeの役割' : 'Claude Code\'s Role'}
+        </p>
+        <ul style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, paddingLeft: '20px' }}>
+          <li>{state.language === 'ja' ? '仕様書からコードを自動生成' : 'Auto-generate code from spec'}</li>
+          <li>{state.language === 'ja' ? 'GitHubリポジトリ作成・プッシュ' : 'Create GitHub repo & push'}</li>
+          <li>{state.language === 'ja' ? 'Firebaseルール設定' : 'Configure Firebase rules'}</li>
+          <li>{state.language === 'ja' ? 'デプロイ自動化' : 'Automate deployment'}</li>
+        </ul>
+      </div>
+    </div>
+  );
+
+  // Gemini Setup Guide
+  const renderGeminiSetup = () => (
+    <div>
+      {/* Info about Gemini */}
+      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(52, 168, 83, 0.15))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#4285f4' }}>
+          ✨ {state.language === 'ja' ? 'Google Gemini' : 'Google Gemini'}
+        </p>
+        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+          {state.language === 'ja'
+            ? 'Geminiを使用する場合は、Google AI Studioでプロジェクトを設定してください。'
+            : 'To use Gemini, set up your project in Google AI Studio.'}
+        </p>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => window.open('https://aistudio.google.com/', '_blank')}
+          style={{ width: '100%', background: '#4285f4' }}
+        >
+          {state.language === 'ja' ? 'Google AI Studioを開く' : 'Open Google AI Studio'}
+        </button>
+      </div>
+
+      {/* Note about Claude Code */}
+      <div style={{ padding: '12px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
+        <p style={{ fontSize: '12px', color: 'var(--accent-purple)' }}>
+          💡 {state.language === 'ja'
+            ? '現在のワークフローではClaude Codeが開発を担当します。Geminiは代替オプションです。'
+            : 'In current workflow, Claude Code handles development. Gemini is an alternative option.'}
+        </p>
+      </div>
+    </div>
+  );
+
+  // Google Cloud Setup Guide
+  const renderGoogleCloudSetup = () => (
+    <div>
+      {/* Step 1: Create Project */}
+      <div style={{ padding: '16px', background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(234, 67, 53, 0.1))', borderRadius: '8px', border: '1px solid rgba(66, 133, 244, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#4285f4' }}>
+          ☁️ {state.language === 'ja' ? 'ステップ1: プロジェクト作成' : 'Step 1: Create Project'}
+        </p>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => window.open('https://console.cloud.google.com/', '_blank')}
+          style={{ width: '100%', background: '#4285f4' }}
+        >
+          {state.language === 'ja' ? 'Google Cloud Consoleを開く' : 'Open Google Cloud Console'}
+        </button>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+          {state.language === 'ja'
+            ? 'Firebaseプロジェクトと同じプロジェクトを使用できます'
+            : 'You can use the same project as Firebase'}
+        </p>
+      </div>
+
+      {/* Step 2: Install gcloud CLI */}
+      <div style={{ padding: '16px', background: 'rgba(33, 150, 243, 0.1)', borderRadius: '8px', border: '1px solid rgba(33, 150, 243, 0.3)', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-cyan)' }}>
+          ⚙️ {state.language === 'ja' ? 'ステップ2: gcloud CLIをインストール' : 'Step 2: Install gcloud CLI'}
+        </p>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => window.open('https://cloud.google.com/sdk/docs/install', '_blank')}
+          style={{ width: '100%', fontSize: '12px' }}
+        >
+          {state.language === 'ja' ? 'インストールガイドを見る' : 'View Installation Guide'}
+        </button>
+      </div>
+
+      {/* Step 3: Login */}
+      <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.1)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--status-connected)' }}>
+          🔐 {state.language === 'ja' ? 'ステップ3: ログイン' : 'Step 3: Login'}
+        </p>
+        <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '12px', color: 'var(--accent-cyan)' }}>
+          gcloud auth login
+        </div>
+      </div>
+
+      {/* Role explanation */}
+      <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(255, 152, 0, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 152, 0, 0.3)' }}>
+        <p style={{ fontSize: '12px', color: 'var(--accent-orange)' }}>
+          🔒 {state.language === 'ja'
+            ? 'Google Cloudはセキュリティ設定（IAM、Cloud Armor等）を管理します。'
+            : 'Google Cloud manages security settings (IAM, Cloud Armor, etc.).'}
+        </p>
+      </div>
     </div>
   );
 
@@ -568,25 +744,17 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
             </div>
           )}
 
-          {/* GitHub, Claude, Gemini */}
-          {(connectorId === 'github' || connectorId === 'claude-code' || connectorId === 'gemini') && (
-            <>
-              {renderApiKeyConfig()}
-              <div style={{ marginTop: '20px' }}>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  {connectorId === 'github' && (state.language === 'ja'
-                    ? '必要な権限: repo, workflow（GitHub Actionsを使う場合）'
-                    : 'Required scopes: repo, workflow (for GitHub Actions)')}
-                  {connectorId === 'claude-code' && (state.language === 'ja'
-                    ? 'Anthropic Console からAPIキーを取得してください'
-                    : 'Get your API key from Anthropic Console')}
-                  {connectorId === 'gemini' && (state.language === 'ja'
-                    ? 'Google AI Studio からAPIキーを取得してください'
-                    : 'Get your API key from Google AI Studio')}
-                </p>
-              </div>
-            </>
-          )}
+          {/* GitHub Setup Guide */}
+          {connectorId === 'github' && renderGitHubSetup()}
+
+          {/* Claude Code Setup Guide */}
+          {connectorId === 'claude-code' && renderClaudeCodeSetup()}
+
+          {/* Gemini Setup Guide */}
+          {connectorId === 'gemini' && renderGeminiSetup()}
+
+          {/* Google Cloud Setup Guide */}
+          {connectorId === 'google-cloud' && renderGoogleCloudSetup()}
 
           {/* Custom API */}
           {connectorId === 'custom-api' && renderCustomApiConfig()}
@@ -626,13 +794,21 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         </div>
 
         <div className="modal-footer">
-          {connector.status === 'connected' && (
-            <button className="btn btn-danger" onClick={handleDisconnect} disabled={isLoading}>
-              {t('disconnect', state.language)}
-            </button>
+          {/* Only show Test/Disconnect for Firebase sync and custom-api */}
+          {(connectorId === 'firebase' || connectorId === 'custom-api') && (
+            <>
+              {connector.status === 'connected' && (
+                <button className="btn btn-danger" onClick={handleDisconnect} disabled={isLoading}>
+                  {t('disconnect', state.language)}
+                </button>
+              )}
+              <button className="btn btn-secondary" onClick={handleTestConnection} disabled={isLoading}>
+                {isLoading ? '...' : t('testConnection', state.language)}
+              </button>
+            </>
           )}
-          <button className="btn btn-secondary" onClick={handleTestConnection} disabled={isLoading}>
-            {isLoading ? '...' : t('testConnection', state.language)}
+          <button className="btn btn-secondary" onClick={onClose}>
+            {t('cancel', state.language)}
           </button>
           <button className="btn btn-primary" onClick={handleSaveConfig} disabled={isLoading}>
             {t('save', state.language)}
