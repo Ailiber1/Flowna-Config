@@ -11,6 +11,20 @@
 
 ---
 
+## 命名ルール（統一）
+
+すべてのサービスで**同じアプリ名**を使用：
+
+| サービス | 命名 |
+|---------|------|
+| GitHub リポジトリ | `[アプリ名]` |
+| Firebase プロジェクト | `[アプリ名]` |
+| フォルダ名 | `[アプリ名]` |
+
+※ Firebaseプロジェクト名が既に使用されている場合のみ、末尾に数字を追加（例: `todo-app-1`）
+
+---
+
 ## 自動実行する内容（この順番で）
 
 ### 1. GitHubリポジトリ作成
@@ -21,9 +35,10 @@ cd [アプリ名]
 
 ### 2. Firebaseプロジェクト作成
 ```bash
-firebase projects:create [アプリ名]-[ランダム4桁]
-firebase use [作成したプロジェクトID]
+firebase projects:create [アプリ名]
+firebase use [アプリ名]
 ```
+※ 名前が使用済みの場合は `[アプリ名]-1` で再試行
 
 ### 3. プロジェクト初期化 & コード生成
 仕様書に基づいてフレームワーク選択、コード生成
@@ -65,11 +80,12 @@ git push -u origin main
   デプロイ完了
 ========================================
 
-デプロイURL: https://[プロジェクトID].web.app
-GitHub: https://github.com/[ユーザー名]/[アプリ名]
+アプリ名: [アプリ名]
 
-Firebase Console: https://console.firebase.google.com/project/[プロジェクトID]
-Google Cloud Console: https://console.cloud.google.com/home/dashboard?project=[プロジェクトID]
+デプロイURL: https://[アプリ名].web.app
+GitHub: https://github.com/[ユーザー名]/[アプリ名]
+Firebase: https://console.firebase.google.com/project/[アプリ名]
+Google Cloud: https://console.cloud.google.com/home/dashboard?project=[アプリ名]
 
 実装した機能:
 - [機能1]
