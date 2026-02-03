@@ -278,7 +278,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
   {
     id: 'firebase',
     name: 'Firebase',
-    icon: '☁️',
+    icon: '🔥',
     description: 'Backend & data persistence',
     type: 'storage',
     version: '1.0.0',
