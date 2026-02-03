@@ -96,7 +96,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
           <div className="illustration-connectors">
             <div className="connector-item">🐱 GitHub</div>
             <div className="connector-item">🦀 Claude Code</div>
-            <div className="connector-item">☁️ Firebase</div>
+            <div className="connector-item">🔥 Firebase</div>
             <div className="connector-item">☁️ Google Cloud</div>
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
           <div className="illustration-connectors">
             <div className="connector-item">🐱 GitHub</div>
             <div className="connector-item">🦀 Claude Code</div>
-            <div className="connector-item">☁️ Firebase</div>
+            <div className="connector-item">🔥 Firebase</div>
             <div className="connector-item">☁️ Google Cloud</div>
           </div>
         </div>
