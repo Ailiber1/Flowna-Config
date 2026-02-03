@@ -269,7 +269,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
   const renderFirebaseConfig = () => (
     <div>
       <div className="form-group">
-        <label className="form-label required">API Key</label>
+        <label className="form-label required">
+          {state.language === 'ja' ? 'APIキー' : 'API Key'}
+        </label>
         <input
           type="password"
           className="form-input"
@@ -279,7 +281,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         />
       </div>
       <div className="form-group">
-        <label className="form-label required">Project ID</label>
+        <label className="form-label required">
+          {state.language === 'ja' ? 'プロジェクトID' : 'Project ID'}
+        </label>
         <input
           type="text"
           className="form-input"
@@ -289,7 +293,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         />
       </div>
       <div className="form-group">
-        <label className="form-label required">Auth Domain</label>
+        <label className="form-label required">
+          {state.language === 'ja' ? '認証ドメイン' : 'Auth Domain'}
+        </label>
         <input
           type="text"
           className="form-input"
@@ -299,7 +305,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         />
       </div>
       <div className="form-group">
-        <label className="form-label">Storage Bucket</label>
+        <label className="form-label">
+          {state.language === 'ja' ? 'ストレージバケット' : 'Storage Bucket'}
+        </label>
         <input
           type="text"
           className="form-input"
@@ -309,7 +317,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         />
       </div>
       <div className="form-group">
-        <label className="form-label">App ID</label>
+        <label className="form-label">
+          {state.language === 'ja' ? 'アプリID' : 'App ID'}
+        </label>
         <input
           type="text"
           className="form-input"
@@ -324,7 +334,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
   const renderApiKeyConfig = () => (
     <div className="form-group">
       <label className="form-label required">
-        {connectorId === 'github' ? 'Personal Access Token' : 'API Key'}
+        {connectorId === 'github'
+          ? (state.language === 'ja' ? 'パーソナルアクセストークン' : 'Personal Access Token')
+          : (state.language === 'ja' ? 'APIキー' : 'API Key')}
       </label>
       <input
         type="password"
@@ -346,7 +358,9 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
   const renderCustomApiConfig = () => (
     <>
       <div className="form-group">
-        <label className="form-label required">Base URL</label>
+        <label className="form-label required">
+          {state.language === 'ja' ? 'ベースURL' : 'Base URL'}
+        </label>
         <input
           type="url"
           className="form-input"
@@ -356,21 +370,25 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         />
       </div>
       <div className="form-group">
-        <label className="form-label">Auth Type</label>
+        <label className="form-label">
+          {state.language === 'ja' ? '認証タイプ' : 'Auth Type'}
+        </label>
         <select
           className="form-select"
           value={customAuthType}
           onChange={(e) => setCustomAuthType(e.target.value as 'none' | 'bearer' | 'apikey' | 'basic')}
         >
-          <option value="none">None</option>
-          <option value="bearer">Bearer Token</option>
-          <option value="apikey">API Key</option>
-          <option value="basic">Basic Auth</option>
+          <option value="none">{state.language === 'ja' ? 'なし' : 'None'}</option>
+          <option value="bearer">{state.language === 'ja' ? 'Bearerトークン' : 'Bearer Token'}</option>
+          <option value="apikey">{state.language === 'ja' ? 'APIキー' : 'API Key'}</option>
+          <option value="basic">{state.language === 'ja' ? 'Basic認証' : 'Basic Auth'}</option>
         </select>
       </div>
       {customAuthType !== 'none' && (
         <div className="form-group">
-          <label className="form-label">Auth Value</label>
+          <label className="form-label">
+            {state.language === 'ja' ? '認証値' : 'Auth Value'}
+          </label>
           <input
             type="password"
             className="form-input"
@@ -569,7 +587,7 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
           {/* Status */}
           <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(13, 33, 55, 0.5)', borderRadius: '8px' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Status:{' '}
+              {state.language === 'ja' ? 'ステータス:' : 'Status:'}{' '}
             </span>
             <span style={{
               fontSize: '12px',
