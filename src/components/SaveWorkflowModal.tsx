@@ -11,7 +11,8 @@ interface SaveWorkflowModalProps {
 export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
   const { state, dispatch } = useApp();
 
-  const [name, setName] = useState('');
+  // Pre-fill with current workflow name if loaded
+  const [name, setName] = useState(state.currentWorkflowName || '');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
@@ -115,6 +116,18 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
     setShowOverwriteConfirm(false);
     setExistingWorkflow(null);
     setDuplicateIds([]);
+  };
+
+  // Quick overwrite for currently loaded workflow
+  const handleQuickOverwrite = () => {
+    if (!state.currentWorkflowId || !state.currentWorkflowName) return;
+
+    const currentWorkflow = state.workflows.find(w => w.id === state.currentWorkflowId);
+    if (!currentWorkflow) return;
+
+    const workflow = createWorkflowData(currentWorkflow.id, currentWorkflow.createdAt);
+    workflow.name = currentWorkflow.name; // Keep original name
+    doSave(workflow, true);
   };
 
   // Overwrite confirmation dialog
@@ -225,8 +238,20 @@ export function SaveWorkflowModal({ onClose }: SaveWorkflowModalProps) {
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               {t('cancel', state.language)}
             </button>
+            {state.currentWorkflowId && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleQuickOverwrite}
+                style={{ background: 'var(--accent-orange)' }}
+              >
+                {state.language === 'ja' ? '上書き保存' : 'Overwrite'}
+              </button>
+            )}
             <button type="submit" className="btn btn-primary">
-              {t('save', state.language)}
+              {state.currentWorkflowId
+                ? (state.language === 'ja' ? '新規保存' : 'Save as New')
+                : t('save', state.language)}
             </button>
           </div>
         </form>
