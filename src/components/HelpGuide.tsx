@@ -126,13 +126,17 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '🖱️',
       content: [
         'ノードやコネクタを右クリックすると、メニューが表示されます。',
-        '編集、削除、RUN/SKIP切り替えなどの操作ができます。',
+        '編集：ノードの設定を変更できます。',
+        'アクションを追加：ノードにカスタムアクションを設定できます。',
+        'URLを開く：関連するリンクを開きます。',
       ],
       illustration: (
         <div className="help-illustration">
           <div className="illustration-context-menu">
             <div className="context-item">✏️ 編集</div>
-            <div className="context-item">▶️ RUN に設定</div>
+            <div className="context-item">📋 コピー</div>
+            <div className="context-item">⚡ アクションを追加</div>
+            <div className="context-item">🔗 URLを開く</div>
             <div className="context-item danger">🗑️ 削除</div>
           </div>
         </div>
@@ -291,13 +295,17 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '🖱️',
       content: [
         'Right-click on nodes or connectors to see the context menu.',
-        'Edit, delete, or toggle RUN/SKIP from here.',
+        'Edit: Change node settings.',
+        'Add Action: Set custom actions for the node.',
+        'Open URL: Open related links.',
       ],
       illustration: (
         <div className="help-illustration">
           <div className="illustration-context-menu">
             <div className="context-item">✏️ Edit</div>
-            <div className="context-item">▶️ Set to RUN</div>
+            <div className="context-item">📋 Copy</div>
+            <div className="context-item">⚡ Add Action</div>
+            <div className="context-item">🔗 Open URL</div>
             <div className="context-item danger">🗑️ Delete</div>
           </div>
         </div>
