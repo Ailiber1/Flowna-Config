@@ -146,7 +146,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'アクションの活用',
       icon: '⚡',
       content: [
-        'ノードにアクションを追加することで、プロジェクト作成からデプロイまでワンクリックで実行できます。',
+        'アクションを追加すると、追加した処理を自動で実行できます。',
         '🔥 Firebaseプロジェクト：アプリ名でFirebaseプロジェクトを作成',
         '🐱 GitHubリポジトリ：アプリ名でGitHubリポジトリを作成',
         '🤖 Claude Codeで開発：仕様書を元にアプリを開発',
@@ -340,7 +340,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'Using Actions',
       icon: '⚡',
       content: [
-        'By adding actions to nodes, you can execute everything from project creation to deployment with one click.',
+        'Adding actions allows automatic execution of the added processes.',
         '🔥 Firebase Project: Create a Firebase project with your app name',
         '🐱 GitHub Repository: Create a GitHub repository with your app name',
         '🤖 Develop with Claude Code: Build apps based on specifications',
