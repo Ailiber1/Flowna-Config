@@ -88,7 +88,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'コネクタの追加',
       icon: '🔌',
       content: [
-        '「コネクタ」からGitHub、Claude Code、Firebaseなどを追加できます。',
+        '「コネクタ」からGitHub、Claude Code、Firebase、Google Cloudなどを追加できます。',
         'コネクタを使うと、外部サービスと連携できます。',
       ],
       illustration: (
@@ -97,6 +97,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="connector-item">🐱 GitHub</div>
             <div className="connector-item">🦀 Claude Code</div>
             <div className="connector-item">☁️ Firebase</div>
+            <div className="connector-item">☁️ Google Cloud</div>
           </div>
         </div>
       ),
@@ -152,6 +153,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
         '🤖 Claude Codeで開発：仕様書を元にアプリを開発',
         '🚀 デプロイ：GitHub PagesにデプロイしてURLを取得',
         '🔄 修正・更新：PRを作成してマージ',
+        '🔐 Google Cloud APIキー制限：セキュリティ対策としてAPIキーをウェブサイトに制限',
       ],
       illustration: (
         <div className="help-illustration">
@@ -163,6 +165,8 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="action-item">🤖 Claude Codeで開発</div>
             <div className="action-item">🚀 デプロイ</div>
             <div className="action-item">🔄 修正・更新(PR)</div>
+            <div className="action-category">セキュリティ</div>
+            <div className="action-item">🔐 Google Cloud APIキー制限</div>
           </div>
         </div>
       ),
@@ -282,7 +286,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'Adding Connectors',
       icon: '🔌',
       content: [
-        'Add connectors like GitHub, Claude Code, or Firebase from the "Connectors" section.',
+        'Add connectors like GitHub, Claude Code, Firebase, or Google Cloud from the "Connectors" section.',
         'Connectors allow integration with external services.',
       ],
       illustration: (
@@ -291,6 +295,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="connector-item">🐱 GitHub</div>
             <div className="connector-item">🦀 Claude Code</div>
             <div className="connector-item">☁️ Firebase</div>
+            <div className="connector-item">☁️ Google Cloud</div>
           </div>
         </div>
       ),
@@ -346,6 +351,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
         '🤖 Develop with Claude Code: Build apps based on specifications',
         '🚀 Deploy: Deploy to GitHub Pages and get URL',
         '🔄 Fix & Update: Create and merge PRs',
+        '🔐 Google Cloud API Key Restriction: Restrict API key to website for security',
       ],
       illustration: (
         <div className="help-illustration">
@@ -357,6 +363,8 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="action-item">🤖 Develop with Claude Code</div>
             <div className="action-item">🚀 Deploy</div>
             <div className="action-item">🔄 Fix & Update (PR)</div>
+            <div className="action-category">Security</div>
+            <div className="action-item">🔐 Google Cloud API Key Restriction</div>
           </div>
         </div>
       ),
