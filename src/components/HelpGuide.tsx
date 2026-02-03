@@ -35,7 +35,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'ノードの追加',
       icon: '➕',
       content: [
-        '左側の「ノードパレット」のノードをクリックすると、キャンバスに追加されます。',
+        '「ノードパレット」のノードをクリックすると、キャンバスに追加されます。',
         'Agent、Logic、System、Ruleなど、様々なタイプのノードがあります。',
       ],
       illustration: (
@@ -88,7 +88,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'コネクタの追加',
       icon: '🔌',
       content: [
-        '左側の「コネクタ」からGitHub、Claude Code、Firebaseなどを追加できます。',
+        '「コネクタ」からGitHub、Claude Code、Firebaseなどを追加できます。',
         'コネクタを使うと、外部サービスと連携できます。',
       ],
       illustration: (
@@ -126,13 +126,17 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '🖱️',
       content: [
         'ノードやコネクタを右クリックすると、メニューが表示されます。',
-        '編集、削除、RUN/SKIP切り替えなどの操作ができます。',
+        '編集：ノードの設定を変更できます。',
+        'アクションを追加：ノードにカスタムアクションを設定できます。',
+        'URLを開く：関連するリンクを開きます。',
       ],
       illustration: (
         <div className="help-illustration">
           <div className="illustration-context-menu">
             <div className="context-item">✏️ 編集</div>
-            <div className="context-item">▶️ RUN に設定</div>
+            <div className="context-item">📋 コピー</div>
+            <div className="context-item">⚡ アクションを追加</div>
+            <div className="context-item">🔗 URLを開く</div>
             <div className="context-item danger">🗑️ 削除</div>
           </div>
         </div>
@@ -143,7 +147,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '💾',
       content: [
         '画面上部の「保存」ボタンでワークフローを保存できます。',
-        '保存したワークフローは、左側の「保存済みワークフロー」から開けます。',
+        '保存したワークフローは、「保存済みワークフロー」から開けます。',
       ],
       illustration: (
         <div className="help-illustration">
@@ -200,7 +204,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'Adding Nodes',
       icon: '➕',
       content: [
-        'Click on a node in the "Node Palette" on the left to add it to the canvas.',
+        'Click on a node in the "Node Palette" to add it to the canvas.',
         'There are various node types: Agent, Logic, System, Rule, etc.',
       ],
       illustration: (
@@ -253,7 +257,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       title: 'Adding Connectors',
       icon: '🔌',
       content: [
-        'Add connectors like GitHub, Claude Code, or Firebase from the left panel.',
+        'Add connectors like GitHub, Claude Code, or Firebase from the "Connectors" section.',
         'Connectors allow integration with external services.',
       ],
       illustration: (
@@ -291,13 +295,17 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '🖱️',
       content: [
         'Right-click on nodes or connectors to see the context menu.',
-        'Edit, delete, or toggle RUN/SKIP from here.',
+        'Edit: Change node settings.',
+        'Add Action: Set custom actions for the node.',
+        'Open URL: Open related links.',
       ],
       illustration: (
         <div className="help-illustration">
           <div className="illustration-context-menu">
             <div className="context-item">✏️ Edit</div>
-            <div className="context-item">▶️ Set to RUN</div>
+            <div className="context-item">📋 Copy</div>
+            <div className="context-item">⚡ Add Action</div>
+            <div className="context-item">🔗 Open URL</div>
             <div className="context-item danger">🗑️ Delete</div>
           </div>
         </div>
@@ -308,7 +316,7 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       icon: '💾',
       content: [
         'Click the "Save" button at the top to save your workflow.',
-        'Open saved workflows from "Saved Workflows" on the left.',
+        'Open saved workflows from "Saved Workflows".',
       ],
       illustration: (
         <div className="help-illustration">
