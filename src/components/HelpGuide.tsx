@@ -143,6 +143,31 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
       ),
     },
     {
+      title: 'アクションの活用',
+      icon: '⚡',
+      content: [
+        'アクションを追加すると、追加した処理を自動で実行できます。',
+        '🔥 Firebaseプロジェクト：アプリ名でFirebaseプロジェクトを作成',
+        '🐱 GitHubリポジトリ：アプリ名でGitHubリポジトリを作成',
+        '🤖 Claude Codeで開発：仕様書を元にアプリを開発',
+        '🚀 デプロイ：GitHub PagesにデプロイしてURLを取得',
+        '🔄 修正・更新：PRを作成してマージ',
+      ],
+      illustration: (
+        <div className="help-illustration">
+          <div className="illustration-actions">
+            <div className="action-category">プロジェクト作成</div>
+            <div className="action-item">🔥 Firebaseプロジェクト</div>
+            <div className="action-item">🐱 GitHubリポジトリ</div>
+            <div className="action-category">開発・デプロイ</div>
+            <div className="action-item">🤖 Claude Codeで開発</div>
+            <div className="action-item">🚀 デプロイ</div>
+            <div className="action-item">🔄 修正・更新(PR)</div>
+          </div>
+        </div>
+      ),
+    },
+    {
       title: 'ワークフローの保存',
       icon: '💾',
       content: [
@@ -307,6 +332,31 @@ export default function HelpGuide({ onClose }: HelpGuideProps) {
             <div className="context-item">⚡ Add Action</div>
             <div className="context-item">🔗 Open URL</div>
             <div className="context-item danger">🗑️ Delete</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Using Actions',
+      icon: '⚡',
+      content: [
+        'Adding actions allows automatic execution of the added processes.',
+        '🔥 Firebase Project: Create a Firebase project with your app name',
+        '🐱 GitHub Repository: Create a GitHub repository with your app name',
+        '🤖 Develop with Claude Code: Build apps based on specifications',
+        '🚀 Deploy: Deploy to GitHub Pages and get URL',
+        '🔄 Fix & Update: Create and merge PRs',
+      ],
+      illustration: (
+        <div className="help-illustration">
+          <div className="illustration-actions">
+            <div className="action-category">Project Setup</div>
+            <div className="action-item">🔥 Firebase Project</div>
+            <div className="action-item">🐱 GitHub Repository</div>
+            <div className="action-category">Development & Deploy</div>
+            <div className="action-item">🤖 Develop with Claude Code</div>
+            <div className="action-item">🚀 Deploy</div>
+            <div className="action-item">🔄 Fix & Update (PR)</div>
           </div>
         </div>
       ),
