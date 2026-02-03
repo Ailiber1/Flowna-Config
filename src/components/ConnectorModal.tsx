@@ -313,14 +313,54 @@ export function ConnectorModal({ connectorId, onClose }: ConnectorModalProps) {
         </div>
       </div>
 
-      {/* Info: Claude Code handles the rest */}
-      <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
-        <p style={{ fontSize: '12px', color: 'var(--accent-purple)' }}>
-          🤖 {state.language === 'ja'
-            ? 'API連携はClaude Codeが自動で行います'
-            : 'API integration will be handled by Claude Code'}
-        </p>
-      </div>
+      {/* Step 3: Claude Code Integration */}
+      {firebaseConfig.projectId && (
+        <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(138, 43, 226, 0.1)', borderRadius: '8px', border: '1px solid rgba(138, 43, 226, 0.3)' }}>
+          <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--accent-purple)' }}>
+            🤖 {state.language === 'ja' ? 'ステップ3: Claude Codeで設定' : 'Step 3: Configure with Claude Code'}
+          </p>
+          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+            {state.language === 'ja'
+              ? '以下をClaude Codeにコピーして、Firebaseの設定を自動化してください：'
+              : 'Copy the following to Claude Code to automate Firebase setup:'}
+          </p>
+          <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)', marginBottom: '12px' }}>
+            <div style={{ marginBottom: '8px', color: 'var(--accent-cyan)' }}>
+              {state.language === 'ja' ? '# Firebase プロジェクト設定' : '# Firebase Project Setup'}
+            </div>
+            <div>firebase use {firebaseConfig.projectId}</div>
+            <div style={{ marginTop: '8px', color: 'var(--text-secondary)' }}>
+              {state.language === 'ja'
+                ? '# Firestoreルール、Storageルール、認証設定を\n# アプリの仕様に応じて自動設定してください'
+                : '# Auto-configure Firestore rules, Storage rules,\n# and auth settings based on app requirements'}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              const text = state.language === 'ja'
+                ? `Firebase プロジェクト: ${firebaseConfig.projectId}\n\n以下を設定してください：\n1. Firestoreセキュリティルール（アプリの用途に応じて）\n2. Storageルール（必要な場合）\n3. Authentication設定（Google, Email等）\n4. firebase.json の設定\n\nコマンド: firebase use ${firebaseConfig.projectId}`
+                : `Firebase Project: ${firebaseConfig.projectId}\n\nPlease configure:\n1. Firestore security rules (based on app requirements)\n2. Storage rules (if needed)\n3. Authentication settings (Google, Email, etc.)\n4. firebase.json configuration\n\nCommand: firebase use ${firebaseConfig.projectId}`;
+              navigator.clipboard.writeText(text);
+              setMessage({ text: state.language === 'ja' ? 'コピーしました！Claude Codeに貼り付けてください' : 'Copied! Paste to Claude Code', type: 'success' });
+            }}
+            style={{ width: '100%', fontSize: '12px' }}
+          >
+            📋 {state.language === 'ja' ? 'Claude Code用にコピー' : 'Copy for Claude Code'}
+          </button>
+        </div>
+      )}
+
+      {!firebaseConfig.projectId && (
+        <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(138, 43, 226, 0.05)', borderRadius: '8px', border: '1px dashed rgba(138, 43, 226, 0.3)' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+            🤖 {state.language === 'ja'
+              ? 'プロジェクトIDを入力すると、Claude Code連携オプションが表示されます'
+              : 'Enter Project ID to see Claude Code integration options'}
+          </p>
+        </div>
+      )}
     </div>
   );
 
