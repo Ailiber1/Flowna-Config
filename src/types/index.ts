@@ -259,6 +259,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
     capabilities: ['import', 'export', 'sync', 'webhook', 'trigger'],
     installedAt: Date.now(),
     lastUsedAt: 0,
+    url: 'https://github.com',
   },
   // === AI Connectors ===
   {
@@ -273,6 +274,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
     capabilities: ['import', 'export'],
     installedAt: Date.now(),
     lastUsedAt: 0,
+    url: 'https://claude.ai',
   },
   // === Storage Connectors ===
   {
@@ -287,6 +289,7 @@ export const DEFAULT_CONNECTORS: Connector[] = [
     capabilities: ['import', 'export', 'sync'],
     installedAt: Date.now(),
     lastUsedAt: 0,
+    url: 'https://console.firebase.google.com',
   },
   // === Cloud Connectors ===
   {
