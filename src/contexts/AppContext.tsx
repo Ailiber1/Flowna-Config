@@ -74,6 +74,10 @@ interface AppState {
 
   // Undo history
   history: HistoryEntry[];
+
+  // Current loaded workflow tracking (for overwrite save)
+  currentWorkflowId: string | null;
+  currentWorkflowName: string | null;
 }
 
 type AppAction =
@@ -158,6 +162,8 @@ type AppAction =
   | { type: 'UPDATE_NODE_LAST_RUN'; payload: { nodeId: string; inputHash: string; revision: number; result: 'success' | 'error' | 'skipped' } }
   | { type: 'OPEN_ACTION_MENU'; payload: { nodeId: string; position: { x: number; y: number } } }
   | { type: 'CLOSE_ACTION_MENU' }
+  // Current workflow tracking
+  | { type: 'SET_CURRENT_WORKFLOW'; payload: { id: string; name: string } | null }
   // Undo
   | { type: 'UNDO' };
 
@@ -209,6 +215,9 @@ const initialState: AppState = {
   actionMenuPosition: null,
   // Undo history
   history: [],
+  // Current loaded workflow tracking
+  currentWorkflowId: null,
+  currentWorkflowName: null,
 };
 
 // Helper to push current state to history
@@ -509,6 +518,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
         connectorNodes: action.payload.connectorNodes || [],
         viewport: action.payload.viewport,
         categories: [...DEFAULT_CATEGORIES, ...action.payload.customCategories],
+        currentWorkflowId: action.payload.id,
+        currentWorkflowName: action.payload.name,
       };
 
     case 'SELECT_ALL_NODES':
@@ -864,6 +875,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
         isActionMenuOpen: false,
         actionMenuNodeId: null,
         actionMenuPosition: null,
+      };
+
+    case 'SET_CURRENT_WORKFLOW':
+      return {
+        ...state,
+        currentWorkflowId: action.payload?.id || null,
+        currentWorkflowName: action.payload?.name || null,
       };
 
     default:
