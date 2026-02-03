@@ -249,6 +249,16 @@ export function TopBar() {
       {/* Mode Switch */}
       <ModeSwitch />
 
+      {/* Help Button - between mode switch and actions */}
+      <button
+        className="topbar-btn help-btn"
+        onClick={() => setShowHelpGuide(true)}
+        title={state.language === 'ja' ? '使い方ガイド' : 'Help Guide'}
+        style={{ marginLeft: '16px' }}
+      >
+        ❓
+      </button>
+
       <div className="topbar-actions">
         {/* Plan Preview (compact) */}
         <button
@@ -278,13 +288,6 @@ export function TopBar() {
         </button>
         <button className="topbar-btn primary" onClick={handleSaveWorkflow}>
           💾 {t('save', state.language)}
-        </button>
-        <button
-          className="topbar-btn help-btn"
-          onClick={() => setShowHelpGuide(true)}
-          title={state.language === 'ja' ? '使い方ガイド' : 'Help Guide'}
-        >
-          ❓
         </button>
         <button
           className="topbar-btn language-btn"
