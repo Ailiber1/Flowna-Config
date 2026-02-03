@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../contexts/AppContext';
 
 interface ClaudeCodeModalProps {
@@ -75,7 +76,7 @@ export default function ClaudeCodeModal({ prompt, onClose }: ClaudeCodeModalProp
     });
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal claude-code-modal"
@@ -179,6 +180,7 @@ export default function ClaudeCodeModal({ prompt, onClose }: ClaudeCodeModalProp
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
